@@ -117,3 +117,8 @@
 /Users/jac/ddac_hms/HMS.Api/obj/Debug/net8.0/HMS.Api.pdb
 /Users/jac/ddac_hms/HMS.Api/obj/Debug/net8.0/HMS.Api.genruntimeconfig.cache
 /Users/jac/ddac_hms/HMS.Api/obj/Debug/net8.0/ref/HMS.Api.dll
+/Users/jac/ddac_hms/HMS.Api/bin/Debug/net8.0/publish/web.config
+/Users/jac/ddac_hms/HMS.Api/bin/Debug/net8.0/publish/appsettings.Development.json
+/Users/jac/ddac_hms/HMS.Api/bin/Debug/net8.0/publish/appsettings.json
+/Users/jac/ddac_hms/HMS.Api/bin/Debug/net8.0/publish/HMS.Api.deps.json
+/Users/jac/ddac_hms/HMS.Api/bin/Debug/net8.0/publish/HMS.Api.runtimeconfig.json
