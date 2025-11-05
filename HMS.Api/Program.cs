@@ -14,7 +14,7 @@ builder.Services.AddControllers();
 
 // Configure Entity Framework with PostgreSQL
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
 
 // Configure Identity
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
@@ -60,7 +60,7 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Configure Swagger/OpenAPI with JWT support
+// Configure Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -97,14 +97,15 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Add CORS
+// Add CORS for React frontend
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("AllowReact", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins("http://localhost:5173", "http://localhost:3000")
+              .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowAnyHeader();
+              .AllowCredentials();
     });
 });
 
@@ -117,13 +118,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "HMS API V1");
-        c.RoutePrefix = string.Empty; // Swagger UI at root
     });
 }
 
 app.UseHttpsRedirection();
 
-app.UseCors("AllowAll");
+app.UseCors("AllowReact");
 
 app.UseAuthentication();
 app.UseAuthorization();
