@@ -1,0 +1,13 @@
+/Users/jac/ddac_hms/HMS.Domain/bin/Debug/net8.0/HMS.Domain.deps.json
+/Users/jac/ddac_hms/HMS.Domain/bin/Debug/net8.0/HMS.Domain.dll
+/Users/jac/ddac_hms/HMS.Domain/bin/Debug/net8.0/HMS.Domain.pdb
+/Users/jac/ddac_hms/HMS.Domain/obj/Debug/net8.0/HMS.Domain.csproj.AssemblyReference.cache
+/Users/jac/ddac_hms/HMS.Domain/obj/Debug/net8.0/HMS.Domain.GeneratedMSBuildEditorConfig.editorconfig
+/Users/jac/ddac_hms/HMS.Domain/obj/Debug/net8.0/HMS.Domain.AssemblyInfoInputs.cache
+/Users/jac/ddac_hms/HMS.Domain/obj/Debug/net8.0/HMS.Domain.AssemblyInfo.cs
+/Users/jac/ddac_hms/HMS.Domain/obj/Debug/net8.0/HMS.Domain.csproj.CoreCompileInputs.cache
+/Users/jac/ddac_hms/HMS.Domain/obj/Debug/net8.0/HMS.Domain.sourcelink.json
+/Users/jac/ddac_hms/HMS.Domain/obj/Debug/net8.0/HMS.Domain.dll
+/Users/jac/ddac_hms/HMS.Domain/obj/Debug/net8.0/refint/HMS.Domain.dll
+/Users/jac/ddac_hms/HMS.Domain/obj/Debug/net8.0/HMS.Domain.pdb
+/Users/jac/ddac_hms/HMS.Domain/obj/Debug/net8.0/ref/HMS.Domain.dll
