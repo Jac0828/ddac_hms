@@ -13,6 +13,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 // Configure Entity Framework with PostgreSQL
+// Connection string from environment variable: ConnectionStrings__Default
+// Falls back to appsettings.json if not set
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
 
@@ -60,7 +62,7 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Configure Swagger/OpenAPI
+// Configure Swagger/OpenAPI (enabled in Production)
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -97,54 +99,81 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Add CORS for React frontend
+// Configure CORS policy "AppCors"
+// Allowed origins from env var: CORS__AllowedOrigins (comma-separated)
+// Defaults to localhost:5173 and localhost:3000 if empty
+var allowedOrigins = builder.Configuration["CORS__AllowedOrigins"]?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+if (allowedOrigins == null || allowedOrigins.Length == 0)
+{
+    allowedOrigins = new[] { "http://localhost:5173", "http://localhost:3000" };
+}
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowReact", policy =>
+    options.AddPolicy("AppCors", policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "http://localhost:3000")
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials();
+              .WithExposedHeaders("Content-Length", "Content-Type", "Authorization");
     });
 });
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+// Enable Swagger in Production (not only Development)
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "HMS API V1");
-    });
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "HMS API V1");
+    c.RoutePrefix = "swagger";
+});
 
 app.UseHttpsRedirection();
 
-app.UseCors("AllowReact");
+app.UseCors("AppCors");
 
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Health check endpoint
+app.MapGet("/healthz", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }))
+   .WithName("HealthCheck")
+   .AllowAnonymous();
+
 app.MapControllers();
 
-// Seed database
-using (var scope = app.Services.CreateScope())
+// Auto-migrate on startup (controlled by env var RUN_MIGRATIONS, default: true)
+var runMigrations = builder.Configuration.GetValue<bool>("RUN_MIGRATIONS", true);
+if (runMigrations)
 {
-    var services = scope.ServiceProvider;
-    try
+    using (var scope = app.Services.CreateScope())
     {
-        var context = services.GetRequiredService<ApplicationDbContext>();
-        context.Database.Migrate(); // Apply migrations
-        await HMS.Api.Data.SeedData.SeedRolesAndUsers(services);
-    }
-    catch (Exception ex)
-    {
+        var services = scope.ServiceProvider;
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while seeding the database.");
+        
+        try
+        {
+            logger.LogInformation("Starting database migration...");
+            var context = services.GetRequiredService<ApplicationDbContext>();
+            context.Database.Migrate();
+            logger.LogInformation("Database migration completed successfully.");
+            
+            // Seed database
+            await HMS.Api.Data.SeedData.SeedRolesAndUsers(services);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An error occurred while migrating or seeding the database.");
+            // Don't throw - allow app to start even if migration fails
+        }
     }
+}
+else
+{
+    var logger = app.Services.GetRequiredService<ILogger<Program>>();
+    logger.LogInformation("Database migration skipped (RUN_MIGRATIONS=false).");
 }
 
 await app.RunAsync();
