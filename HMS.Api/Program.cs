@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -8,6 +9,16 @@ using HMS.Domain.Models;
 using HMS.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// ForwardedHeaders for reverse proxy (e.g., Elastic Beanstalk)
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor |
+                                ForwardedHeaders.XForwardedProto |
+                                ForwardedHeaders.XForwardedHost;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -122,6 +133,9 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+// Use forwarded headers for reverse proxy
+app.UseForwardedHeaders();
+
 // Enable Swagger in Production (not only Development)
 app.UseSwagger();
 app.UseSwaggerUI(c =>
@@ -140,6 +154,11 @@ app.UseAuthorization();
 // Health check endpoint
 app.MapGet("/healthz", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }))
    .WithName("HealthCheck")
+   .AllowAnonymous();
+
+// Root redirect to Swagger
+app.MapGet("/", () => Results.Redirect("/swagger"))
+   .WithName("Root")
    .AllowAnonymous();
 
 app.MapControllers();
