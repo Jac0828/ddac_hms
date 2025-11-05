@@ -1,0 +1,60 @@
+@model HMS.Web.Controllers.Booking
+@{
+    ViewData["Title"] = "Booking Details";
+}
+
+<h2>Booking Details #@Model.Id</h2>
+<hr />
+
+<div class="row">
+    <div class="col-md-8">
+        <dl class="row">
+            <dt class="col-sm-4">Booking ID:</dt>
+            <dd class="col-sm-8">#@Model.Id</dd>
+
+            <dt class="col-sm-4">Room:</dt>
+            <dd class="col-sm-8">@(Model.Room?.RoomNumber ?? "N/A") - @(Model.Room?.RoomType ?? "N/A")</dd>
+
+            <dt class="col-sm-4">Check-In Date:</dt>
+            <dd class="col-sm-8">@Model.CheckInDate.ToString("MMM dd, yyyy")</dd>
+
+            <dt class="col-sm-4">Check-Out Date:</dt>
+            <dd class="col-sm-8">@Model.CheckOutDate.ToString("MMM dd, yyyy")</dd>
+
+            <dt class="col-sm-4">Number of Guests:</dt>
+            <dd class="col-sm-8">@Model.NumberOfGuests</dd>
+
+            <dt class="col-sm-4">Total Amount:</dt>
+            <dd class="col-sm-8"><strong>$@Model.TotalAmount.ToString("F2")</strong></dd>
+
+            <dt class="col-sm-4">Status:</dt>
+            <dd class="col-sm-8">
+                <span class="badge bg-@(Model.Status switch {
+                    "Confirmed" => "success",
+                    "Pending" => "warning",
+                    "CheckedIn" => "info",
+                    "CheckedOut" => "secondary",
+                    "Cancelled" => "danger",
+                    _ => "secondary"
+                })">@Model.Status</span>
+            </dd>
+
+            @if (!string.IsNullOrEmpty(Model.SpecialRequests))
+            {
+                <dt class="col-sm-4">Special Requests:</dt>
+                <dd class="col-sm-8">@Model.SpecialRequests</dd>
+            }
+        </dl>
+
+        <div class="mt-4">
+            <a asp-action="Index" class="btn btn-secondary">Back to Bookings</a>
+            @if (Model.Status == "Pending" || Model.Status == "Confirmed")
+            {
+                <form asp-action="Cancel" asp-route-id="@Model.Id" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to cancel this booking?');">Cancel Booking</button>
+                </form>
+            }
+        </div>
+    </div>
+</div>
+

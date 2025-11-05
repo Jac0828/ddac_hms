@@ -1,0 +1,67 @@
+@model List<HMS.Web.Controllers.Booking>
+@{
+    ViewData["Title"] = "My Bookings";
+}
+
+<h2>My Bookings</h2>
+<hr />
+
+@if (Model != null && Model.Count > 0)
+{
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Booking ID</th>
+                    <th>Room</th>
+                    <th>Check-In</th>
+                    <th>Check-Out</th>
+                    <th>Guests</th>
+                    <th>Total Amount</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var booking in Model)
+                {
+                    <tr>
+                        <td>#@booking.Id</td>
+                        <td>@(booking.Room?.RoomNumber ?? "N/A") - @(booking.Room?.RoomType ?? "N/A")</td>
+                        <td>@booking.CheckInDate.ToString("MMM dd, yyyy")</td>
+                        <td>@booking.CheckOutDate.ToString("MMM dd, yyyy")</td>
+                        <td>@booking.NumberOfGuests</td>
+                        <td>$@booking.TotalAmount.ToString("F2")</td>
+                        <td>
+                            <span class="badge bg-@(booking.Status switch {
+                                "Confirmed" => "success",
+                                "Pending" => "warning",
+                                "CheckedIn" => "info",
+                                "CheckedOut" => "secondary",
+                                "Cancelled" => "danger",
+                                _ => "secondary"
+                            })">@booking.Status</span>
+                        </td>
+                        <td>
+                            <a asp-action="Details" asp-route-id="@booking.Id" class="btn btn-sm btn-outline-primary">View</a>
+                            @if (booking.Status == "Pending" || booking.Status == "Confirmed")
+                            {
+                                <form asp-action="Cancel" asp-route-id="@booking.Id" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to cancel this booking?');">Cancel</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="alert alert-info">
+        <h4>No bookings found</h4>
+        <p>You haven't made any bookings yet. <a asp-controller="Rooms" asp-action="Index">Browse rooms</a> to get started!</p>
+    </div>
+}
+

@@ -1,0 +1,71 @@
+@model HMS.Web.Controllers.CreateBookingModel
+@{
+    ViewData["Title"] = "Create Booking";
+    var room = ViewBag.Room as HMS.Web.Controllers.Room;
+    var checkIn = ViewBag.CheckIn as DateTime? ?? DateTime.Today;
+    var checkOut = ViewBag.CheckOut as DateTime? ?? DateTime.Today.AddDays(1);
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <h2>Book Room @(room?.RoomNumber ?? "")</h2>
+        <hr />
+
+        @if (room != null)
+        {
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">@room.RoomType - Room @room.RoomNumber</h5>
+                    <p class="card-text">
+                        <strong>Price:</strong> $@room.PricePerNight per night<br>
+                        <strong>Capacity:</strong> @room.Capacity guests<br>
+                        <strong>Description:</strong> @room.Description
+                    </p>
+                </div>
+            </div>
+        }
+
+        <form asp-action="Create" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            
+            <input type="hidden" asp-for="RoomId" value="@Model.RoomId" />
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="CheckInDate" class="form-label"></label>
+                    <input asp-for="CheckInDate" type="date" class="form-control" value="@checkIn.ToString("yyyy-MM-dd")" />
+                    <span asp-validation-for="CheckInDate" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label asp-for="CheckOutDate" class="form-label"></label>
+                    <input asp-for="CheckOutDate" type="date" class="form-control" value="@checkOut.ToString("yyyy-MM-dd")" />
+                    <span asp-validation-for="CheckOutDate" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="NumberOfGuests" class="form-label"></label>
+                <input asp-for="NumberOfGuests" class="form-control" min="1" max="@(room?.Capacity ?? 4)" />
+                <span asp-validation-for="NumberOfGuests" class="text-danger"></span>
+                <small class="form-text text-muted">Maximum capacity: @(room?.Capacity ?? 4) guests</small>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="SpecialRequests" class="form-label">Special Requests (Optional)</label>
+                <textarea asp-for="SpecialRequests" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="SpecialRequests" class="text-danger"></span>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Confirm Booking</button>
+                <a asp-controller="Rooms" asp-action="Index" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+

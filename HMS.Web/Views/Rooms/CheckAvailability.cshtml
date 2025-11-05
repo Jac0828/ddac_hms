@@ -1,0 +1,76 @@
+@model List<HMS.Web.Controllers.Room>
+@{
+    ViewData["Title"] = "Check Availability";
+    var checkIn = ViewBag.CheckIn as DateTime? ?? DateTime.Today;
+    var checkOut = ViewBag.CheckOut as DateTime? ?? DateTime.Today.AddDays(1);
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <h2>Check Room Availability</h2>
+        <hr />
+
+        <form asp-action="CheckAvailability" method="get" class="mb-4">
+            <div class="row">
+                <div class="col-md-4">
+                    <label for="checkIn" class="form-label">Check-In Date</label>
+                    <input type="date" name="checkIn" id="checkIn" class="form-control" value="@checkIn.ToString("yyyy-MM-dd")" required />
+                </div>
+                <div class="col-md-4">
+                    <label for="checkOut" class="form-label">Check-Out Date</label>
+                    <input type="date" name="checkOut" id="checkOut" class="form-control" value="@checkOut.ToString("yyyy-MM-dd")" required />
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Check Availability</button>
+                </div>
+            </div>
+        </form>
+
+        @if (Model != null && Model.Count > 0)
+        {
+            <div class="alert alert-success">
+                Found <strong>@Model.Count</strong> available room(s) for the selected dates.
+            </div>
+
+            <div class="row">
+                @foreach (var room in Model)
+                {
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title">Room @room.RoomNumber</h5>
+                                <p class="card-text">
+                                    <strong>Type:</strong> @room.RoomType<br>
+                                    <strong>Price:</strong> $@room.PricePerNight/night<br>
+                                    <strong>Capacity:</strong> @room.Capacity guests
+                                </p>
+                                <p class="card-text"><small class="text-muted">@room.Description</small></p>
+                                
+                                @if (User.Identity?.IsAuthenticated == true)
+                                {
+                                    <a asp-controller="Bookings" asp-action="Create" 
+                                       asp-route-roomId="@room.Id" 
+                                       asp-route-checkIn="@checkIn.ToString("yyyy-MM-dd")" 
+                                       asp-route-checkOut="@checkOut.ToString("yyyy-MM-dd")" 
+                                       class="btn btn-primary btn-sm">Book Now</a>
+                                }
+                                else
+                                {
+                                    <a asp-controller="Account" asp-action="Login" class="btn btn-primary btn-sm">Login to Book</a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else if (ViewBag.CheckIn != null)
+        {
+            <div class="alert alert-warning">
+                <h4>No rooms available</h4>
+                <p>No rooms are available for the selected dates. Please try different dates.</p>
+            </div>
+        }
+    </div>
+</div>
+

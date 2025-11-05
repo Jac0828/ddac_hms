@@ -1,0 +1,63 @@
+﻿@{
+    ViewData["Title"] = "Home";
+    var userName = Context.Session.GetString("UserName");
+    var isAuthenticated = User.Identity?.IsAuthenticated ?? false;
+}
+
+<div class="hero-section text-center py-5 bg-light">
+    <h1 class="display-4">Welcome to Hotel Management System</h1>
+    <p class="lead">Your one-stop solution for hotel bookings and management</p>
+    @if (isAuthenticated && !string.IsNullOrEmpty(userName))
+    {
+        <p class="text-muted">Welcome back, @userName!</p>
+    }
+</div>
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">View Rooms</h5>
+                    <p class="card-text">Browse available rooms and check their amenities.</p>
+                    <a asp-controller="Rooms" asp-action="Index" class="btn btn-primary">Browse Rooms</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Check Availability</h5>
+                    <p class="card-text">Find available rooms for your desired dates.</p>
+                    <a asp-controller="Rooms" asp-action="CheckAvailability" class="btn btn-primary">Check Availability</a>
+                </div>
+            </div>
+        </div>
+
+        @if (isAuthenticated)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">My Bookings</h5>
+                        <p class="card-text">View and manage your bookings.</p>
+                        <a asp-controller="Bookings" asp-action="Index" class="btn btn-primary">My Bookings</a>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Login</h5>
+                        <p class="card-text">Sign in to manage your bookings.</p>
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-primary">Login</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

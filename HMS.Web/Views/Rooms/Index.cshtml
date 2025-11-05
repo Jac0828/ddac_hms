@@ -1,0 +1,51 @@
+@model List<HMS.Web.Controllers.Room>
+@{
+    ViewData["Title"] = "Rooms";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Available Rooms</h2>
+    <a asp-action="CheckAvailability" class="btn btn-primary">Check Availability</a>
+</div>
+
+<div class="row">
+    @foreach (var room in Model)
+    {
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Room @room.RoomNumber</h5>
+                    <p class="card-text">
+                        <strong>Type:</strong> @room.RoomType<br>
+                        <strong>Price:</strong> $@room.PricePerNight/night<br>
+                        <strong>Capacity:</strong> @room.Capacity guests<br>
+                        <strong>Status:</strong> <span class="badge bg-@(room.Status == "Available" ? "success" : "warning")">@room.Status</span>
+                    </p>
+                    <p class="card-text"><small class="text-muted">@room.Description</small></p>
+                    
+                    <div class="mb-2">
+                        @if (room.HasWifi) { <span class="badge bg-info">WiFi</span> }
+                        @if (room.HasTV) { <span class="badge bg-info">TV</span> }
+                        @if (room.HasAirConditioning) { <span class="badge bg-info">AC</span> }
+                        @if (room.HasBalcony) { <span class="badge bg-info">Balcony</span> }
+                    </div>
+
+                    <a asp-action="Details" asp-route-id="@room.Id" class="btn btn-outline-primary btn-sm">View Details</a>
+                    @if (room.Status == "Available" && User.Identity?.IsAuthenticated == true)
+                    {
+                        <a asp-controller="Bookings" asp-action="Create" asp-route-roomId="@room.Id" class="btn btn-primary btn-sm">Book Now</a>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@if (Model.Count == 0)
+{
+    <div class="alert alert-info">
+        <h4>No rooms found</h4>
+        <p>Please check back later or contact us for more information.</p>
+    </div>
+}
+
