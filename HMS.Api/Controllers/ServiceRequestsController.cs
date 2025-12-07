@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using HMS.Domain.Models;
+using HMS.Domain.Enums;
+using HMS.Domain.Extensions;
 using HMS.Infrastructure.Data;
 
 namespace HMS.Api.Controllers;
@@ -22,26 +24,41 @@ public class ServiceRequestsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ServiceRequest>>> GetServiceRequests()
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var isRoomAttendant = User.IsInRole("RoomAttendant");
-        var isManager = User.IsInRole("Manager");
-
-        var query = _context.ServiceRequests
-            .Include(sr => sr.Booking)
-            .Include(sr => sr.User)
-            .Include(sr => sr.AssignedToUser)
-            .AsQueryable();
-
-        if (!isManager && !isRoomAttendant)
+        try
         {
-            query = query.Where(sr => sr.UserId == userId);
-        }
-        else if (isRoomAttendant)
-        {
-            query = query.Where(sr => sr.AssignedToUserId == userId || sr.AssignedToUserId == null);
-        }
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var isRoomAttendant = User.IsInRole("RoomAttendant");
+            var isManager = User.IsInRole("Manager");
 
-        return await query.ToListAsync();
+            var query = _context.ServiceRequests
+                .Include(sr => sr.Booking)
+                .Include(sr => sr.User)
+                .Include(sr => sr.AssignedToUser)
+                .AsQueryable();
+
+            if (!isManager && !isRoomAttendant)
+            {
+                query = query.Where(sr => sr.UserId == userId);
+            }
+            else if (isRoomAttendant)
+            {
+                query = query.Where(sr => sr.AssignedToUserId == userId || sr.AssignedToUserId == null);
+            }
+
+            var result = await query.AsNoTracking().ToListAsync(); // Read-only query, no need to track changes
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            // Log the exception for debugging
+            Console.WriteLine($"Error in GetServiceRequests: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            if (ex.InnerException != null)
+            {
+                Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+            }
+            return StatusCode(500, new { message = "An error occurred while retrieving service requests", error = ex.Message });
+        }
     }
 
     [HttpPost]
@@ -54,9 +71,9 @@ public class ServiceRequestsController : ControllerBase
         {
             BookingId = model.BookingId,
             UserId = userId!,
-            ServiceType = model.ServiceType,
+            ServiceType = model.ServiceType.ToServiceType(),
             Description = model.Description,
-            Status = "Pending",
+            Status = ServiceRequestStatus.Pending,
             RequestedAt = DateTime.UtcNow
         };
 
@@ -102,7 +119,7 @@ public class ServiceRequestsController : ControllerBase
         }
 
         serviceRequest.AssignedToUserId = model.AssignedToUserId;
-        serviceRequest.Status = "InProgress";
+        serviceRequest.Status = ServiceRequestStatus.InProgress;
         await _context.SaveChangesAsync();
 
         return NoContent();
@@ -125,7 +142,7 @@ public class ServiceRequestsController : ControllerBase
             return Forbid();
         }
 
-        serviceRequest.Status = "Completed";
+        serviceRequest.Status = ServiceRequestStatus.Completed;
         serviceRequest.CompletedAt = DateTime.UtcNow;
         serviceRequest.Notes = model.Notes;
         await _context.SaveChangesAsync();

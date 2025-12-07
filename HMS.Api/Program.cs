@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using Npgsql;
 using HMS.Domain.Models;
 using HMS.Infrastructure.Data;
 
@@ -21,13 +22,51 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 });
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+        options.JsonSerializerOptions.WriteIndented = true;
+    });
+
+// DEBUG: Check connection string
+var connectionString = builder.Configuration.GetConnectionString("Default");
+Console.WriteLine("=== DEBUG: Connection String ===");
+Console.WriteLine($"Connection String: {connectionString}");
+Console.WriteLine($"Is Null: {connectionString == null}");
+if (connectionString != null)
+{
+    Console.WriteLine($"Contains '127.0.0.1': {connectionString.Contains("127.0.0.1")}");
+    Console.WriteLine($"Contains 'localhost': {connectionString.Contains("localhost")}");
+    Console.WriteLine($"Contains '5432': {connectionString.Contains("5432")}");
+    Console.WriteLine($"Contains 'rds.amazonaws.com': {connectionString.Contains("rds.amazonaws.com")}");
+}
+Console.WriteLine("================================");
 
 // Configure Entity Framework with PostgreSQL
 // Connection string from environment variable: ConnectionStrings__Default
 // Falls back to appsettings.json if not set
+var dbConnectionString = builder.Configuration.GetConnectionString("Default");
+Console.WriteLine($"=== Using Connection String for DbContext ===");
+Console.WriteLine($"Connection String: {dbConnectionString}");
+Console.WriteLine($"==============================================");
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
+    options.UseNpgsql(dbConnectionString, npgsqlOptions =>
+    {
+        npgsqlOptions.CommandTimeout(30); // 30 second timeout
+        npgsqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 3,
+            maxRetryDelay: TimeSpan.FromSeconds(5),
+            errorCodesToAdd: null);
+    }));
+
+// Register Services
+builder.Services.AddScoped<HMS.Infrastructure.Services.IUserService, HMS.Infrastructure.Services.UserService>();
+builder.Services.AddScoped<HMS.Infrastructure.Services.IRoomService, HMS.Infrastructure.Services.RoomService>();
+builder.Services.AddScoped<HMS.Infrastructure.Services.IBookingService, HMS.Infrastructure.Services.BookingService>();
+builder.Services.AddScoped<HMS.Infrastructure.Services.IHousekeepingService, HMS.Infrastructure.Services.HousekeepingService>();
+builder.Services.AddScoped<HMS.Infrastructure.Services.IPaymentService, HMS.Infrastructure.Services.PaymentService>();
 
 // Configure Identity
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
@@ -156,6 +195,60 @@ app.MapGet("/healthz", () => Results.Ok(new { status = "healthy", timestamp = Da
    .WithName("HealthCheck")
    .AllowAnonymous();
 
+// Database connection test endpoint
+app.MapGet("/api/test-db", async (ApplicationDbContext context) =>
+{
+    try
+    {
+        var canConnect = await context.Database.CanConnectAsync();
+        if (canConnect)
+        {
+            var roomCount = await context.Rooms.CountAsync();
+            var userCount = await context.Users.CountAsync();
+            var connectionString = context.Database.GetConnectionString();
+            var maskedConnection = connectionString != null 
+                ? MaskConnectionString(connectionString)
+                : "Not available";
+            
+            return Results.Ok(new
+            {
+                status = "connected",
+                timestamp = DateTime.UtcNow,
+                statistics = new
+                {
+                    rooms = roomCount,
+                    users = userCount
+                },
+                connection = maskedConnection,
+                database = context.Database.GetDbConnection().Database
+            });
+        }
+        else
+        {
+            return Results.Problem("Cannot connect to database", statusCode: 503);
+        }
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(
+            $"Database connection failed: {ex.Message}",
+            statusCode: 503
+        );
+    }
+})
+.WithName("TestDatabase")
+.AllowAnonymous();
+
+static string MaskConnectionString(string connectionString)
+{
+    // Mask password in connection string for security
+    return System.Text.RegularExpressions.Regex.Replace(
+        connectionString,
+        @"Password=([^;]+)",
+        "Password=***"
+    );
+}
+
 // Root redirect to Swagger
 app.MapGet("/", () => Results.Redirect("/swagger"))
    .WithName("Root")
@@ -176,16 +269,146 @@ if (runMigrations)
         {
             logger.LogInformation("Starting database migration...");
             var context = services.GetRequiredService<ApplicationDbContext>();
-            context.Database.Migrate();
-            logger.LogInformation("Database migration completed successfully.");
             
-            // Seed database
+            // Check if database can connect
+            if (!context.Database.CanConnect())
+            {
+                logger.LogWarning("Cannot connect to database. Skipping migrations.");
+                return;
+            }
+            
+            // Check if AspNetRoles table exists (indicates tables were created manually)
+            var tablesExist = false;
+            try
+            {
+                context.Database.ExecuteSqlRaw("SELECT 1 FROM \"AspNetRoles\" LIMIT 1;");
+                tablesExist = true;
+                logger.LogInformation("Database tables already exist (created manually or via SQL).");
+            }
+            catch
+            {
+                tablesExist = false;
+            }
+            
+            // Check if migrations history table exists
+            var migrationsHistoryExists = false;
+            try
+            {
+                context.Database.ExecuteSqlRaw("SELECT 1 FROM \"__EFMigrationsHistory\" LIMIT 1;");
+                migrationsHistoryExists = true;
+            }
+            catch
+            {
+                migrationsHistoryExists = false;
+            }
+            
+            if (tablesExist && !migrationsHistoryExists)
+            {
+                // Tables exist but migrations haven't been recorded
+                // Get all available migrations and mark them as applied
+                var allMigrations = context.Database.GetMigrations().ToList();
+                if (allMigrations.Any())
+                {
+                    logger.LogInformation($"Tables exist but migrations not recorded. Marking {allMigrations.Count} migration(s) as applied...");
+                    // Create migrations history table manually
+                    context.Database.ExecuteSqlRaw(@"
+                        CREATE TABLE IF NOT EXISTS ""__EFMigrationsHistory"" (
+                            ""MigrationId"" character varying(150) NOT NULL,
+                            ""ProductVersion"" character varying(32) NOT NULL,
+                            CONSTRAINT ""PK___EFMigrationsHistory"" PRIMARY KEY (""MigrationId"")
+                        );
+                    ");
+                    // Mark all migrations as applied
+                    foreach (var migration in allMigrations)
+                    {
+                        // Use parameterized query to prevent SQL injection
+                        var migrationIdParam = new Npgsql.NpgsqlParameter("@migrationId", migration);
+                        var productVersionParam = new Npgsql.NpgsqlParameter("@productVersion", "7.0.0");
+                        context.Database.ExecuteSqlRaw(@"
+                            INSERT INTO ""__EFMigrationsHistory"" (""MigrationId"", ""ProductVersion"")
+                            VALUES (@migrationId, @productVersion)
+                            ON CONFLICT (""MigrationId"") DO NOTHING;
+                        ", migrationIdParam, productVersionParam);
+                    }
+                    logger.LogInformation("Migrations marked as applied successfully.");
+                }
+            }
+            else
+            {
+                // Normal migration flow
+                var pendingMigrations = context.Database.GetPendingMigrations().ToList();
+                if (pendingMigrations.Any())
+                {
+                    logger.LogInformation($"Applying {pendingMigrations.Count} pending migration(s)...");
+                    context.Database.Migrate();
+                    logger.LogInformation("Database migration completed successfully.");
+                }
+                else
+                {
+                    logger.LogInformation("No pending migrations. Database is up to date.");
+                }
+            }
+            
+            // Seed database (will skip if data already exists)
+            logger.LogInformation("Seeding database...");
             await HMS.Api.Data.SeedData.SeedRolesAndUsers(services);
+            logger.LogInformation("Database seeding completed.");
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "An error occurred while migrating or seeding the database.");
-            // Don't throw - allow app to start even if migration fails
+            // Check if it's a "table already exists" error - that's OK if tables were created manually
+            if (ex.Message.Contains("already exists") || ex.InnerException?.Message.Contains("already exists") == true)
+            {
+                logger.LogWarning("Some tables already exist. Attempting to mark migrations as applied...");
+                try
+                {
+                    var context = services.GetRequiredService<ApplicationDbContext>();
+                    var allMigrations = context.Database.GetMigrations().ToList();
+                    if (allMigrations.Any())
+                    {
+                        // Try to create migrations history and mark migrations as applied
+                        context.Database.ExecuteSqlRaw(@"
+                            CREATE TABLE IF NOT EXISTS ""__EFMigrationsHistory"" (
+                                ""MigrationId"" character varying(150) NOT NULL,
+                                ""ProductVersion"" character varying(32) NOT NULL,
+                                CONSTRAINT ""PK___EFMigrationsHistory"" PRIMARY KEY (""MigrationId"")
+                            );
+                        ");
+                        foreach (var migration in allMigrations)
+                        {
+                            // Use parameterized query to prevent SQL injection
+                            var migrationIdParam = new Npgsql.NpgsqlParameter("@migrationId", migration);
+                            var productVersionParam = new Npgsql.NpgsqlParameter("@productVersion", "7.0.0");
+                            context.Database.ExecuteSqlRaw(@"
+                                INSERT INTO ""__EFMigrationsHistory"" (""MigrationId"", ""ProductVersion"")
+                                VALUES (@migrationId, @productVersion)
+                                ON CONFLICT (""MigrationId"") DO NOTHING;
+                            ", migrationIdParam, productVersionParam);
+                        }
+                        logger.LogInformation("Migrations marked as applied. Continuing...");
+                    }
+                }
+                catch (Exception markEx)
+                {
+                    logger.LogWarning(markEx, "Could not mark migrations as applied, but continuing...");
+                }
+                
+                // Still try to seed
+                try
+                {
+                    await HMS.Api.Data.SeedData.SeedRolesAndUsers(services);
+                    logger.LogInformation("Database seeding completed.");
+                }
+                catch (Exception seedEx)
+                {
+                    logger.LogWarning(seedEx, "Seeding had some issues but continuing...");
+                }
+            }
+            else
+            {
+                logger.LogError(ex, "An error occurred while migrating or seeding the database.");
+                // Don't throw - allow app to start even if migration fails
+            }
         }
     }
 }

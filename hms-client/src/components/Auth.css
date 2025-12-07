@@ -1,0 +1,2279 @@
+/* Centered Auth Container */
+.auth-container-centered {
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  padding: 2rem 1rem 1rem 1rem;
+  background: var(--theme-bg-gradient);
+  background-size: 400% 400%;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  animation: gradientShift 6s ease infinite;
+}
+
+/* Split Layout Auth Container */
+.auth-container-split {
+  min-height: 100vh;
+  display: flex;
+  position: relative;
+  overflow: visible;
+  width: 100%;
+  background: var(--theme-bg-gradient);
+  background-size: 400% 400%;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  animation: gradientShift 6s ease infinite;
+}
+
+/* Left Welcome Panel */
+.auth-welcome-panel {
+  flex: 0 0 60%;
+  position: relative;
+  background: linear-gradient(135deg, #8B6F47 0%, #B8944F 15%, #C9A961 30%, #B8944F 45%, #8B6F47 60%, #B8944F 75%, #C9A961 90%, #8B6F47 100%);
+  background-size: 400% 400%;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  animation: gradientShift 6s ease infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  overflow: hidden;
+}
+
+.welcome-shapes {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+}
+
+.welcome-shape {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  filter: blur(60px);
+  animation: floatShape 20s ease-in-out infinite;
+}
+
+.welcome-shape-1 {
+  width: 400px;
+  height: 400px;
+  top: -100px;
+  left: -100px;
+  animation-delay: 0s;
+}
+
+.welcome-shape-2 {
+  width: 500px;
+  height: 500px;
+  bottom: -150px;
+  right: -150px;
+  animation-delay: 7s;
+}
+
+.welcome-shape-3 {
+  width: 350px;
+  height: 350px;
+  top: 50%;
+  right: 10%;
+  animation-delay: 14s;
+}
+
+@keyframes floatShape {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(50px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-30px, 30px) scale(0.9);
+  }
+}
+
+.welcome-content {
+  position: relative;
+  z-index: 1;
+  color: white;
+  max-width: 500px;
+}
+
+.welcome-title {
+  font-size: 4rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  margin-bottom: 1rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.welcome-subtitle {
+  font-size: 1.5rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 2rem;
+  opacity: 0.95;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.welcome-description {
+  font-size: 1rem;
+  line-height: 1.8;
+  opacity: 0.9;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Centered Sign In Panel */
+.auth-signin-panel-centered {
+  width: 100%;
+  max-width: 550px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Right Sign In Panel */
+.auth-signin-panel {
+  flex: 0 0 40%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.98);
+}
+
+.auth-card-split {
+  width: 100%;
+  max-width: 550px;
+  background: linear-gradient(135deg, rgba(255, 250, 240, 1) 0%, rgba(254, 248, 235, 0.98) 25%, rgba(251, 245, 225, 0.95) 50%, rgba(254, 248, 235, 0.98) 75%, rgba(255, 250, 240, 1) 100%);
+  backdrop-filter: blur(30px);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 12px 48px rgba(201, 169, 97, 0.25),
+              0 0 0 2px rgba(201, 169, 97, 0.4),
+              inset 0 2px 0 rgba(255, 255, 255, 0.9),
+              inset 0 -2px 0 rgba(201, 169, 97, 0.15);
+  border: 3px solid rgba(201, 169, 97, 0.5);
+  animation: cardFloat 6s ease-in-out infinite, cardGlow 4s ease-in-out infinite;
+  transform-style: preserve-3d;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  overflow-x: visible;
+  overflow-y: auto;
+  max-height: 95vh;
+}
+
+.auth-card-split::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, #8B6F47 0%, #B8944F 20%, #C9A961 40%, #D4AF6A 60%, #C9A961 80%, #B8944F 100%);
+  z-index: 1;
+  animation: gradientShift 3s ease infinite;
+  background-size: 300% 100%;
+}
+
+.auth-card-split::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, rgba(201, 169, 97, 0.3) 0%, rgba(184, 148, 79, 0.2) 50%, rgba(201, 169, 97, 0.3) 100%);
+  z-index: 1;
+}
+
+.auth-card-split:hover {
+  transform: translateY(-5px) scale(1.01);
+  box-shadow: 0 12px 48px rgba(201, 169, 97, 0.2),
+              0 0 0 1px rgba(201, 169, 97, 0.3);
+}
+
+.auth-header-split {
+  margin-bottom: 1.5rem;
+}
+
+.auth-title-split {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1A1A1A;
+  margin-bottom: 0.25rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.auth-subtitle-split {
+  color: #718096;
+  font-size: 0.8rem;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.auth-form-split {
+  width: 100%;
+  overflow: visible !important;
+  position: relative;
+  z-index: 1;
+}
+
+.form-group-split {
+  margin-bottom: 1.25rem;
+  overflow: visible !important;
+  position: relative;
+  z-index: 0;
+}
+
+/* Ensure form groups below date picker don't cover it */
+.form-group-split:has(+ .form-group-split .date-picker-popup-auth),
+.form-group-split:has(.date-picker-popup-auth) {
+  z-index: 1000 !important;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  overflow: visible !important;
+  z-index: 0;
+}
+
+/* Date input wrapper needs higher z-index when picker is open */
+.input-wrapper.date-input-wrapper {
+  z-index: 1;
+}
+
+.input-wrapper.date-input-wrapper:has(.date-picker-popup-auth) {
+  z-index: 1000 !important;
+  isolation: isolate;
+}
+
+.input-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.auth-input-split {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 3.5rem;
+  border: 1px solid rgba(201, 169, 97, 0.3);
+  border-radius: 12px;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+  background: white;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  height: 2.75rem;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+/* Beautify Date Input with Theme Colors - Match other inputs */
+.auth-input-split[type="date"] {
+  color: #4A5568;
+  cursor: text;
+  position: relative;
+  background: white;
+  border: 1px solid rgba(201, 169, 97, 0.3);
+}
+
+/* Allow typing in date input - show date format when typing */
+.auth-input-split[type="date"]::-webkit-datetime-edit {
+  color: #4A5568;
+  opacity: 1;
+}
+
+.auth-input-split[type="date"]:not(:valid):not(:focus)::-webkit-datetime-edit {
+  color: transparent;
+  opacity: 0;
+}
+
+.auth-input-split[type="date"]:focus::-webkit-datetime-edit,
+.auth-input-split[type="date"]:valid::-webkit-datetime-edit {
+  color: #1A1A1A;
+  opacity: 1;
+}
+
+.auth-input-split[type="date"]::-webkit-datetime-edit-text,
+.auth-input-split[type="date"]::-webkit-datetime-edit-month-field,
+.auth-input-split[type="date"]::-webkit-datetime-edit-day-field,
+.auth-input-split[type="date"]::-webkit-datetime-edit-year-field {
+  color: #4A5568;
+  padding: 0 0.25rem;
+  font-weight: 500;
+}
+
+.auth-input-split[type="date"]:focus::-webkit-datetime-edit-text,
+.auth-input-split[type="date"]:focus::-webkit-datetime-edit-month-field,
+.auth-input-split[type="date"]:focus::-webkit-datetime-edit-day-field,
+.auth-input-split[type="date"]:focus::-webkit-datetime-edit-year-field,
+.auth-input-split[type="date"]:valid::-webkit-datetime-edit-text,
+.auth-input-split[type="date"]:valid::-webkit-datetime-edit-month-field,
+.auth-input-split[type="date"]:valid::-webkit-datetime-edit-day-field,
+.auth-input-split[type="date"]:valid::-webkit-datetime-edit-year-field {
+  color: #1A1A1A;
+  opacity: 1;
+}
+
+.auth-input-split[type="date"]:hover {
+  border-color: rgba(201, 169, 97, 0.5);
+}
+
+.auth-input-split[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 1;
+  position: absolute;
+  right: 0.875rem;
+  width: 16px;
+  height: 16px;
+  z-index: 2;
+  background-image: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2' stroke='%23C9A961' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cline x1='16' y1='2' x2='16' y2='6' stroke='%23C9A961' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cline x1='8' y1='2' x2='8' y2='6' stroke='%23C9A961' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cline x1='3' y1='10' x2='21' y2='10' stroke='%23C9A961' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  padding: 0.25rem;
+  margin-left: 0.5rem;
+}
+
+.auth-input-split[type="date"]:focus {
+  color: #1A1A1A;
+  border-color: #C9A961;
+  box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.1);
+  background: white;
+  outline: none;
+}
+
+.auth-input-split[type="date"]::-webkit-datetime-edit-text {
+  color: #8B6F47;
+  padding: 0 0.25rem;
+  font-weight: 500;
+}
+
+.auth-input-split[type="date"]::-webkit-datetime-edit-month-field,
+.auth-input-split[type="date"]::-webkit-datetime-edit-day-field,
+.auth-input-split[type="date"]::-webkit-datetime-edit-year-field {
+  color: #8B6F47;
+  padding: 0 0.25rem;
+  font-weight: 500;
+}
+
+.auth-input-split[type="date"]:focus::-webkit-datetime-edit-text,
+.auth-input-split[type="date"]:focus::-webkit-datetime-edit-month-field,
+.auth-input-split[type="date"]:focus::-webkit-datetime-edit-day-field,
+.auth-input-split[type="date"]:focus::-webkit-datetime-edit-year-field {
+  color: #B8944F;
+  font-weight: 600;
+}
+
+/* Custom date picker styling - Calendar icon on the right with theme colors */
+.input-wrapper:has(input[type="date"]) {
+  position: relative;
+}
+
+/* Remove the custom calendar icon since we're using the native one */
+.input-wrapper:has(input[type="date"])::after {
+  display: none;
+}
+
+/* Adjust date input padding to make room for calendar icon and allow typing */
+.input-wrapper:has(input[type="date"]) .auth-input-split {
+  padding-right: 2.5rem;
+  cursor: text;
+}
+
+/* Ensure date value is visible and properly displayed */
+.auth-input-split[type="date"]:not(:placeholder-shown) {
+  color: #1A1A1A;
+}
+
+.auth-input-split[type="date"]:not(:placeholder-shown)::-webkit-datetime-edit-text,
+.auth-input-split[type="date"]:not(:placeholder-shown)::-webkit-datetime-edit-month-field,
+.auth-input-split[type="date"]:not(:placeholder-shown)::-webkit-datetime-edit-day-field,
+.auth-input-split[type="date"]:not(:placeholder-shown)::-webkit-datetime-edit-year-field {
+  color: #1A1A1A;
+  font-weight: 500;
+}
+
+/* Date placeholder label inside input */
+.date-input-wrapper {
+  position: relative;
+  z-index: 1;
+  overflow: visible !important;
+}
+
+/* When date picker is open, increase z-index to ensure it's above other form elements */
+.date-input-wrapper:has(.date-picker-popup-auth) {
+  z-index: 1000 !important;
+  isolation: isolate;
+}
+
+.date-placeholder-label {
+  position: absolute;
+  left: 3.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #8B6F47;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  pointer-events: none;
+  z-index: 1;
+  transition: color 0.3s ease, opacity 0.3s ease;
+  white-space: nowrap;
+}
+
+.date-input-wrapper:has(input:focus) .date-placeholder-label {
+  color: #B8944F;
+}
+
+/* Keep placeholder visible when input is empty, hide when date is entered */
+.date-input-wrapper:has(input[value=""]) .date-placeholder-label,
+.date-input-wrapper:has(input:not([value])) .date-placeholder-label {
+  opacity: 1;
+}
+
+.date-input-wrapper:has(input[value]:not([value=""])) .date-placeholder-label {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Calendar popup styling - Note: Browser date picker popups have very limited CSS support.
+   The calendar popup appearance is mostly controlled by the browser/OS.
+   Users can type dates directly or use the calendar icon to open the picker. */
+
+.auth-input-split:focus {
+  outline: none;
+  border-color: #C9A961;
+  box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.1);
+}
+
+.auth-input-split[type="select"],
+.auth-input-split select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+}
+
+/* Gender Selector - Left/Right Navigation */
+.gender-selector-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.gender-selector-wrapper .input-wrapper {
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.gender-selector-wrapper .input-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.gender-selector {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 3.5rem;
+  border: 1px solid rgba(201, 169, 97, 0.3);
+  border-radius: 12px;
+  background: white;
+  transition: all 0.3s ease;
+  height: 2.75rem;
+  min-height: 2.75rem;
+  max-height: 2.75rem;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.gender-selector:hover {
+  border-color: rgba(201, 169, 97, 0.5);
+}
+
+.gender-selector:focus-within {
+  border-color: #C9A961;
+  box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.1);
+}
+
+.gender-nav-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  color: #8B6F47;
+  flex-shrink: 0;
+}
+
+.gender-nav-button:hover {
+  background: rgba(201, 169, 97, 0.1);
+  transform: scale(1.1);
+}
+
+.gender-nav-button:active {
+  transform: scale(0.95);
+}
+
+.gender-nav-button svg {
+  transition: transform 0.3s ease;
+}
+
+.gender-nav-button:hover svg {
+  transform: translateX(-2px);
+}
+
+.gender-nav-right:hover svg {
+  transform: translateX(2px);
+}
+
+.gender-display {
+  flex: 1;
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #8B6F47;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  padding: 0 0.5rem;
+  min-height: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gender-selector:focus-within .gender-display {
+  color: #B8944F;
+  font-weight: 600;
+}
+
+/* Keep select styling for other selects if any */
+.auth-input-split select:not(.gender-selector select) {
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%23C9A961' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2rem;
+}
+
+.show-password-btn {
+  position: absolute;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: #C9A961;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.show-password-btn:hover {
+  color: #B8944F;
+}
+
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #4A4A4A;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.remember-me input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #C9A961;
+}
+
+.forgot-password-link {
+  color: #C9A961;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: color 0.3s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.forgot-password-link:hover {
+  color: #B8944F;
+}
+
+.auth-button-primary {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #C9A961 0%, #B8944F 50%, #8B6F47 100%);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.auth-button-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(201, 169, 97, 0.4);
+}
+
+.auth-button-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.auth-separator {
+  text-align: center;
+  margin: 0.5rem 0 0.25rem 0;
+  position: relative;
+  color: #A0AEC0;
+  font-size: 0.8rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.auth-separator::before,
+.auth-separator::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 45%;
+  height: 1px;
+  background: #E2E8F0;
+}
+
+.auth-separator::before {
+  left: 0;
+}
+
+.auth-separator::after {
+  right: 0;
+}
+
+.auth-button-secondary {
+  width: 100%;
+  padding: 0.65rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-radius: 12px;
+  border: 1px solid rgba(201, 169, 97, 0.3);
+  background: white;
+  color: #4A4A4A;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 0.25rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.auth-button-secondary:hover {
+  border-color: #C9A961;
+  background: rgba(201, 169, 97, 0.05);
+}
+
+.auth-footer-split {
+  text-align: center;
+  margin-top: 0.1rem;
+  padding-top: 0;
+}
+
+.auth-footer-split p {
+  color: #718096;
+  margin: 0;
+  font-size: 0.85rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.auth-link-split {
+  color: #C9A961;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.auth-link-split:hover {
+  color: #B8944F;
+}
+
+.form-row-split {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  align-items: stretch;
+}
+
+.form-row-split .form-group-split {
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+}
+
+.form-row-split .form-group-split .input-wrapper {
+  width: 100%;
+  flex: 1;
+}
+
+/* Auth Container with Luxury Background (for register page) */
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: 2rem;
+  background: linear-gradient(135deg, #FFFFFF 0%, #FEFCF9 8%, #FBF8F3 16%, #F8F4ED 24%, #F5F0E6 32%, #F8F4ED 40%, #FBF8F3 48%, #FEFCF9 56%, #FFFFFF 64%, #FEFCF9 72%, #FBF8F3 80%, #F8F4ED 88%, #F5F0E6 96%, #FFFFFF 100%);
+  background-size: 400% 400%;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  animation: gradientShift 6s ease infinite;
+  transition: background 0.3s ease;
+  width: 100%;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  25% {
+    background-position: 50% 0%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  75% {
+    background-position: 50% 100%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Animated Gradient Shapes */
+.gradient-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.gradient-shape {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.6;
+  animation: float 20s ease-in-out infinite;
+}
+
+.gradient-shape-1 {
+  width: 500px;
+  height: 500px;
+  background: linear-gradient(135deg, rgba(201, 169, 97, 0.2) 0%, rgba(184, 148, 79, 0.15) 50%, rgba(255, 255, 255, 0.4) 100%);
+  top: -200px;
+  left: -200px;
+  animation-delay: 0s;
+}
+
+.gradient-shape-2 {
+  width: 400px;
+  height: 400px;
+  background: linear-gradient(135deg, rgba(184, 148, 79, 0.18) 0%, rgba(139, 111, 71, 0.12) 50%, rgba(255, 255, 255, 0.35) 100%);
+  bottom: -150px;
+  right: -150px;
+  animation-delay: 5s;
+}
+
+.gradient-shape-3 {
+  width: 350px;
+  height: 350px;
+  background: linear-gradient(135deg, rgba(139, 111, 71, 0.15) 0%, rgba(201, 169, 97, 0.1) 50%, rgba(255, 255, 255, 0.3) 100%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation-delay: 10s;
+}
+
+.gradient-shape-4 {
+  width: 300px;
+  height: 300px;
+  background: linear-gradient(135deg, rgba(201, 169, 97, 0.18) 0%, rgba(184, 148, 79, 0.12) 50%, rgba(255, 255, 255, 0.35) 100%);
+  top: 20%;
+  right: 10%;
+  animation-delay: 15s;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(50px, -50px) scale(1.1);
+  }
+  50% {
+    transform: translate(-30px, 30px) scale(0.9);
+  }
+  75% {
+    transform: translate(30px, 50px) scale(1.05);
+  }
+}
+
+/* Content Wrapper */
+.auth-content-wrapper {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 500px;
+  margin-top: -3rem;
+}
+
+/* Auth Card */
+.auth-card {
+  background: rgba(255, 255, 255, 1);
+  backdrop-filter: blur(30px);
+  border-radius: 16px;
+  padding: 3rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12),
+              0 0 0 1px rgba(201, 169, 97, 0.1);
+  border: 1px solid rgba(201, 169, 97, 0.2);
+  max-width: 500px;
+  width: 100%;
+  animation: cardFloat 6s ease-in-out infinite, cardGlow 4s ease-in-out infinite;
+  transform-style: preserve-3d;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.auth-card:hover {
+  transform: translateY(-5px) scale(1.01);
+  box-shadow: 0 12px 48px rgba(201, 169, 97, 0.2),
+              0 0 0 1px rgba(201, 169, 97, 0.3);
+}
+
+@keyframes cardFloat {
+  0%, 100% {
+    transform: translateY(0px) rotateX(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotateX(1deg);
+  }
+}
+
+@keyframes cardGlow {
+  0%, 100% {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12),
+                0 0 0 1px rgba(201, 169, 97, 0.1),
+                0 0 20px rgba(201, 169, 97, 0.05);
+  }
+  50% {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12),
+                0 0 0 1px rgba(201, 169, 97, 0.2),
+                0 0 30px rgba(201, 169, 97, 0.15);
+  }
+}
+
+.register-card {
+  max-width: 600px;
+}
+
+/* Auth Header */
+.auth-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.auth-icon-small {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(201, 169, 97, 0.1) 0%, rgba(184, 148, 79, 0.15) 100%);
+  border-radius: 12px;
+  padding: 0.5rem;
+}
+
+.auth-icon-small svg {
+  width: 32px;
+  height: 32px;
+}
+
+.word-animation {
+  display: inline-block;
+}
+
+.auth-title {
+  font-size: 1.75rem;
+  font-weight: 500;
+  color: #1A1A1A;
+  margin-bottom: 0.5rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  letter-spacing: 0.3px;
+}
+
+.auth-subtitle {
+  color: #718096;
+  font-size: 0.9rem;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Form Styles */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  color: #2d3748;
+  margin-bottom: 0.75rem;
+  font-size: 0.85rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.label-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+
+.label-icon svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(201, 169, 97, 0.3);
+  border-radius: 12px;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+  background: white;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: #C9A961;
+  box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.1);
+}
+
+.auth-input:hover {
+  border-color: rgba(201, 169, 97, 0.5);
+}
+
+/* Auth Button */
+.auth-button {
+  width: 100%;
+  padding: 0.875rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #C9A961 0%, #B8944F 50%, #8B6F47 100%);
+  color: white;
+  margin-top: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(201, 169, 97, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.auth-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.auth-button:hover::before {
+  left: 100%;
+}
+
+.auth-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+}
+
+.auth-button:active {
+  transform: translateY(0);
+}
+
+.auth-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Spinner */
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 0.8s linear infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Alert */
+.auth-alert {
+  border-radius: 12px;
+  border: none;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  background: #fee;
+  color: #c33;
+  font-size: 0.9rem;
+}
+
+/* Footer */
+.auth-footer {
+  text-align: center;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.auth-footer p {
+  color: #718096;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.auth-link {
+  color: #C9A961;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.auth-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(135deg, #C9A961 0%, #B8944F 50%, #8B6F47 100%);
+  transition: width 0.3s ease;
+}
+
+.auth-link:hover {
+  color: #B8944F;
+}
+
+.auth-link:hover::after {
+  width: 100%;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .auth-container {
+    padding: 1rem;
+  }
+
+  .auth-card {
+    padding: 2rem 1.5rem;
+  }
+
+  .auth-title {
+    font-size: 1.75rem;
+  }
+
+  .register-card {
+    max-width: 100%;
+  }
+}
+
+/* Additional animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auth-card {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Gold Gradient Split Layout - No Card */
+/* Email Verification Modal */
+.verification-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  padding: 2rem;
+}
+
+.verification-modal-content {
+  background: linear-gradient(135deg, #FFFFFF 0%, #F9F7F2 100%);
+  border-radius: 24px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(201, 169, 97, 0.1);
+  width: 100%;
+  max-width: 500px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(201, 169, 97, 0.25);
+}
+
+.verification-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem 2.5rem 1.5rem;
+  border-bottom: 1px solid rgba(201, 169, 97, 0.2);
+  background: linear-gradient(135deg, rgba(249, 245, 240, 0.5) 0%, rgba(255, 255, 255, 0.5) 100%);
+}
+
+.verification-modal-header h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #2C2C2C;
+  margin: 0;
+}
+
+.verification-modal-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(201, 169, 97, 0.1);
+  color: #8B6F47;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1.1rem;
+}
+
+.verification-modal-close:hover {
+  background: linear-gradient(135deg, #C9A961 0%, #8B6F47 100%);
+  color: white;
+  transform: rotate(90deg) scale(1.1);
+}
+
+.verification-modal-body {
+  padding: 2rem 2.5rem;
+}
+
+.verification-notice {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.verification-icon {
+  font-size: 3rem;
+  color: #C9A961;
+  margin-bottom: 1rem;
+}
+
+.verification-text {
+  font-size: 1.1rem;
+  color: #2C2C2C;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.verification-subtext {
+  font-size: 0.95rem;
+  color: #6C757D;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.verification-input-group {
+  margin-bottom: 1.5rem;
+}
+
+.verification-input-group label {
+  display: block;
+  font-weight: 600;
+  color: #2C2C2C;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.verification-code-input {
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid rgba(201, 169, 97, 0.25);
+  border-radius: 12px;
+  font-size: 1.5rem;
+  letter-spacing: 0.5rem;
+  font-family: monospace;
+  font-weight: bold;
+  text-align: center;
+  transition: all 0.3s ease;
+  background-color: #FFFFFF;
+  color: #2C2C2C;
+}
+
+.verification-code-input:focus {
+  border-color: #C9A961;
+  box-shadow: 0 0 0 4px rgba(201, 169, 97, 0.12);
+  outline: none;
+}
+
+.verification-error {
+  color: #DC3545;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+.verification-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.verification-btn {
+  padding: 0.875rem 2rem;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  font-size: 1rem;
+  min-width: 140px;
+}
+
+.verification-btn.primary {
+  background: linear-gradient(135deg, #C9A961 0%, #8B6F47 100%);
+  color: white;
+  box-shadow: 0 6px 20px rgba(201, 169, 97, 0.35);
+}
+
+.verification-btn.primary:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(201, 169, 97, 0.45);
+}
+
+.verification-btn.primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.verification-btn.secondary {
+  background: #f5f5f5;
+  color: #666;
+  border: 2px solid #e0e0e0;
+}
+
+.verification-btn.secondary:hover {
+  background: #e8e8e8;
+  color: #333;
+  border-color: #d0d0d0;
+}
+
+.verification-skip {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #6C757D;
+  margin: 0;
+  font-style: italic;
+}
+
+.auth-container-split-gold {
+  min-height: 100vh;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+}
+
+/* Left Welcome Panel */
+.auth-welcome-panel-gold {
+  flex: 0 0 60%;
+  position: relative;
+  background: linear-gradient(135deg, #8B6F47 0%, #B8944F 25%, #C9A961 50%, #B8944F 75%, #8B6F47 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 8s ease infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  overflow: hidden;
+}
+
+.welcome-shapes-gold {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+}
+
+.welcome-shape-gold {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  filter: blur(50px);
+  animation: floatShapeGold 20s ease-in-out infinite;
+}
+
+.welcome-shape-large {
+  width: 500px;
+  height: 500px;
+  bottom: -200px;
+  left: -150px;
+  animation-delay: 0s;
+}
+
+.welcome-shape-medium {
+  width: 400px;
+  height: 400px;
+  top: 15%;
+  right: 5%;
+  animation-delay: 7s;
+}
+
+.welcome-shape-small {
+  width: 300px;
+  height: 300px;
+  bottom: 25%;
+  right: -100px;
+  animation-delay: 14s;
+}
+
+@keyframes floatShapeGold {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.1;
+  }
+  50% {
+    transform: translate(40px, -40px) scale(1.15);
+    opacity: 0.2;
+  }
+}
+
+.welcome-content-gold {
+  position: relative;
+  z-index: 1;
+  color: white;
+  max-width: 500px;
+  text-align: center;
+}
+
+.welcome-title-gold {
+  font-size: 4rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 8px;
+  margin-bottom: 1.5rem;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.welcome-subtitle-gold {
+  font-size: 1.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  margin-bottom: 2rem;
+  opacity: 0.95;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.welcome-description-gold {
+  font-size: 1rem;
+  line-height: 1.8;
+  opacity: 0.9;
+  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Right Sign-in Panel */
+.auth-signin-panel-gold {
+  flex: 0 0 40%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 3rem;
+  background: linear-gradient(135deg, #FAF8F3 0%, #FFFFFF 50%, #FAF8F3 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 10s ease infinite;
+  overflow-y: auto;
+}
+
+.signin-header-gold {
+  margin-bottom: 1.5rem;
+}
+
+.signin-title-gold {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1A1A1A;
+  margin-bottom: 0.25rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.signin-subtitle-gold {
+  color: #718096;
+  font-size: 0.8rem;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.signin-form-gold {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.form-group-gold {
+  margin-bottom: 1.25rem;
+}
+
+.input-wrapper-gold {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.input-icon-gold {
+  position: absolute;
+  left: 1rem;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.auth-input-gold {
+  width: 100%;
+  padding: 0.7rem 1rem 0.7rem 3.5rem;
+  border: 1px solid rgba(201, 169, 97, 0.3);
+  border-radius: 12px;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  background: white;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.auth-input-gold:focus {
+  outline: none;
+  border-color: #C9A961;
+  box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.1);
+}
+
+.show-password-btn-gold {
+  position: absolute;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: #C9A961;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.show-password-btn-gold:hover {
+  color: #B8944F;
+}
+
+.form-options-gold {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  font-size: 0.85rem;
+}
+
+.remember-me-gold {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #4A5568;
+  cursor: pointer;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.remember-me-gold input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.forgot-password-link-gold {
+  color: #C9A961;
+  text-decoration: none;
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.forgot-password-link-gold:hover {
+  color: #B8944F;
+  text-decoration: underline;
+}
+
+.auth-button-primary-gold {
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #B8944F 0%, #C9A961 50%, #B8944F 100%);
+  background-size: 200% 200%;
+  animation: gradientShift 3s ease infinite;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 1rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  box-shadow: 0 4px 15px rgba(201, 169, 97, 0.3);
+}
+
+.auth-button-primary-gold:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(201, 169, 97, 0.4);
+}
+
+.auth-button-primary-gold:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.auth-separator-gold {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 1rem 0;
+  color: #A0AEC0;
+  font-size: 0.9rem;
+}
+
+.auth-separator-gold::before,
+.auth-separator-gold::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid rgba(201, 169, 97, 0.2);
+}
+
+.auth-separator-gold span {
+  padding: 0 1rem;
+}
+
+.auth-button-secondary-gold {
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  background: white;
+  color: #4A5568;
+  border: 1px solid rgba(201, 169, 97, 0.3);
+  margin-bottom: 0;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.auth-button-secondary-gold:hover {
+  background: #FAF8F3;
+  border-color: #C9A961;
+}
+
+.auth-footer-gold {
+  margin-top: 0.1rem;
+  padding-top: 0;
+  text-align: center;
+  color: #718096;
+  font-size: 0.85rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.auth-link-gold {
+  color: #C9A961;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.auth-link-gold:hover {
+  color: #B8944F;
+  text-decoration: underline;
+}
+
+.auth-alert-gold {
+  margin-bottom: 1.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+/* Date Picker Popup Styling - Match Example Image - Smaller Size */
+.date-picker-popup-auth {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  z-index: 10000 !important;
+  background: linear-gradient(135deg, #FAF8F3 0%, #FFFFFF 50%, #FAF8F3 100%);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  padding: 0.75rem;
+  width: 280px;
+  min-width: 280px;
+  max-width: 280px;
+  border: 1px solid rgba(201, 169, 97, 0.3);
+  overflow: visible;
+  pointer-events: auto;
+  isolation: isolate;
+}
+
+.date-picker-popup-auth .react-datepicker {
+  width: 100% !important;
+  border: none !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  display: block !important;
+  position: relative !important;
+  z-index: 10000 !important;
+}
+
+.date-picker-popup-auth .react-datepicker__month-container {
+  width: 100% !important;
+  padding: 0 !important;
+  display: block !important;
+  position: relative !important;
+  z-index: 10000 !important;
+}
+
+.date-picker-footer-auth {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(201, 169, 97, 0.2);
+}
+
+.date-picker-set-btn-auth {
+  background: #C9A961;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.date-picker-set-btn-auth:hover {
+  background: #B8944F;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(201, 169, 97, 0.3);
+}
+
+.date-picker-set-btn-auth:active {
+  transform: translateY(0);
+}
+
+/* React DatePicker Calendar Styling - Match Example Image */
+.auth-date-picker-calendar {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  width: 100% !important;
+}
+
+.auth-date-picker-calendar .react-datepicker {
+  border: none;
+  box-shadow: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  width: 100% !important;
+}
+
+.auth-date-picker-calendar .react-datepicker__month-container {
+  width: 100% !important;
+  padding: 0 !important;
+}
+
+.auth-date-picker-calendar .react-datepicker__month {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.auth-date-picker-calendar .react-datepicker__header {
+  background: linear-gradient(135deg, rgba(201, 169, 97, 0.1) 0%, rgba(201, 169, 97, 0.05) 100%);
+  border-bottom: 2px solid rgba(201, 169, 97, 0.3);
+  padding: 0.4rem 0;
+  border-radius: 8px 8px 0 0;
+}
+
+.auth-date-picker-calendar .react-datepicker__current-month {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #8B6F47;
+  margin-bottom: 0.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.auth-date-picker-calendar .react-datepicker__navigation {
+  top: 0.4rem;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: rgba(201, 169, 97, 0.15);
+  transition: all 0.3s ease;
+}
+
+.auth-date-picker-calendar .react-datepicker__navigation:hover {
+  background: rgba(201, 169, 97, 0.3);
+  transform: scale(1.05);
+}
+
+.auth-date-picker-calendar .react-datepicker__navigation-icon::before {
+  border-color: #8B6F47;
+  border-width: 2px 2px 0 0;
+  width: 8px;
+  height: 8px;
+}
+
+.auth-date-picker-calendar .react-datepicker__day-names {
+  margin-bottom: 0.3rem;
+}
+
+.auth-date-picker-calendar .react-datepicker__day-name {
+  color: #8B6F47;
+  font-weight: 600;
+  font-size: 0.65rem;
+  width: calc(100% / 7) !important;
+  min-width: calc(100% / 7) !important;
+  line-height: 1.75rem;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  display: inline-block !important;
+  box-sizing: border-box;
+}
+
+.auth-date-picker-calendar .react-datepicker__month {
+  margin: 0;
+}
+
+.auth-date-picker-calendar .react-datepicker__day {
+  width: calc(100% / 7) !important;
+  min-width: calc(100% / 7) !important;
+  height: 1.75rem !important;
+  line-height: 1.75rem !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 50%;
+  color: #4A4A4A;
+  font-size: 0.7rem !important;
+  transition: all 0.2s ease;
+  text-align: center;
+  box-sizing: border-box;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-date-picker-calendar .react-datepicker__week {
+  display: flex;
+  width: 100%;
+  margin: 0;
+}
+
+.auth-date-picker-calendar .react-datepicker__day:hover:not(.react-datepicker__day--disabled):not(.react-datepicker__day--selected) {
+  background: rgba(201, 169, 97, 0.2);
+  border-radius: 50%;
+  color: #8B6F47;
+}
+
+.auth-date-picker-calendar .react-datepicker__day--selected,
+.auth-date-picker-calendar .react-datepicker__day--keyboard-selected {
+  background: linear-gradient(135deg, #C9A961 0%, #B8944F 100%) !important;
+  color: white !important;
+  font-weight: 600;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(201, 169, 97, 0.3);
+}
+
+.auth-date-picker-calendar .react-datepicker__day--disabled {
+  color: #ccc;
+  cursor: not-allowed;
+}
+
+.auth-date-picker-calendar .react-datepicker__day--today {
+  font-weight: 600;
+  color: #C9A961;
+}
+
+.auth-date-picker-calendar .react-datepicker__day--today.react-datepicker__day--selected {
+  color: white;
+}
+
+/* Style month/year dropdowns to look like clickable text */
+.auth-date-picker-calendar .react-datepicker__month-dropdown-container,
+.auth-date-picker-calendar .react-datepicker__year-dropdown-container {
+  display: inline-block !important;
+  margin: 0 !important;
+  vertical-align: middle !important;
+}
+
+.auth-date-picker-calendar .react-datepicker__month-dropdown,
+.auth-date-picker-calendar .react-datepicker__year-dropdown {
+  background: transparent !important;
+  border: none !important;
+  padding: 0.2rem 0.5rem !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  color: #8B6F47 !important;
+  cursor: pointer !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  outline: none !important;
+  text-align: center !important;
+  border-radius: 4px !important;
+  transition: all 0.2s ease !important;
+  margin: 0 0.25rem !important;
+}
+
+.auth-date-picker-calendar .react-datepicker__month-dropdown:hover,
+.auth-date-picker-calendar .react-datepicker__year-dropdown:hover {
+  color: #C9A961 !important;
+  background: rgba(201, 169, 97, 0.1) !important;
+}
+
+.auth-date-picker-calendar .react-datepicker__month-dropdown:focus,
+.auth-date-picker-calendar .react-datepicker__year-dropdown:focus {
+  color: #C9A961 !important;
+  background: rgba(201, 169, 97, 0.15) !important;
+  outline: none !important;
+}
+
+/* Hide dropdown arrows - make it look like text */
+.auth-date-picker-calendar .react-datepicker__month-dropdown::-ms-expand,
+.auth-date-picker-calendar .react-datepicker__year-dropdown::-ms-expand {
+  display: none !important;
+}
+
+.auth-date-picker-calendar .react-datepicker__month-dropdown-container::after,
+.auth-date-picker-calendar .react-datepicker__year-dropdown-container::after {
+  display: none !important;
+}
+
+/* Style the dropdown options */
+.auth-date-picker-calendar .react-datepicker__month-option,
+.auth-date-picker-calendar .react-datepicker__year-option {
+  padding: 0.5rem !important;
+  border-radius: 4px !important;
+  transition: all 0.2s ease !important;
+  font-size: 0.8rem !important;
+  color: #4A4A4A !important;
+}
+
+.auth-date-picker-calendar .react-datepicker__month-option:hover,
+.auth-date-picker-calendar .react-datepicker__year-option:hover {
+  background: rgba(201, 169, 97, 0.1) !important;
+  color: #8B6F47 !important;
+}
+
+.auth-date-picker-calendar .react-datepicker__month-option--selected,
+.auth-date-picker-calendar .react-datepicker__year-option--selected {
+  background: rgba(201, 169, 97, 0.2) !important;
+  color: #8B6F47 !important;
+  font-weight: 600 !important;
+}
+
+/* Style month/year title area */
+.auth-date-picker-calendar .react-datepicker__header {
+  position: relative;
+}
+
+/* ============================================
+   REGISTER PAGE STYLES (Split Layout Gold Theme)
+   ============================================ */
+
+/* Form Row for Register Page - Two Column Layout */
+.form-row-register {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+  align-items: stretch;
+  overflow: visible !important;
+  position: relative;
+}
+
+.form-group-register {
+  flex: 1;
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: visible !important;
+  position: relative;
+}
+
+.form-group-register-full {
+  margin-bottom: 1.75rem;
+  width: 100%;
+}
+
+/* Gender Selector for Register Page */
+.gender-selector-wrapper-register {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.gender-selector-register {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 3.5rem;
+  border: 1px solid rgba(201, 169, 97, 0.3);
+  border-radius: 12px;
+  background: white;
+  transition: all 0.3s ease;
+  height: 2.75rem;
+  min-height: 2.75rem;
+  max-height: 2.75rem;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.gender-selector-register:hover {
+  border-color: rgba(201, 169, 97, 0.5);
+}
+
+.gender-selector-register:focus-within {
+  border-color: #C9A961;
+  box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.1);
+}
+
+.gender-nav-button-register {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  color: #8B6F47;
+  flex-shrink: 0;
+}
+
+.gender-nav-button-register:hover {
+  background: rgba(201, 169, 97, 0.1);
+  transform: scale(1.1);
+}
+
+.gender-nav-button-register:active {
+  transform: scale(0.95);
+}
+
+.gender-nav-button-register svg {
+  transition: transform 0.3s ease;
+}
+
+.gender-nav-left-register:hover svg {
+  transform: translateX(-2px);
+}
+
+.gender-nav-right-register:hover svg {
+  transform: translateX(2px);
+}
+
+.gender-display-register {
+  flex: 1;
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #8B6F47;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  padding: 0 0.5rem;
+  min-height: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gender-selector-register:focus-within .gender-display-register {
+  color: #B8944F;
+  font-weight: 600;
+}
+
+/* Date Input for Register Page */
+.date-input-wrapper-register {
+  position: relative;
+  overflow: visible !important;
+  z-index: 1;
+}
+
+.date-input-register {
+  cursor: pointer;
+}
+
+.date-picker-popup-register {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  z-index: 99999 !important;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(201, 169, 97, 0.2);
+  padding: 0.5rem;
+  min-width: 240px;
+  max-width: 240px;
+  overflow: visible;
+}
+
+.register-date-picker-calendar {
+  width: 100% !important;
+}
+
+.register-date-picker-calendar .react-datepicker {
+  width: 100% !important;
+  border: none !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.register-date-picker-calendar .react-datepicker__month-container {
+  width: 100% !important;
+}
+
+.register-date-picker-calendar .react-datepicker__header {
+  background: linear-gradient(135deg, rgba(201, 169, 97, 0.15) 0%, rgba(184, 148, 79, 0.1) 100%);
+  border-bottom: 1px solid rgba(201, 169, 97, 0.2);
+  padding: 0.4rem 0;
+  border-radius: 12px 12px 0 0;
+}
+
+.register-date-picker-calendar .react-datepicker__current-month {
+  font-size: 0.8rem;
+  color: #8B6F47;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.register-date-picker-calendar .react-datepicker__day-name {
+  font-size: 0.65rem;
+  color: #8B6F47;
+  font-weight: 600;
+  width: calc(100% / 7);
+  line-height: 1.75rem;
+  margin: 0;
+}
+
+.register-date-picker-calendar .react-datepicker__day {
+  width: calc(100% / 7);
+  height: 1.75rem;
+  line-height: 1.75rem;
+  font-size: 0.7rem;
+  color: #4A4A4A;
+  border-radius: 6px;
+  margin: 0.125rem;
+}
+
+.register-date-picker-calendar .react-datepicker__day:hover {
+  background: rgba(201, 169, 97, 0.2);
+  color: #8B6F47;
+  border-radius: 6px;
+}
+
+.register-date-picker-calendar .react-datepicker__day--selected {
+  background: linear-gradient(135deg, #C9A961 0%, #B8944F 100%);
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(201, 169, 97, 0.3);
+}
+
+.register-date-picker-calendar .react-datepicker__day--today {
+  font-weight: 600;
+  color: #8B6F47;
+}
+
+.register-date-picker-calendar .react-datepicker__navigation {
+  top: 0.4rem;
+  width: 24px;
+  height: 24px;
+  background: rgba(201, 169, 97, 0.15);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.register-date-picker-calendar .react-datepicker__navigation:hover {
+  background: rgba(201, 169, 97, 0.25);
+}
+
+.register-date-picker-calendar .react-datepicker__navigation-icon::before {
+  border-color: #8B6F47;
+}
+
+.register-date-picker-calendar .react-datepicker__month-dropdown-container,
+.register-date-picker-calendar .react-datepicker__year-dropdown-container {
+  display: inline-block;
+  margin: 0 0.25rem;
+}
+
+.register-date-picker-calendar .react-datepicker__month-dropdown,
+.register-date-picker-calendar .react-datepicker__year-dropdown {
+  background: transparent;
+  border: none;
+  font-size: 0.8rem;
+  color: #8B6F47;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  margin: 0 0.25rem;
+}
+
+.register-date-picker-calendar .react-datepicker__month-dropdown:hover,
+.register-date-picker-calendar .react-datepicker__year-dropdown:hover {
+  color: #C9A961;
+  background: rgba(201, 169, 97, 0.1);
+}
+
+.register-date-picker-calendar .react-datepicker__month-dropdown:focus,
+.register-date-picker-calendar .react-datepicker__year-dropdown:focus {
+  color: #C9A961;
+  background: rgba(201, 169, 97, 0.15);
+  outline: none;
+}
+
+/* Phone Input for Register Page */
+.phone-input-register {
+  width: 100%;
+}
+
+/* Responsive Design for Register Page */
+@media (max-width: 768px) {
+  .form-row-register {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .form-group-register {
+    width: 100%;
+  }
+
+  .date-picker-popup-register {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+

@@ -1,0 +1,3 @@
+ALTER TABLE "AspNetUsers" ADD COLUMN IF NOT EXISTS "Points" integer NOT NULL DEFAULT 0;
+ALTER TABLE "AspNetUsers" ADD COLUMN IF NOT EXISTS "MembershipTier" text NOT NULL DEFAULT 'Member';
+

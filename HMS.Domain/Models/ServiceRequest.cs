@@ -1,17 +1,44 @@
+using HMS.Domain.Enums;
+using HMS.Domain.Interfaces;
+using System.ComponentModel.DataAnnotations;
+
 namespace HMS.Domain.Models;
 
-public class ServiceRequest
+public class ServiceRequest : IAuditable, ISoftDelete
 {
     public int Id { get; set; }
+    
     public int BookingId { get; set; }
+    
+    [Required]
     public string UserId { get; set; } = string.Empty;
-    public string ServiceType { get; set; } = string.Empty; // RoomService, Housekeeping, Maintenance, Laundry, etc.
+    
+    public ServiceType ServiceType { get; set; } = ServiceType.Other;
+    
+    [Required]
+    [StringLength(500)]
     public string Description { get; set; } = string.Empty;
-    public string Status { get; set; } = "Pending"; // Pending, InProgress, Completed, Cancelled
+    
+    public ServiceRequestStatus Status { get; set; } = ServiceRequestStatus.Pending;
+    
     public string? AssignedToUserId { get; set; } // RoomAttendant or other staff
+    
     public DateTime RequestedAt { get; set; } = DateTime.UtcNow;
     public DateTime? CompletedAt { get; set; }
+    
+    [StringLength(1000)]
     public string? Notes { get; set; }
+    
+    // IAuditable
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? UpdatedAt { get; set; }
+    public string? CreatedBy { get; set; }
+    public string? UpdatedBy { get; set; }
+    
+    // ISoftDelete
+    public bool IsDeleted { get; set; } = false;
+    public DateTime? DeletedAt { get; set; }
+    public string? DeletedBy { get; set; }
 
     // Navigation properties
     public virtual Booking Booking { get; set; } = null!;

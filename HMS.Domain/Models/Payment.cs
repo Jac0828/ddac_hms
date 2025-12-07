@@ -1,19 +1,39 @@
+using HMS.Domain.Enums;
+using HMS.Domain.Interfaces;
+using System.ComponentModel.DataAnnotations;
+
 namespace HMS.Domain.Models;
 
-public class Payment
+public class Payment : IAuditable, ISoftDelete
 {
     public int Id { get; set; }
+    
     public int BookingId { get; set; }
-    public string UserId { get; set; } = string.Empty;
+    
+    [Range(0.01, 100000, ErrorMessage = "Amount must be between 0.01 and 100000")]
     public decimal Amount { get; set; }
-    public string PaymentMethod { get; set; } = string.Empty; // CreditCard, DebitCard, Cash, BankTransfer
-    public string Status { get; set; } = "Pending"; // Pending, Completed, Failed, Refunded
+    
+    public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.CreditCard;
+    
+    public DateTime TransactionDate { get; set; } = DateTime.UtcNow;
+    
+    public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
+    
+    [StringLength(100)]
     public string? TransactionId { get; set; }
-    public DateTime PaymentDate { get; set; } = DateTime.UtcNow;
+    
+    // IAuditable
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? UpdatedAt { get; set; }
+    public string? CreatedBy { get; set; }
+    public string? UpdatedBy { get; set; }
+    
+    // ISoftDelete
+    public bool IsDeleted { get; set; } = false;
+    public DateTime? DeletedAt { get; set; }
+    public string? DeletedBy { get; set; }
 
     // Navigation properties
     public virtual Booking Booking { get; set; } = null!;
-    public virtual AppUser User { get; set; } = null!;
 }
 

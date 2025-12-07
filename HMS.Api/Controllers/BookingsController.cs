@@ -1,10 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using HMS.Api.DTOs;
 using HMS.Domain.Models;
-using HMS.Infrastructure.Data;
+using HMS.Domain.Enums;
+using HMS.Domain.Extensions;
+using HMS.Infrastructure.Services;
 
 namespace HMS.Api.Controllers;
 
@@ -13,199 +14,237 @@ namespace HMS.Api.Controllers;
 [Authorize]
 public class BookingsController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
-    private readonly UserManager<AppUser> _userManager;
+    private readonly IBookingService _bookingService;
+    private readonly IRoomService _roomService;
 
-    public BookingsController(ApplicationDbContext context, UserManager<AppUser> userManager)
+    public BookingsController(IBookingService bookingService, IRoomService roomService)
     {
-        _context = context;
-        _userManager = userManager;
-    }
-
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<object>>> GetBookings()
-    {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var user = await _userManager.FindByIdAsync(userId!);
-        var roles = await _userManager.GetRolesAsync(user!);
-
-        IQueryable<Booking> query;
-
-        if (roles.Contains("Manager") || roles.Contains("Receptionist"))
-        {
-            query = _context.Bookings.Include(b => b.User).Include(b => b.Room);
-        }
-        else
-        {
-            query = _context.Bookings
-                .Where(b => b.UserId == userId)
-                .Include(b => b.Room);
-        }
-
-        var bookings = await query
-            .Select(b => new
-            {
-                b.Id,
-                b.CheckInDate,
-                b.CheckOutDate,
-                b.NumberOfGuests,
-                b.TotalAmount,
-                b.Status,
-                b.SpecialRequests,
-                Room = new { b.Room.Id, b.Room.RoomNumber, b.Room.RoomType },
-                User = roles.Contains("Manager") || roles.Contains("Receptionist") ? new { b.User.Id, b.User.Email, b.User.FirstName, b.User.LastName } : null
-            })
-            .ToListAsync();
-
-        return Ok(bookings);
-    }
-
-    [HttpGet("{id}")]
-    public async Task<ActionResult<Booking>> GetBooking(int id)
-    {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var user = await _userManager.FindByIdAsync(userId!);
-        var roles = await _userManager.GetRolesAsync(user!);
-
-        var booking = await _context.Bookings
-            .Include(b => b.Room)
-            .Include(b => b.User)
-            .FirstOrDefaultAsync(b => b.Id == id);
-
-        if (booking == null)
-        {
-            return NotFound();
-        }
-
-        if (!roles.Contains("Manager") && !roles.Contains("Receptionist") && booking.UserId != userId)
-        {
-            return Forbid();
-        }
-
-        return booking;
+        _bookingService = bookingService;
+        _roomService = roomService;
     }
 
     [HttpPost]
     [Authorize(Roles = "Customer,Manager,Receptionist")]
-    public async Task<ActionResult<Booking>> CreateBooking(CreateBookingModel model)
+    public async Task<ActionResult<BookingDto>> CreateBooking([FromBody] CreateBookingDto dto)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        // Check if room is available
-        var isAvailable = !await _context.Bookings.AnyAsync(b =>
-            b.RoomId == model.RoomId &&
-            b.Status != "Cancelled" &&
-            ((model.CheckInDate >= b.CheckInDate && model.CheckInDate < b.CheckOutDate) ||
-             (model.CheckOutDate > b.CheckInDate && model.CheckOutDate <= b.CheckOutDate) ||
-             (model.CheckInDate <= b.CheckInDate && model.CheckOutDate >= b.CheckOutDate)));
-
-        if (!isAvailable)
-        {
-            return BadRequest("Room is not available for the selected dates");
-        }
-
-        var room = await _context.Rooms.FindAsync(model.RoomId);
-        if (room == null)
-        {
-            return NotFound("Room not found");
-        }
-
-        var nights = (model.CheckOutDate - model.CheckInDate).Days;
-        var totalAmount = room.PricePerNight * nights;
-
         var booking = new Booking
         {
-            UserId = model.UserId ?? userId!,
-            RoomId = model.RoomId,
-            CheckInDate = model.CheckInDate,
-            CheckOutDate = model.CheckOutDate,
-            NumberOfGuests = model.NumberOfGuests,
-            TotalAmount = totalAmount,
-            Status = "Pending",
-            SpecialRequests = model.SpecialRequests,
-            CreatedAt = DateTime.UtcNow
+            UserId = userId!,
+            RoomId = dto.RoomId,
+            CheckInDate = dto.CheckInDate,
+            CheckOutDate = dto.CheckOutDate,
+            NumberOfGuests = dto.NumberOfGuests,
+            SpecialRequests = dto.SpecialRequests
         };
 
-        _context.Bookings.Add(booking);
-        await _context.SaveChangesAsync();
-
-        return CreatedAtAction(nameof(GetBooking), new { id = booking.Id }, booking);
+        try
+        {
+            var created = await _bookingService.CreateBookingAsync(booking);
+            return CreatedAtAction(nameof(GetBooking), new { id = created.Id }, await MapToDtoAsync(created));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
-    [HttpPut("{id}/status")]
-    [Authorize(Roles = "Manager,Receptionist")]
-    public async Task<IActionResult> UpdateBookingStatus(int id, UpdateBookingStatusModel model)
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<BookingDto>>> GetBookings()
     {
-        var booking = await _context.Bookings.FindAsync(id);
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var roles = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
+
+            IEnumerable<Booking> bookings;
+
+            if (roles.Contains("Manager") || roles.Contains("Receptionist"))
+            {
+                bookings = await _bookingService.GetAllBookingsAsync();
+            }
+            else
+            {
+                bookings = await _bookingService.GetUserBookingsAsync(userId!);
+            }
+
+            // Map all bookings to DTOs in parallel for better performance
+            var dtoTasks = bookings.Select(b => MapToDtoAsync(b));
+            var dtos = await Task.WhenAll(dtoTasks);
+
+            return Ok(dtos);
+        }
+        catch (Exception ex)
+        {
+            // Log the exception for debugging
+            Console.WriteLine($"Error in GetBookings: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            if (ex.InnerException != null)
+            {
+                Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+            }
+            return StatusCode(500, new { message = "An error occurred while retrieving bookings", error = ex.Message });
+        }
+    }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<BookingDto>> GetBooking(int id)
+    {
+        var booking = await _bookingService.GetBookingByIdAsync(id);
         if (booking == null)
-        {
             return NotFound();
-        }
 
-        booking.Status = model.Status;
-        booking.UpdatedAt = DateTime.UtcNow;
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var roles = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
 
-        if (model.Status == "CheckedIn")
+        if (!roles.Contains("Manager") && !roles.Contains("Receptionist") && booking.UserId != userId)
+            return Forbid();
+
+        return Ok(await MapToDtoAsync(booking));
+    }
+
+    [HttpPut("{id}")]
+    [Authorize(Roles = "Manager,Receptionist")]
+    public async Task<IActionResult> ModifyBooking(int id, [FromBody] UpdateBookingDto dto)
+    {
+        var booking = await _bookingService.GetBookingByIdAsync(id);
+        if (booking == null)
+            return NotFound();
+
+        booking.CheckInDate = dto.CheckInDate;
+        booking.CheckOutDate = dto.CheckOutDate;
+        booking.NumberOfGuests = dto.NumberOfGuests;
+        booking.SpecialRequests = dto.SpecialRequests;
+
+        // Recalculate total price
+        try
         {
-            var room = await _context.Rooms.FindAsync(booking.RoomId);
-            if (room != null)
-            {
-                room.Status = "Occupied";
-            }
+            booking.TotalPrice = await _bookingService.CalculateTotalPriceAsync(booking.RoomId, dto.CheckInDate, dto.CheckOutDate);
         }
-        else if (model.Status == "CheckedOut")
+        catch (InvalidOperationException ex)
         {
-            var room = await _context.Rooms.FindAsync(booking.RoomId);
-            if (room != null)
-            {
-                room.Status = "Cleaning";
-            }
+            return BadRequest(new { message = ex.Message });
         }
 
-        await _context.SaveChangesAsync();
-
+        await _bookingService.UpdateBookingAsync(booking);
         return NoContent();
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = "Customer,Manager,Receptionist")]
     public async Task<IActionResult> CancelBooking(int id)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var user = await _userManager.FindByIdAsync(userId!);
-        var roles = await _userManager.GetRolesAsync(user!);
-
-        var booking = await _context.Bookings.FindAsync(id);
+        var booking = await _bookingService.GetBookingByIdAsync(id);
         if (booking == null)
-        {
             return NotFound();
-        }
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var roles = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
 
         if (!roles.Contains("Manager") && !roles.Contains("Receptionist") && booking.UserId != userId)
-        {
             return Forbid();
-        }
 
-        booking.Status = "Cancelled";
-        booking.UpdatedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
+        var result = await _bookingService.CancelBookingAsync(id);
+        if (!result)
+            return NotFound();
 
         return NoContent();
     }
-}
 
-public class CreateBookingModel
-{
-    public int RoomId { get; set; }
-    public DateTime CheckInDate { get; set; }
-    public DateTime CheckOutDate { get; set; }
-    public int NumberOfGuests { get; set; }
-    public string? SpecialRequests { get; set; }
-    public string? UserId { get; set; } // Optional for Manager/Receptionist to create bookings for others
-}
+    [HttpPost("{id}/checkin")]
+    [Authorize(Roles = "Manager,Receptionist")]
+    public async Task<ActionResult<BookingDto>> CheckIn(int id)
+    {
+        var booking = await _bookingService.GetBookingByIdAsync(id);
+        if (booking == null)
+            return NotFound();
 
-public class UpdateBookingStatusModel
-{
-    public string Status { get; set; } = string.Empty;
-}
+        if (booking.Status != BookingStatus.Confirmed && booking.Status != BookingStatus.Pending)
+            return BadRequest(new { message = $"Cannot check in booking with status: {booking.Status.ToStringValue()}" });
 
+        booking.Status = BookingStatus.CheckedIn;
+        booking.UpdatedAt = DateTime.UtcNow;
+
+        // Update room status
+        var room = await _roomService.GetRoomByIdAsync(booking.RoomId);
+        if (room != null)
+        {
+            room.Status = RoomStatus.Occupied;
+            await _roomService.UpdateRoomAsync(room);
+        }
+
+        await _bookingService.UpdateBookingAsync(booking);
+        return Ok(await MapToDtoAsync(booking));
+    }
+
+    [HttpPost("{id}/checkout")]
+    [Authorize(Roles = "Manager,Receptionist")]
+    public async Task<ActionResult<BookingDto>> Checkout(int id)
+    {
+        try
+        {
+            var booking = await _bookingService.CheckoutBookingAsync(id);
+            
+            // Update room status
+            var room = await _roomService.GetRoomByIdAsync(booking.RoomId);
+            if (room != null)
+            {
+                room.Status = RoomStatus.Available;
+                await _roomService.UpdateRoomAsync(room);
+            }
+            
+            return Ok(await MapToDtoAsync(booking));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpGet("upcoming-checkins")]
+    [Authorize(Roles = "Manager,Receptionist")]
+    public async Task<ActionResult<IEnumerable<BookingDto>>> GetUpcomingCheckIns([FromQuery] int days = 7)
+    {
+        var startDate = DateTime.Today;
+        var endDate = startDate.AddDays(days);
+
+        var bookings = await _bookingService.GetAllBookingsAsync();
+        var upcoming = bookings
+            .Where(b => b.CheckInDate.Date >= startDate && 
+                       b.CheckInDate.Date <= endDate &&
+                       (b.Status == BookingStatus.Confirmed || b.Status == BookingStatus.Pending))
+            .OrderBy(b => b.CheckInDate);
+
+        var dtos = new List<BookingDto>();
+        foreach (var booking in upcoming)
+        {
+            dtos.Add(await MapToDtoAsync(booking));
+        }
+
+        return Ok(dtos);
+    }
+
+    private Task<BookingDto> MapToDtoAsync(Booking booking)
+    {
+        // Room and User are already loaded via Include() in GetAllBookingsAsync
+        // No need for additional database queries - this eliminates N+1 query problem
+        return Task.FromResult(new BookingDto
+        {
+            Id = booking.Id,
+            UserId = booking.UserId,
+            UserEmail = booking.User?.Email ?? "",
+            UserFullName = $"{booking.User?.FirstName} {booking.User?.LastName}",
+            RoomId = booking.RoomId,
+            RoomNumber = booking.Room?.RoomNumber ?? "",
+            RoomType = booking.Room?.RoomType?.Name ?? "",
+            CheckInDate = booking.CheckInDate,
+            CheckOutDate = booking.CheckOutDate,
+            TotalPrice = booking.TotalPrice,
+            PaymentStatus = booking.PaymentStatus.ToStringValue(),
+            Status = booking.Status.ToStringValue(),
+            NumberOfGuests = booking.NumberOfGuests,
+            SpecialRequests = booking.SpecialRequests,
+            CreatedAt = booking.CreatedAt
+        });
+    }
+}

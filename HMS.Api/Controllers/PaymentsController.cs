@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using HMS.Api.DTOs;
 using HMS.Domain.Models;
-using HMS.Infrastructure.Data;
+using HMS.Domain.Enums;
+using HMS.Domain.Extensions;
+using HMS.Infrastructure.Services;
 
 namespace HMS.Api.Controllers;
 
@@ -12,100 +14,120 @@ namespace HMS.Api.Controllers;
 [Authorize]
 public class PaymentsController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IPaymentService _paymentService;
+    private readonly IBookingService _bookingService;
 
-    public PaymentsController(ApplicationDbContext context)
+    public PaymentsController(IPaymentService paymentService, IBookingService bookingService)
     {
-        _context = context;
-    }
-
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<Payment>>> GetPayments([FromQuery] int? bookingId)
-    {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var isManager = User.IsInRole("Manager");
-
-        var query = _context.Payments
-            .Include(p => p.Booking)
-            .Include(p => p.User)
-            .AsQueryable();
-
-        if (!isManager)
-        {
-            query = query.Where(p => p.UserId == userId);
-        }
-
-        if (bookingId.HasValue)
-        {
-            query = query.Where(p => p.BookingId == bookingId.Value);
-        }
-
-        return await query.ToListAsync();
+        _paymentService = paymentService;
+        _bookingService = bookingService;
     }
 
     [HttpPost]
     [Authorize(Roles = "Customer,Manager,Receptionist")]
-    public async Task<ActionResult<Payment>> CreatePayment(CreatePaymentModel model)
+    public async Task<ActionResult<PaymentDto>> RecordPayment([FromBody] CreatePaymentDto dto)
     {
-        var booking = await _context.Bookings.FindAsync(model.BookingId);
+        var booking = await _bookingService.GetBookingByIdAsync(dto.BookingId);
         if (booking == null)
-        {
             return NotFound("Booking not found");
-        }
-
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var paymentUserId = model.UserId ?? userId!;
 
         var payment = new Payment
         {
-            BookingId = model.BookingId,
-            UserId = paymentUserId,
-            Amount = model.Amount,
-            PaymentMethod = model.PaymentMethod,
-            Status = "Completed",
-            TransactionId = model.TransactionId,
-            PaymentDate = DateTime.UtcNow,
-            CreatedAt = DateTime.UtcNow
+            BookingId = dto.BookingId,
+            Amount = dto.Amount,
+            PaymentMethod = dto.PaymentMethod.ToPaymentMethod(),
+            Status = PaymentStatus.Paid,
+            TransactionId = dto.TransactionId
         };
 
-        _context.Payments.Add(payment);
-        booking.Status = "Confirmed";
-        await _context.SaveChangesAsync();
+        var created = await _paymentService.RecordPaymentAsync(payment);
+        return CreatedAtAction(nameof(GetPayment), new { id = created.Id }, await MapToDtoAsync(created));
+    }
 
-        return CreatedAtAction(nameof(GetPayment), new { id = payment.Id }, payment);
+    [HttpGet]
+    [Authorize(Roles = "Manager")]
+    public async Task<ActionResult<IEnumerable<PaymentDto>>> GetAllPayments()
+    {
+        var payments = await _paymentService.GetAllPaymentsAsync();
+        var dtos = new List<PaymentDto>();
+        foreach (var payment in payments)
+        {
+            dtos.Add(await MapToDtoAsync(payment));
+        }
+        return Ok(dtos);
+    }
+
+    [HttpGet("booking/{bookingId}")]
+    public async Task<ActionResult<IEnumerable<PaymentDto>>> GetBookingPayments(int bookingId)
+    {
+        var booking = await _bookingService.GetBookingByIdAsync(bookingId);
+        if (booking == null)
+            return NotFound();
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var roles = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
+
+        // Only Manager or booking owner can see payments
+        if (!roles.Contains("Manager") && booking.UserId != userId)
+            return Forbid();
+
+        var payments = await _paymentService.GetBookingPaymentsAsync(bookingId);
+        var dtos = payments.Select(p => MapToDto(p));
+        return Ok(dtos);
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Payment>> GetPayment(int id)
+    public async Task<ActionResult<PaymentDto>> GetPayment(int id)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var isManager = User.IsInRole("Manager");
-
-        var payment = await _context.Payments
-            .Include(p => p.Booking)
-            .Include(p => p.User)
-            .FirstOrDefaultAsync(p => p.Id == id);
-
+        var payment = await _paymentService.GetPaymentByIdAsync(id);
         if (payment == null)
-        {
             return NotFound();
-        }
 
-        if (!isManager && payment.UserId != userId)
-        {
+        var booking = await _bookingService.GetBookingByIdAsync(payment.BookingId);
+        if (booking == null)
+            return NotFound();
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var roles = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
+
+        // Only Manager or booking owner can see payment
+        if (!roles.Contains("Manager") && booking.UserId != userId)
             return Forbid();
-        }
 
-        return payment;
+        return Ok(await MapToDtoAsync(payment));
+    }
+
+    private async Task<PaymentDto> MapToDtoAsync(Payment payment)
+    {
+        var booking = await _bookingService.GetBookingByIdAsync(payment.BookingId);
+        
+        return new PaymentDto
+        {
+            Id = payment.Id,
+            BookingId = payment.BookingId,
+            BookingRoomNumber = booking?.Room?.RoomNumber ?? "",
+            CustomerEmail = booking?.User?.Email ?? "",
+            Amount = payment.Amount,
+            PaymentMethod = payment.PaymentMethod.ToStringValue(),
+            TransactionDate = payment.TransactionDate,
+            Status = payment.Status.ToStringValue(),
+            TransactionId = payment.TransactionId
+        };
+    }
+
+    private PaymentDto MapToDto(Payment payment)
+    {
+        return new PaymentDto
+        {
+            Id = payment.Id,
+            BookingId = payment.BookingId,
+            BookingRoomNumber = payment.Booking?.Room?.RoomNumber ?? "",
+            CustomerEmail = payment.Booking?.User?.Email ?? "",
+            Amount = payment.Amount,
+            PaymentMethod = payment.PaymentMethod.ToStringValue(),
+            TransactionDate = payment.TransactionDate,
+            Status = payment.Status.ToStringValue(),
+            TransactionId = payment.TransactionId
+        };
     }
 }
-
-public class CreatePaymentModel
-{
-    public int BookingId { get; set; }
-    public decimal Amount { get; set; }
-    public string PaymentMethod { get; set; } = string.Empty;
-    public string? TransactionId { get; set; }
-    public string? UserId { get; set; } // Optional for Manager/Receptionist
-}
-
