@@ -281,8 +281,6 @@ const Home: React.FC = () => {
               </div>
             )}
           </div>
-        )}
-      </motion.section>
 
           {/* Guests */}
           <div className="booking-field" ref={guestRef}>
