@@ -9,7 +9,6 @@ INSERT INTO "AspNetRoles" ("Id", "Name", "NormalizedName", "ConcurrencyStamp")
 VALUES 
     ('role-admin-001', 'Admin', 'ADMIN', gen_random_uuid()::text),
     ('role-manager-001', 'Manager', 'MANAGER', gen_random_uuid()::text),
-    ('role-reception-001', 'Receptionist', 'RECEPTIONIST', gen_random_uuid()::text),
     ('role-housekeeping-001', 'Housekeeping', 'HOUSEKEEPING', gen_random_uuid()::text),
     ('role-guest-001', 'Guest', 'GUEST', gen_random_uuid()::text)
 ON CONFLICT ("Id") DO NOTHING;
@@ -135,11 +134,11 @@ VALUES
     ('user-housekeeping-008', 'role-housekeeping-001'),
     ('user-housekeeping-009', 'role-housekeeping-001'),
     ('user-housekeeping-010', 'role-housekeeping-001'),
-    -- Receptionists (assign Receptionist role)
-    ('user-reception-001', 'role-reception-001'),
-    ('user-reception-002', 'role-reception-001'),
-    ('user-reception-003', 'role-reception-001'),
-    ('user-reception-004', 'role-reception-001'),
-    ('user-reception-005', 'role-reception-001')
+    -- Receptionists (also get Guest role for system access)
+    ('user-reception-001', 'role-guest-001'),
+    ('user-reception-002', 'role-guest-001'),
+    ('user-reception-003', 'role-guest-001'),
+    ('user-reception-004', 'role-guest-001'),
+    ('user-reception-005', 'role-guest-001')
 ON CONFLICT DO NOTHING;
 

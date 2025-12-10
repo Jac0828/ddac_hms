@@ -28,24 +28,9 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Log ALL errors for debugging
-    console.error('API Error:', {
-      message: error.message,
-      code: error.code,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      data: error.response?.data,
-      config: {
-        url: error.config?.url,
-        baseURL: error.config?.baseURL,
-        method: error.config?.method,
-        data: error.config?.data,
-      }
-    });
-    
     // Log network errors for debugging
     if (!error.response) {
-      console.error('Network Error - No response from server:', {
+      console.error('Network Error:', {
         message: error.message,
         code: error.code,
         config: {
@@ -58,8 +43,6 @@ api.interceptors.response.use(
     
     // Don't redirect on 401 during login - let the login component handle it
     if (error.response?.status === 401 && !error.config?.url?.includes('/api/auth/login')) {
-      // If we get a 401, the token is invalid or expired.
-      // We should clear it and redirect to login immediately.
       localStorage.removeItem('jwtToken');
       localStorage.removeItem('user');
       window.location.href = '/login';
@@ -123,8 +106,6 @@ export interface Booking {
   totalAmount?: number; // Keep for backward compatibility
   status: string;
   specialRequests?: string;
-  actualCheckInDate?: string;
-  actualCheckOutDate?: string;
   room?: {
     id: number;
     roomNumber: string;
@@ -163,88 +144,6 @@ export interface ServiceRequest {
     lastName: string;
   };
 }
-
-export interface FeaturedOffer {
-  title: string;
-  description: string;
-  price?: string;
-  priceLabel?: string;
-  tags: string[];
-  badge?: string;
-  imageUrl?: string;
-}
-
-// Settings API
-export interface HotelSetting {
-  id?: number;
-  hotelName: string;
-  welcomeDescription: string;
-  email: string;
-  phone: string;
-  address: string;
-  checkInTime: string;
-  checkOutTime: string;
-  taxRate: number;
-  currency: string;
-  facebookUrl: string;
-  instagramUrl: string;
-  twitterUrl: string;
-  memberDiscount: number;
-  silverDiscount: number;
-  goldDiscount: number;
-  platinumDiscount: number;
-  membershipBenefitsJson: string; // JSON string from backend
-  // New fields for Home Page
-  homeBannerImagesJson: string;
-  featuredOffersJson: string; // JSON string for Featured Offers
-  promotionTitle: string;
-  promotionDescription: string;
-  promotionImageUrl: string;
-  aboutTitle: string;
-  aboutDescription: string;
-  aboutImageUrl: string;
-}
-
-// Parsed interface for frontend usage
-export interface ParsedHotelSetting extends Omit<HotelSetting, 'membershipBenefitsJson' | 'homeBannerImagesJson' | 'featuredOffersJson'> {
-  membershipBenefits: {
-    member: string[];
-    silver: string[];
-    gold: string[];
-    platinum: string[];
-  };
-  homeBannerImages: string[];
-  featuredOffers: FeaturedOffer[];
-}
-
-export const settingsApi = {
-  get: async (): Promise<ParsedHotelSetting> => {
-    const response = await api.get<HotelSetting>('/api/admin/settings');
-    const data = response.data;
-    return {
-      ...data,
-      membershipBenefits: JSON.parse(data.membershipBenefitsJson || '{}'),
-      homeBannerImages: JSON.parse(data.homeBannerImagesJson || '[]'),
-      featuredOffers: JSON.parse(data.featuredOffersJson || '[]')
-    };
-  },
-  update: async (data: ParsedHotelSetting): Promise<ParsedHotelSetting> => {
-    const payload = {
-      ...data,
-      membershipBenefitsJson: JSON.stringify(data.membershipBenefits),
-      homeBannerImagesJson: JSON.stringify(data.homeBannerImages),
-      featuredOffersJson: JSON.stringify(data.featuredOffers)
-    };
-    const response = await api.put<HotelSetting>('/api/admin/settings', payload);
-    const responseData = response.data;
-    return {
-      ...responseData,
-      membershipBenefits: JSON.parse(responseData.membershipBenefitsJson || '{}'),
-      homeBannerImages: JSON.parse(responseData.homeBannerImagesJson || '[]'),
-      featuredOffers: JSON.parse(responseData.featuredOffersJson || '[]')
-    };
-  }
-};
 
 export const authApi = {
   login: async (data: LoginRequest): Promise<LoginResponse> => {
@@ -406,14 +305,12 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
-  fullName?: string;
   gender?: string;
   dateOfBirth?: string;
   phoneNumber?: string;
   isActive: boolean;
   createdAt: string;
-  roles?: string[]; // Optional in UserDto
-  role?: string; // Present in UserDto
+  roles: string[];
   points?: number;
   membershipTier?: string;
   emailConfirmed?: boolean;
@@ -424,7 +321,6 @@ export interface CreateUserData {
   password: string;
   firstName: string;
   lastName: string;
-  fullName?: string; // Added for UsersController
   gender?: string;
   dateOfBirth?: string;
   role: string;
@@ -434,17 +330,14 @@ export interface CreateUserData {
 
 export interface UpdateUserData {
   email?: string;
-  fullName?: string;
-  firstName?: string;
-  lastName?: string;
+  firstName: string;
+  lastName: string;
   gender?: string;
   dateOfBirth?: string;
   phoneNumber?: string;
   role: string;
   isActive: boolean;
   password?: string;
-  membershipTier?: string;
-  profilePictureUrl?: string;
 }
 
 export interface DatabaseData {
@@ -469,35 +362,6 @@ export interface DatabaseData {
   QueryTickets?: any[];
 }
 
-// Users API for Managers
-export const usersApi = {
-  getAll: async (): Promise<User[]> => {
-    try {
-      const response = await api.get<User[]>('/api/users');
-      return response.data;
-    } catch (error: any) {
-      console.error('usersApi.getAll error:', {
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
-        message: error.message,
-        url: error.config?.url
-      });
-      return [];
-    }
-  },
-  create: async (data: CreateUserData): Promise<User> => {
-    const response = await api.post<User>('/api/users', data);
-    return response.data;
-  },
-  update: async (id: string, data: UpdateUserData): Promise<void> => {
-    await api.put(`/api/users/${id}`, data);
-  },
-  delete: async (id: string): Promise<void> => {
-    await api.delete(`/api/users/${id}`);
-  }
-};
-
 export const adminApi = {
   getUsers: async (): Promise<User[]> => {
     try {
@@ -505,6 +369,22 @@ export const adminApi = {
       return response.data;
     } catch (error: any) {
       console.error('adminApi.getUsers error:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: error.message,
+        url: error.config?.url
+      });
+      // Return empty array instead of throwing to prevent crash
+      return [];
+    }
+  },
+  getStaff: async (): Promise<User[]> => {
+    try {
+      const response = await api.get<User[]>('/api/admin/staff');
+      return response.data;
+    } catch (error: any) {
+      console.error('adminApi.getStaff error:', {
         status: error.response?.status,
         statusText: error.response?.statusText,
         data: error.response?.data,
@@ -569,7 +449,6 @@ export interface AuditLog {
   userId: string;
   userName: string;
   userEmail: string;
-  userRole?: string; // Added field for Role
   action: string;
   entityType: string;
   entityId?: number;
@@ -696,45 +575,6 @@ export interface ReviewStats {
   ratingDistribution: Record<number, number>;
 }
 
-// Payment API
-export interface Payment {
-  id: number;
-  bookingId: number;
-  bookingRoomNumber: string;
-  customerEmail: string;
-  amount: number;
-  paymentMethod: string;
-  transactionDate: string;
-  status: string;
-  transactionId?: string;
-}
-
-export interface CreatePaymentData {
-  bookingId: number;
-  amount: number;
-  paymentMethod: string;
-  transactionId?: string;
-}
-
-export const paymentApi = {
-  record: async (data: CreatePaymentData): Promise<Payment> => {
-    const response = await api.post<Payment>('/api/payments', data);
-    return response.data;
-  },
-  getAll: async (): Promise<Payment[]> => {
-    const response = await api.get<Payment[]>('/api/payments');
-    return response.data;
-  },
-  getByBooking: async (bookingId: number): Promise<Payment[]> => {
-    const response = await api.get<Payment[]>(`/api/payments/booking/${bookingId}`);
-    return response.data;
-  },
-  getById: async (id: number): Promise<Payment> => {
-    const response = await api.get<Payment>(`/api/payments/${id}`);
-    return response.data;
-  },
-};
-
 export const reviewsApi = {
   getAll: async (approvedOnly: boolean = true): Promise<Review[]> => {
     const response = await api.get<Review[]>(`/api/reviews?approvedOnly=${approvedOnly}`);
@@ -763,10 +603,6 @@ export const housekeepingApi = {
     const response = await api.post<HousekeepingTask>('/api/housekeeping', data);
     return response.data;
   },
-  getByStaff: async (staffId: string): Promise<HousekeepingTask[]> => {
-    const response = await api.get<HousekeepingTask[]>(`/api/housekeeping/staff/${staffId}`);
-    return response.data;
-  },
   updateStatus: async (id: number, status: string): Promise<void> => {
     await api.put(`/api/housekeeping/${id}/status`, { status });
   },
@@ -792,23 +628,6 @@ export const bookingsApiExtended = {
     const response = await api.get<Booking[]>(`/api/bookings/upcoming-checkins?days=${days}`);
     return response.data;
   },
-};
-
-// Upload API
-export const uploadApi = {
-  uploadImage: async (file: File): Promise<{ url: string }> => {
-    const formData = new FormData();
-    formData.append('file', file);
-    const response = await api.post<{ url: string }>('/api/images/upload', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data;
-  },
-  deleteImage: async (url: string): Promise<void> => {
-    await api.delete(`/api/images?url=${encodeURIComponent(url)}`);
-  }
 };
 
 export default api;

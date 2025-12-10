@@ -4,22 +4,18 @@ import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { useSettings } from '../contexts/SettingsContext';
-import { reviewsApi, ReviewStats, Review } from '../services/api';
+import { reviewsApi, ReviewStats } from '../services/api';
 import DatePicker from 'react-datepicker';
 import { format } from 'date-fns';
-import { motion, AnimatePresence } from 'framer-motion';
-import ImageGallery from './common/ImageGallery';
-import FeedbackModal from './common/FeedbackModal'; // Import FeedbackModal
+import { motion } from 'framer-motion';
 import 'react-datepicker/dist/react-datepicker.css';
 import './Home.css';
-import { FaCheck, FaTimes, FaPhone, FaEnvelope, FaMapMarkerAlt, FaFacebook, FaInstagram, FaTwitter, FaClock } from 'react-icons/fa';
 
 const Home: React.FC = () => {
-  const { isAuthenticated, isAdmin, isManager, isReceptionist, isRoomAttendant } = useAuth();
+  const { isAuthenticated, user, isAdmin, isManager, isReceptionist, isRoomAttendant, isCustomer } = useAuth();
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
-  const { settings } = useSettings();
+  const { theme } = useTheme();
   const navigate = useNavigate();
   
   const [checkInDate, setCheckInDate] = useState<Date>(new Date());
@@ -31,92 +27,50 @@ const Home: React.FC = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showGuestPicker, setShowGuestPicker] = useState(false);
   const [rooms, setRooms] = useState([{ adults: 2, children: 0 }]);
-  const [selectedOffer, setSelectedOffer] = useState<any>(null); // State for selected offer
   
-  // Review stats & list
-  const [reviewStats, setReviewStats] = useState<ReviewStats | null>(null);
-  const [recentReviews, setRecentReviews] = useState<Review[]>([]);
-  const [reviewRating, setReviewRating] = useState(0);
-  const [reviewComment, setReviewComment] = useState('');
-  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
-  const [feedbackModal, setFeedbackModal] = useState<{ isOpen: boolean; title: string; message: string; type: 'success' | 'error' | 'info' }>({
-    isOpen: false, title: '', message: '', type: 'success'
+  // Hero image management
+  const [heroImages, setHeroImages] = useState<string[]>(() => {
+    const stored = localStorage.getItem('heroImages');
+    return stored ? JSON.parse(stored) : [];
   });
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showImageManager, setShowImageManager] = useState(false);
+  
+  // Review stats
+  const [reviewStats, setReviewStats] = useState<ReviewStats | null>(null);
   
   const datePickerRef = useRef<HTMLDivElement>(null);
   const guestRef = useRef<HTMLDivElement>(null);
 
-  // Redirect staff roles to dashboard (only if not already on root path)
+  // Redirect staff roles to dashboard
   useEffect(() => {
     if (isAuthenticated && (isAdmin || isManager || isReceptionist || isRoomAttendant)) {
-      const currentPath = window.location.pathname;
-      if (currentPath === '/') {
-        if (isAdmin) {
-          navigate('/admin', { replace: true });
-        } else {
-          navigate('/dashboard', { replace: true });
-        }
+      if (isAdmin) {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
       }
     }
   }, [isAuthenticated, isAdmin, isManager, isReceptionist, isRoomAttendant, navigate]);
 
-  // Load review stats and recent reviews
-  const loadReviewsData = async () => {
-    try {
-      const stats = await reviewsApi.getStats();
-      setReviewStats(stats);
-      
-      // Fetch recent approved reviews
-      const reviews = await reviewsApi.getAll(true);
-      // Sort by date desc and take top 3
-      const sortedReviews = reviews.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 3);
-      setRecentReviews(sortedReviews);
-    } catch (error) {
-      console.error('Failed to load reviews data:', error);
-      setReviewStats({
-        averageRating: 4.7,
-        totalReviews: 2859,
-        ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
-      });
-    }
-  };
-
+  // Load review stats
   useEffect(() => {
-    loadReviewsData();
+    const loadReviewStats = async () => {
+      try {
+        const stats = await reviewsApi.getStats();
+        setReviewStats(stats);
+      } catch (error) {
+        console.error('Failed to load review stats:', error);
+        // Set default values if API fails
+        setReviewStats({
+          averageRating: 4.7,
+          totalReviews: 2859,
+          ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+        });
+      }
+    };
+    loadReviewStats();
   }, []);
-
-  const handleSubmitReview = async () => {
-    if (!isAuthenticated) {
-      setShowLoginPrompt(true);
-      return;
-    }
-
-    if (reviewRating === 0) {
-      setFeedbackModal({ isOpen: true, title: 'Rating Required', message: 'Please select a star rating.', type: 'error' });
-      return;
-    }
-
-    try {
-      await reviewsApi.create({
-        rating: reviewRating,
-        comment: reviewComment
-      });
-      setFeedbackModal({ isOpen: true, title: 'Thank You!', message: 'Your review has been submitted successfully.', type: 'success' });
-      setReviewRating(0);
-      setReviewComment('');
-      // Refresh reviews list to show the new review immediately
-      loadReviewsData();
-    } catch (error) {
-      console.error('Failed to submit review:', error);
-      setFeedbackModal({ isOpen: true, title: 'Error', message: 'Failed to submit review. Please try again later.', type: 'error' });
-    }
-  };
-
-  const handleInteraction = () => {
-    if (!isAuthenticated) {
-      setShowLoginPrompt(true);
-    }
-  };
 
   // Close pickers when clicking outside
   useEffect(() => {
@@ -172,41 +126,185 @@ const Home: React.FC = () => {
   const totalAdults = rooms.reduce((sum, room) => sum + room.adults, 0);
   const totalChildren = rooms.reduce((sum, room) => sum + room.children, 0);
 
+  // Hero image management functions
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const newImages = [...heroImages, reader.result as string];
+        setHeroImages(newImages);
+        localStorage.setItem('heroImages', JSON.stringify(newImages));
+        setCurrentImageIndex(newImages.length - 1);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleImageRemove = (index: number) => {
+    const newImages = heroImages.filter((_, i) => i !== index);
+    setHeroImages(newImages);
+    localStorage.setItem('heroImages', JSON.stringify(newImages));
+    if (currentImageIndex >= newImages.length) {
+      setCurrentImageIndex(Math.max(0, newImages.length - 1));
+    }
+  };
+
+  const swapImageLeft = () => {
+    if (currentImageIndex > 0) {
+      const newImages = [...heroImages];
+      [newImages[currentImageIndex - 1], newImages[currentImageIndex]] = 
+        [newImages[currentImageIndex], newImages[currentImageIndex - 1]];
+      setHeroImages(newImages);
+      localStorage.setItem('heroImages', JSON.stringify(newImages));
+      setCurrentImageIndex(currentImageIndex - 1);
+    }
+  };
+
+  const swapImageRight = () => {
+    if (currentImageIndex < heroImages.length - 1) {
+      const newImages = [...heroImages];
+      [newImages[currentImageIndex], newImages[currentImageIndex + 1]] = 
+        [newImages[currentImageIndex + 1], newImages[currentImageIndex]];
+      setHeroImages(newImages);
+      localStorage.setItem('heroImages', JSON.stringify(newImages));
+      setCurrentImageIndex(currentImageIndex + 1);
+    }
+  };
+
+  const currentHeroImage = heroImages[currentImageIndex] || null;
+
+  // Don't render home page for staff roles
   if (isAuthenticated && (isAdmin || isManager || isReceptionist || isRoomAttendant)) {
     return null;
   }
 
-  // Use images from settings or fallback to default gradient/placeholder
-  const bannerImages = settings?.homeBannerImages && settings.homeBannerImages.length > 0 
-    ? settings.homeBannerImages 
-    : [];
 
   return (
     <div className="home-container">
-      {/* Hero Section with Image Gallery */}
+      {/* Hero Section with Hotel Image */}
       <motion.section
         className="hero-image-section"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1 }}
-        style={{ height: '80vh', position: 'relative', padding: 0 }}
       >
-        {bannerImages.length > 0 ? (
-          <ImageGallery 
-            images={bannerImages} 
-            height="100%" 
-            showThumbnails={false}
-            allowFullscreen={false}
-            className="home-hero-gallery"
-            autoPlay={true}
-            interval={3000}
-          />
+        {currentHeroImage ? (
+          <div className="hero-image-container">
+            <img 
+              src={currentHeroImage} 
+              alt="Hotel Hero" 
+              className="hero-image"
+            />
+            {/* Left/Right Navigation Arrows */}
+            {heroImages.length > 1 && (
+              <>
+                <button 
+                  className="hero-nav-arrow hero-nav-arrow-left"
+                  onClick={() => {
+                    const prevIndex = currentImageIndex === 0 ? heroImages.length - 1 : currentImageIndex - 1;
+                    setCurrentImageIndex(prevIndex);
+                  }}
+                  title={t('home.previousImage')}
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
+                <button 
+                  className="hero-nav-arrow hero-nav-arrow-right"
+                  onClick={() => {
+                    const nextIndex = currentImageIndex === heroImages.length - 1 ? 0 : currentImageIndex + 1;
+                    setCurrentImageIndex(nextIndex);
+                  }}
+                  title={t('home.nextImage')}
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
+              </>
+            )}
+            {(isAdmin || isManager) && (
+              <div className="hero-image-controls">
+                <button 
+                  className="hero-control-btn"
+                  onClick={() => setShowImageManager(true)}
+                  title={t('home.manageImages')}
+                >
+                  🖼️
+                </button>
+              </div>
+            )}
+          </div>
         ) : (
           <div className="hero-image-placeholder">
             <div className="hotel-image-gradient"></div>
-            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', color: 'white', textAlign: 'center' }}>
-              <h1>{settings?.hotelName || 'Welcome to Luxury'}</h1>
-              <p>{settings?.welcomeDescription}</p>
+            {(isAdmin || isManager) && (
+              <div className="hero-image-upload-prompt">
+                <button 
+                  className="hero-upload-btn"
+                  onClick={() => setShowImageManager(true)}
+                >
+                  {t('home.uploadHeroImage')}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Image Manager Modal */}
+        {showImageManager && (isAdmin || isManager) && (
+          <div className="image-manager-modal" onClick={() => setShowImageManager(false)}>
+            <div className="image-manager-content" onClick={(e) => e.stopPropagation()}>
+              <div className="image-manager-header">
+                <h3>{t('home.manageHeroImages')}</h3>
+                <button className="close-btn" onClick={() => setShowImageManager(false)}>×</button>
+              </div>
+              <div className="image-manager-body">
+                <div className="image-upload-section">
+                  <label className="upload-label">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      style={{ display: 'none' }}
+                    />
+                    <span className="upload-button">{t('home.uploadImage')}</span>
+                  </label>
+                </div>
+                <div className="image-list">
+                  {heroImages.map((img, index) => (
+                    <div key={index} className={`image-item ${index === currentImageIndex ? 'active' : ''}`}>
+                      <img src={img} alt={`Hero ${index + 1}`} />
+                      <div className="image-actions">
+                        {index > 0 && (
+                          <button onClick={() => {
+                            const newImages = [...heroImages];
+                            [newImages[index - 1], newImages[index]] = [newImages[index], newImages[index - 1]];
+                            setHeroImages(newImages);
+                            localStorage.setItem('heroImages', JSON.stringify(newImages));
+                            if (currentImageIndex === index) setCurrentImageIndex(index - 1);
+                            else if (currentImageIndex === index - 1) setCurrentImageIndex(index);
+                          }}>←</button>
+                        )}
+                        <button onClick={() => setCurrentImageIndex(index)}>{t('home.setAsCurrent')}</button>
+                        {index < heroImages.length - 1 && (
+                          <button onClick={() => {
+                            const newImages = [...heroImages];
+                            [newImages[index], newImages[index + 1]] = [newImages[index + 1], newImages[index]];
+                            setHeroImages(newImages);
+                            localStorage.setItem('heroImages', JSON.stringify(newImages));
+                            if (currentImageIndex === index) setCurrentImageIndex(index + 1);
+                            else if (currentImageIndex === index + 1) setCurrentImageIndex(index);
+                          }}>→</button>
+                        )}
+                        <button onClick={() => handleImageRemove(index)} className="delete-btn">✕</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -256,6 +354,39 @@ const Home: React.FC = () => {
                       selectsStart
                       startDate={checkInDate}
                       endDate={checkOutDate}
+                      renderCustomHeader={({
+                        date,
+                        decreaseMonth,
+                        increaseMonth,
+                        prevMonthButtonDisabled,
+                        nextMonthButtonDisabled,
+                      }) => (
+                        <div className="calendar-header">
+                          <button
+                            type="button"
+                            onClick={decreaseMonth}
+                            disabled={prevMonthButtonDisabled}
+                            className="calendar-nav-btn calendar-nav-btn-prev"
+                            aria-label="Previous Month"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </button>
+                          <span className="calendar-month-label">{format(date, 'MMM yyyy')}</span>
+                          <button
+                            type="button"
+                            onClick={increaseMonth}
+                            disabled={nextMonthButtonDisabled}
+                            className="calendar-nav-btn calendar-nav-btn-next"
+                            aria-label="Next Month"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </button>
+                        </div>
+                      )}
                     />
                   </div>
                   <div className="date-range-calendar-section">
@@ -263,6 +394,7 @@ const Home: React.FC = () => {
                       selected={checkOutDate}
                       onChange={(date: Date) => {
                         setCheckOutDate(date);
+                        // Close the picker when end date is selected
                         if (date && checkInDate) {
                           setTimeout(() => {
                             setShowDatePicker(false);
@@ -275,14 +407,45 @@ const Home: React.FC = () => {
                       selectsEnd
                       startDate={checkInDate}
                       endDate={checkOutDate}
+                      renderCustomHeader={({
+                        date,
+                        decreaseMonth,
+                        increaseMonth,
+                        prevMonthButtonDisabled,
+                        nextMonthButtonDisabled,
+                      }) => (
+                        <div className="calendar-header">
+                          <button
+                            type="button"
+                            onClick={decreaseMonth}
+                            disabled={prevMonthButtonDisabled}
+                            className="calendar-nav-btn calendar-nav-btn-prev"
+                            aria-label="Previous Month"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </button>
+                          <span className="calendar-month-label">{format(date, 'MMM yyyy')}</span>
+                          <button
+                            type="button"
+                            onClick={increaseMonth}
+                            disabled={nextMonthButtonDisabled}
+                            className="calendar-nav-btn calendar-nav-btn-next"
+                            aria-label="Next Month"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </button>
+                        </div>
+                      )}
                     />
                   </div>
                 </div>
               </div>
             )}
           </div>
-        )}
-      </motion.section>
 
           {/* Guests */}
           <div className="booking-field" ref={guestRef}>
@@ -390,22 +553,9 @@ const Home: React.FC = () => {
         </div>
       </motion.div>
 
-      {/* Special Promotion Section (Dynamic) - REMOVED as per request */}
-      {/* 
-      {(settings?.promotionTitle || settings?.promotionImageUrl) && (
-        <motion.section
-          className="offers-section"
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.5, duration: 0.6 }}
-          style={{ background: '#fff', padding: '4rem 0' }}
-        >
-          ...
-        </motion.section>
-      )}
-      */}
 
-      {/* Offers Section (Dynamic) */}
+
+      {/* Offers Section */}
       <motion.section
         className="offers-section"
         initial={{ opacity: 0, y: 50 }}
@@ -422,203 +572,70 @@ const Home: React.FC = () => {
             {t('offers.title')}
           </motion.h2>
           <div className="offers-grid">
-            {(settings?.featuredOffers && settings.featuredOffers.length > 0 ? settings.featuredOffers : [
-              {
-                title: t('offers.bedBreakfast'),
-                description: t('offers.bedBreakfastDesc'),
-                price: '1778',
-                priceLabel: t('offers.averagePerNight'),
-                tags: [t('offers.stay'), t('offers.breakfastIncluded')],
-                imageClass: 'offer-image-1'
-              },
-              {
-                title: t('offers.memberSaver'),
-                description: t('offers.memberSaverDesc'),
-                price: '1650',
-                priceLabel: t('offers.averagePerNight'),
-                tags: [t('offers.stay'), t('offers.earlyBirdTag')],
-                badge: t('offers.memberExclusive'),
-                imageClass: 'offer-image-2'
-              },
-              {
-                title: t('offers.earlyBird'),
-                description: t('offers.earlyBirdDesc'),
-                price: '1529',
-                priceLabel: t('offers.averagePerNight'),
-                tags: [t('offers.stay'), t('offers.freeParking')],
-                imageClass: 'offer-image-3'
-              }
-            ]).map((offer: any, index: number) => (
-              <motion.div key={index} className="offer-card" whileHover={{ scale: 1.03, y: -5 }}>
-                <div 
-                  className={`offer-image ${offer.imageClass || ''}`}
-                  style={offer.imageUrl ? { backgroundImage: `url(${offer.imageUrl})` } : {}}
-                >
-                  {offer.badge && <span className="offer-badge">{offer.badge}</span>}
+            <motion.div
+              className="offer-card"
+              whileHover={{ scale: 1.03, y: -5 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <div className="offer-image offer-image-1"></div>
+              <div className="offer-content">
+                <div className="offer-tags">
+                  <span className="offer-tag">{t('offers.stay')}</span>
+                  <span className="offer-tag">{t('offers.breakfastIncluded')}</span>
+                  <span className="offer-tag">{t('offers.freeParking')}</span>
                 </div>
-                <div className="offer-content">
-                  <div className="offer-tags">
-                    {offer.tags.map((tag: string, i: number) => (
-                      <span key={i} className="offer-tag">{tag}</span>
-                    ))}
-                  </div>
-                  <h3 className="offer-title">{offer.title}</h3>
-                  <p className="offer-description">{offer.description}</p>
-                  <div className="offer-price">
-                    {/* Try to parse price as number for formatting, otherwise show as string */}
-                    {!isNaN(parseFloat(offer.price)) ? formatPrice(parseFloat(offer.price)) : offer.price} 
-                    {' '}
-                    {offer.priceLabel}
-                  </div>
-                  <button className="offer-button" onClick={() => setSelectedOffer(offer)}>{t('offers.viewDetails')}</button>
+                <h3 className="offer-title">{t('offers.bedBreakfast')}</h3>
+                <p className="offer-description">{t('offers.bedBreakfastDesc')}</p>
+                <div className="offer-price">{formatPrice(1778)} {t('offers.averagePerNight')}</div>
+                <button className="offer-button">{t('offers.viewDetails')}</button>
+              </div>
+            </motion.div>
+
+            <motion.div
+              className="offer-card"
+              whileHover={{ scale: 1.03, y: -5 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <div className="offer-image offer-image-2">
+                <span className="offer-badge">{t('offers.memberExclusive')}</span>
+              </div>
+              <div className="offer-content">
+                <div className="offer-tags">
+                  <span className="offer-tag">{t('offers.stay')}</span>
+                  <span className="offer-tag">{t('offers.earlyBirdTag')}</span>
+                  <span className="offer-tag">{t('offers.freeParking')}</span>
                 </div>
-              </motion.div>
-            ))}
+                <h3 className="offer-title">{t('offers.memberSaver')}</h3>
+                <p className="offer-description">{t('offers.memberSaverDesc')}</p>
+                <div className="offer-price">{formatPrice(1650)} {t('offers.averagePerNight')}</div>
+                <button className="offer-button">{t('offers.viewDetails')}</button>
+              </div>
+            </motion.div>
+
+            <motion.div
+              className="offer-card"
+              whileHover={{ scale: 1.03, y: -5 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <div className="offer-image offer-image-3"></div>
+              <div className="offer-content">
+                <div className="offer-tags">
+                  <span className="offer-tag">{t('offers.stay')}</span>
+                  <span className="offer-tag">{t('offers.earlyBirdTag')}</span>
+                  <span className="offer-tag">{t('offers.freeParking')}</span>
+                </div>
+                <h3 className="offer-title">{t('offers.earlyBird')}</h3>
+                <p className="offer-description">{t('offers.earlyBirdDesc')}</p>
+                <div className="offer-price">{formatPrice(1529)} {t('offers.averagePerNight')}</div>
+                <button className="offer-button">{t('offers.viewDetails')}</button>
+              </div>
+            </motion.div>
           </div>
           <div className="view-all-link">
             <Link to="/offers">{t('offers.viewAll')}</Link>
           </div>
         </div>
       </motion.section>
-
-      {/* Offer Details Modal */}
-      <AnimatePresence>
-        {selectedOffer && (
-          <motion.div 
-            className="modal-backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setSelectedOffer(null)}
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              background: 'rgba(0, 0, 0, 0.5)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 1000,
-              backdropFilter: 'blur(5px)'
-            }}
-          >
-            <motion.div
-              className="modal-content"
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              onClick={e => e.stopPropagation()}
-              style={{
-                background: 'white',
-                borderRadius: '20px',
-                width: '90%',
-                maxWidth: '800px',
-                maxHeight: '90vh',
-                overflow: 'auto',
-                padding: '0',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-                position: 'relative'
-              }}
-            >
-              <button 
-                onClick={() => setSelectedOffer(null)}
-                style={{
-                  position: 'absolute',
-                  top: '1rem',
-                  right: '1rem',
-                  background: 'rgba(255, 255, 255, 0.8)',
-                  border: 'none',
-                  borderRadius: '50%',
-                  width: '36px',
-                  height: '36px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  zIndex: 10,
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                }}
-              >
-                <FaTimes />
-              </button>
-
-              <div className="row g-0">
-                <div className="col-md-6">
-                  <div style={{ height: '100%', minHeight: '300px', background: '#f8f9fa' }}>
-                     {selectedOffer.imageUrl ? (
-                       <img 
-                         src={selectedOffer.imageUrl} 
-                         alt={selectedOffer.title} 
-                         style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                       />
-                     ) : (
-                       <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #f0e6d2 0%, #d4c5a9 100%)' }}>
-                         <span style={{ fontSize: '3rem', opacity: 0.3 }}>🏨</span>
-                       </div>
-                     )}
-                  </div>
-                </div>
-                <div className="col-md-6 p-4 d-flex flex-column">
-                  <div className="mb-auto">
-                    {selectedOffer.badge && (
-                      <span className="badge mb-3" style={{ background: '#C9A961', color: 'white', fontWeight: 500, letterSpacing: '1px', padding: '0.5em 1em' }}>
-                        {selectedOffer.badge}
-                      </span>
-                    )}
-                    <h2 style={{ fontFamily: 'Playfair Display, serif', color: '#2C2C2C', marginBottom: '1rem' }}>
-                      {selectedOffer.title}
-                    </h2>
-                    
-                    <div className="d-flex flex-wrap gap-2 mb-4">
-                      {selectedOffer.tags && selectedOffer.tags.map((tag: string, i: number) => (
-                        <span key={i} style={{ fontSize: '0.85rem', color: '#666', background: '#f0f0f0', padding: '0.25rem 0.75rem', borderRadius: '20px' }}>
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-
-                    <p style={{ color: '#555', lineHeight: '1.7', fontSize: '1.05rem', marginBottom: '1.5rem' }}>
-                      {selectedOffer.description}
-                    </p>
-
-                    <div className="d-flex align-items-baseline gap-2 mb-4 p-3 bg-light rounded-3">
-                      <span style={{ fontSize: '1.5rem', fontWeight: 700, color: '#C9A961' }}>
-                        {!isNaN(parseFloat(selectedOffer.price)) ? formatPrice(parseFloat(selectedOffer.price)) : selectedOffer.price}
-                      </span>
-                      <span className="text-muted">{selectedOffer.priceLabel}</span>
-                    </div>
-
-                    <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 1.5rem 0' }}>
-                      <li className="d-flex align-items-center gap-2 mb-2 text-muted">
-                         <FaCheck style={{ color: '#28a745', fontSize: '0.8rem' }} /> Best Rate Guarantee
-                      </li>
-                      <li className="d-flex align-items-center gap-2 mb-2 text-muted">
-                         <FaCheck style={{ color: '#28a745', fontSize: '0.8rem' }} /> No Booking Fees
-                      </li>
-                      <li className="d-flex align-items-center gap-2 text-muted">
-                         <FaCheck style={{ color: '#28a745', fontSize: '0.8rem' }} /> Instant Confirmation
-                      </li>
-                    </ul>
-                  </div>
-
-                  <button 
-                    className="offer-button w-100" 
-                    style={{ marginTop: 'auto' }}
-                    onClick={() => {
-                        navigate('/rooms');
-                        setSelectedOffer(null);
-                    }}
-                  >
-                    {t('booking.bookNow') || 'Book Now'}
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* About Section */}
       <motion.section
@@ -630,25 +647,50 @@ const Home: React.FC = () => {
         <div className="section-container">
           <div className="about-layout">
             <div className="about-content">
-              <motion.h2 className="section-title" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-                {settings?.aboutTitle || t('about.title')}
+              <motion.h2
+                className="section-title"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 2.3 }}
+              >
+                {t('about.title')}
               </motion.h2>
-              <motion.p className="about-description" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-                {settings?.aboutDescription || t('about.description')}
+              <motion.p
+                className="about-description"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 2.4 }}
+              >
+                {t('about.description')}
               </motion.p>
-              <motion.ul className="about-features" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+              <motion.ul
+                className="about-features"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 2.5 }}
+              >
                 <li>{t('about.rooms')}</li>
                 <li>{t('about.restaurants')}</li>
                 <li>{t('about.pool')}</li>
               </motion.ul>
-              <motion.button className="about-button" whileHover={{ scale: 1.05 }}>{t('about.learnMore')}</motion.button>
+              <motion.button
+                className="about-button"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 2.6 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {t('about.learnMore')}
+              </motion.button>
             </div>
-            <motion.div className="about-image" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-              {settings?.aboutImageUrl ? (
-                <img src={settings.aboutImageUrl} alt={settings.aboutTitle || "About Hotel"} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '20px', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }} />
-              ) : (
-                <div className="hotel-lobby-image"></div>
-              )}
+            <motion.div
+              className="about-image"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 2.3 }}
+            >
+              <div className="hotel-lobby-image"></div>
             </motion.div>
           </div>
         </div>
@@ -662,8 +704,22 @@ const Home: React.FC = () => {
         transition={{ delay: 2.4, duration: 0.6 }}
       >
         <div className="section-container">
-          <motion.h2 className="section-title" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>{t('roomTypes.title')}</motion.h2>
-          <motion.p className="room-types-description" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>{t('roomTypes.description')}</motion.p>
+          <motion.h2
+            className="section-title"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 2.6 }}
+          >
+            {t('roomTypes.title')}
+          </motion.h2>
+          <motion.p
+            className="room-types-description"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 2.7 }}
+          >
+            {t('roomTypes.description')}
+          </motion.p>
           <div className="room-types-grid">
             {[
               { type: 'Single', icon: '🛏️', desc: t('roomTypes.single') },
@@ -674,6 +730,9 @@ const Home: React.FC = () => {
               <motion.div
                 key={roomType.type}
                 className="room-type-card"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 2.8 + index * 0.1 }}
                 whileHover={{ scale: 1.05, y: -5 }}
               >
                 <div className="room-type-icon">{roomType.icon}</div>
@@ -694,222 +753,49 @@ const Home: React.FC = () => {
       >
         <div className="section-container">
           <div className="reviews-layout">
-            <motion.div className="reviews-rating-box" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}>
+            <motion.div
+              className="reviews-rating-box"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 3.2 }}
+            >
               <div className="rating-score">{reviewStats ? `${reviewStats.averageRating}/5` : '4.7/5'}</div>
               <div className="rating-label">{t('reviews.rating')}</div>
               <div className="rating-count">{reviewStats ? reviewStats.totalReviews : 2859} {t('reviews.reviews')}</div>
             </motion.div>
             <div className="reviews-content">
-              <motion.h2 className="section-title" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>{t('reviews.title')}</motion.h2>
-              
-              {/* Recent Reviews List */}
-              {recentReviews.length > 0 && (
-                <div className="recent-reviews mb-5">
-                  <div className="row g-4">
-                    {recentReviews.map((review) => (
-                      <div className="col-md-4" key={review.id}>
-                        <div className="review-card p-4 h-100 bg-white rounded-3 shadow-sm border border-light">
-                          <div className="d-flex align-items-center gap-2 mb-3">
-                            <div className="review-avatar rounded-circle bg-light d-flex align-items-center justify-content-center text-muted fw-bold" style={{ width: '40px', height: '40px' }}>
-                              {review.userName.charAt(0).toUpperCase()}
-                            </div>
-                            <div>
-                              <h6 className="mb-0 fw-bold" style={{ fontSize: '0.95rem' }}>{review.userName}</h6>
-                              <small className="text-muted" style={{ fontSize: '0.75rem' }}>{new Date(review.createdAt).toLocaleDateString()}</small>
-                            </div>
-                          </div>
-                          <div className="mb-3 text-warning" style={{ fontSize: '0.9rem' }}>
-                            {[...Array(5)].map((_, i) => (
-                              <span key={i} style={{ opacity: i < review.rating ? 1 : 0.3 }}>⭐</span>
-                            ))}
-                          </div>
-                          <p className="mb-0 text-secondary small" style={{ lineHeight: '1.6' }}>"{review.comment}"</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <motion.div className="review-form" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-                <h3>{t('reviews.writeReview')}</h3>
-                <div className="review-rating-input">
-                  <label>{t('reviews.yourRating')}</label>
-                  <div className="star-rating" onClick={handleInteraction}>
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <span 
-                        key={star} 
-                        className="star" 
-                        style={{ 
-                          cursor: 'pointer', 
-                          opacity: star <= reviewRating ? 1 : 0.3,
-                          transform: star <= reviewRating ? 'scale(1.1)' : 'scale(1)'
-                        }}
-                        onClick={() => isAuthenticated && setReviewRating(star)}
-                      >
-                        ⭐
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div className="review-comment-input">
-                  <label>{t('reviews.yourComment')}</label>
-                  <textarea 
-                    className="review-textarea" 
-                    rows={4}
-                    value={reviewComment}
-                    onChange={(e) => setReviewComment(e.target.value)}
-                    onClick={handleInteraction}
-                    readOnly={!isAuthenticated}
-                    placeholder={!isAuthenticated ? "Please login to write a review..." : "Share your experience..."}
-                  ></textarea>
-                </div>
-                <button 
-                  className="review-submit-button"
-                  onClick={handleSubmitReview}
+              <motion.h2
+                className="section-title"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 3.3 }}
+              >
+                {t('reviews.title')}
+              </motion.h2>
+              {isAuthenticated && (
+                <motion.div
+                  className="review-form"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 3.4 }}
                 >
-                  {isAuthenticated ? t('reviews.submit') : "Login to Submit"}
-                </button>
-              </motion.div>
+                  <h3>{t('reviews.writeReview')}</h3>
+                  <div className="review-rating-input">
+                    <label>{t('reviews.yourRating')}</label>
+                    <div className="star-rating">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <span key={star} className="star">⭐</span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="review-comment-input">
+                    <label>{t('reviews.yourComment')}</label>
+                    <textarea className="review-textarea" rows={4}></textarea>
+                  </div>
+                  <button className="review-submit-button">{t('reviews.submit')}</button>
+                </motion.div>
+              )}
             </div>
-          </div>
-        </div>
-      </motion.section>
-
-      {/* Feedback Modal */}
-      <FeedbackModal
-        isOpen={feedbackModal.isOpen}
-        onClose={() => setFeedbackModal(prev => ({ ...prev, isOpen: false }))}
-        title={feedbackModal.title}
-        message={feedbackModal.message}
-        type={feedbackModal.type}
-      />
-
-      {/* Login Prompt Modal */}
-      <FeedbackModal
-        isOpen={showLoginPrompt}
-        onClose={() => setShowLoginPrompt(false)}
-        title="Login Required"
-        message="You need to be logged in to write a review. Would you like to login or register now?"
-        type="info"
-        confirmText="Login / Register"
-        cancelText="Cancel"
-        onConfirm={() => navigate('/login')}
-      />
-
-      {/* Contact & Policies Section */}
-      <motion.section
-        className="contact-section"
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 3.3, duration: 0.6 }}
-        style={{ background: '#f8f9fa', padding: '5rem 0', borderTop: '1px solid #eee' }}
-      >
-        <div className="container">
-          <div className="row g-5">
-            {/* Contact Details */}
-            <div className="col-md-4">
-              <h3 style={{ fontFamily: 'Playfair Display, serif', marginBottom: '1.5rem', color: '#2C2C2C' }}>Contact Us</h3>
-              <ul style={{ listStyle: 'none', padding: 0 }}>
-                <li className="d-flex align-items-start gap-3 mb-3">
-                  <div style={{ width: '24px', height: '24px', background: '#C9A961', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', flexShrink: 0 }}>
-                    <FaMapMarkerAlt size={12} />
-                  </div>
-                  <div>
-                    <h6 className="mb-1 fw-bold" style={{ fontSize: '0.9rem' }}>Address</h6>
-                    <p className="text-muted mb-0 small">{settings?.address || '123 Luxury Avenue'}</p>
-                  </div>
-                </li>
-                <li className="d-flex align-items-start gap-3 mb-3">
-                  <div style={{ width: '24px', height: '24px', background: '#C9A961', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', flexShrink: 0 }}>
-                    <FaPhone size={12} />
-                  </div>
-                  <div>
-                    <h6 className="mb-1 fw-bold" style={{ fontSize: '0.9rem' }}>Phone</h6>
-                    <p className="text-muted mb-0 small">{settings?.phone || '+1 (555) 123-4567'}</p>
-                  </div>
-                </li>
-                <li className="d-flex align-items-start gap-3 mb-3">
-                  <div style={{ width: '24px', height: '24px', background: '#C9A961', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', flexShrink: 0 }}>
-                    <FaEnvelope size={12} />
-                  </div>
-                  <div>
-                    <h6 className="mb-1 fw-bold" style={{ fontSize: '0.9rem' }}>Email</h6>
-                    <p className="text-muted mb-0 small">{settings?.email || 'concierge@hmshotel.com'}</p>
-                  </div>
-                </li>
-              </ul>
-              
-              {/* Social Media */}
-              <div className="mt-4">
-                <h6 className="mb-3 fw-bold" style={{ fontSize: '0.9rem' }}>Follow Us</h6>
-                <div className="d-flex gap-3">
-                  {settings?.facebookUrl && (
-                    <a href={settings.facebookUrl} target="_blank" rel="noopener noreferrer" className="social-icon-link" style={{ width: '36px', height: '36px', background: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b5998', border: '1px solid #eee', transition: 'all 0.2s' }}>
-                      <FaFacebook />
-                    </a>
-                  )}
-                  {settings?.instagramUrl && (
-                    <a href={settings.instagramUrl} target="_blank" rel="noopener noreferrer" className="social-icon-link" style={{ width: '36px', height: '36px', background: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#e1306c', border: '1px solid #eee', transition: 'all 0.2s' }}>
-                      <FaInstagram />
-                    </a>
-                  )}
-                  {settings?.twitterUrl && (
-                    <a href={settings.twitterUrl} target="_blank" rel="noopener noreferrer" className="social-icon-link" style={{ width: '36px', height: '36px', background: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1da1f2', border: '1px solid #eee', transition: 'all 0.2s' }}>
-                      <FaTwitter />
-                    </a>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Policies */}
-            <div className="col-md-4">
-              <h3 style={{ fontFamily: 'Playfair Display, serif', marginBottom: '1.5rem', color: '#2C2C2C' }}>Hotel Policies</h3>
-              <ul style={{ listStyle: 'none', padding: 0 }}>
-                <li className="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom" style={{ borderColor: '#eee' }}>
-                  <FaClock style={{ color: '#C9A961' }} />
-                  <div className="flex-grow-1">
-                    <span className="d-block fw-bold text-dark">Check-in Time</span>
-                    <small className="text-muted">From {settings?.checkInTime || '15:00'}</small>
-                  </div>
-                </li>
-                <li className="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom" style={{ borderColor: '#eee' }}>
-                  <FaClock style={{ color: '#C9A961' }} />
-                  <div className="flex-grow-1">
-                    <span className="d-block fw-bold text-dark">Check-out Time</span>
-                    <small className="text-muted">Until {settings?.checkOutTime || '11:00'}</small>
-                  </div>
-                </li>
-                <li className="d-flex align-items-center gap-3 mb-3">
-                  <FaCheck style={{ color: '#C9A961' }} />
-                  <div className="flex-grow-1">
-                    <span className="d-block fw-bold text-dark">Cancellation</span>
-                    <small className="text-muted">Free cancellation up to 24 hours before arrival.</small>
-                  </div>
-                </li>
-              </ul>
-            </div>
-
-            {/* Newsletter / Brand */}
-            <div className="col-md-4">
-              <div className="p-4 rounded-3 text-center" style={{ background: '#fff', border: '1px solid rgba(201, 169, 97, 0.2)', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
-                <h2 style={{ fontFamily: 'Playfair Display, serif', color: '#C9A961', marginBottom: '0.5rem' }}>HMS</h2>
-                <p className="text-uppercase small fw-bold text-muted mb-4">Luxury Hotel & Resort</p>
-                <p className="small text-muted mb-4">
-                  {settings?.welcomeDescription || 'Experience the epitome of luxury with our world-class amenities and exceptional service.'}
-                </p>
-                <div className="d-grid">
-                  <button className="btn btn-primary" style={{ background: 'linear-gradient(135deg, #C9A961 0%, #8B6F47 100%)', border: 'none' }} onClick={() => navigate('/register')}>
-                    Become a Member
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="text-center mt-5 pt-4 border-top" style={{ borderColor: '#eee', color: '#999', fontSize: '0.85rem' }}>
-            &copy; {new Date().getFullYear()} {settings?.hotelName || 'HMS Luxury Hotel'}. All rights reserved.
           </div>
         </div>
       </motion.section>

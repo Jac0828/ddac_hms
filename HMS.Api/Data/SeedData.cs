@@ -14,18 +14,6 @@ public static class SeedData
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var loggerFactory = serviceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILoggerFactory>();
-        var logger = loggerFactory.CreateLogger("SeedData");
-
-        // Quick check: If admin user already exists, skip entire seeding process
-        var adminExists = await userManager.FindByEmailAsync("admin@hms.com") != null;
-        if (adminExists)
-        {
-            logger.LogInformation("Database already seeded (admin user exists). Skipping seeding.");
-            return;
-        }
-
-        logger.LogInformation("Starting database seeding...");
 
         // Seed Roles
         string[] roles = { "Customer", "Receptionist", "Housekeeping", "Manager", "Admin" };
@@ -35,7 +23,6 @@ public static class SeedData
             if (!await roleManager.RoleExistsAsync(role))
             {
                 await roleManager.CreateAsync(new IdentityRole(role));
-                logger.LogInformation("Created role: {Role}", role);
             }
         }
 
@@ -61,6 +48,8 @@ public static class SeedData
             }
             else
             {
+                var loggerFactory = serviceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILoggerFactory>();
+                var logger = loggerFactory.CreateLogger("SeedData");
                 logger.LogWarning("Failed to create admin user: {Errors}", string.Join(", ", result.Errors.Select(e => e.Description)));
             }
         }
@@ -255,14 +244,49 @@ public static class SeedData
         }
 
         // Seed Rooms (30 luxury rooms)
-        // IMPORTANT: Never delete existing data - preserve all user operations!
-        // Only seed rooms if none exist - this ensures data persistence
+        // Only clear existing rooms in development environment to prevent data loss in production
+        var environment = serviceProvider.GetRequiredService<Microsoft.Extensions.Hosting.IHostEnvironment>();
         var existingRooms = await context.Rooms.ToListAsync();
-        if (existingRooms.Any())
+        if (existingRooms.Any() && environment.IsDevelopment())
         {
-            // Rooms already exist - skip seeding to preserve user data
-            logger.LogInformation("Rooms already exist ({Count} rooms). Skipping room seeding to preserve user data.", existingRooms.Count);
-            // Continue to seed other data (housekeeping tasks, hotel settings) if needed
+            // Delete bookings first (due to foreign key constraint)
+            var bookingsWithRooms = await context.Bookings
+                .Where(b => existingRooms.Select(r => r.Id).Contains(b.RoomId))
+                .ToListAsync();
+
+            if (bookingsWithRooms.Any())
+            {
+                // Delete payments associated with bookings
+                var bookingIds = bookingsWithRooms.Select(b => b.Id).ToList();
+                var payments = await context.Payments
+                    .Where(p => bookingIds.Contains(p.BookingId))
+                    .ToListAsync();
+                context.Payments.RemoveRange(payments);
+
+                // Delete service requests associated with bookings
+                var serviceRequests = await context.ServiceRequests
+                    .Where(sr => bookingIds.Contains(sr.BookingId))
+                    .ToListAsync();
+                context.ServiceRequests.RemoveRange(serviceRequests);
+
+                // Delete bookings
+                context.Bookings.RemoveRange(bookingsWithRooms);
+            }
+            
+            // Delete housekeeping tasks
+            var tasksWithRooms = await context.HousekeepingTasks
+                .Where(t => existingRooms.Select(r => r.Id).Contains(t.RoomId))
+                .ToListAsync();
+            context.HousekeepingTasks.RemoveRange(tasksWithRooms);
+            
+            // Delete rooms
+            context.Rooms.RemoveRange(existingRooms);
+            await context.SaveChangesAsync();
+        }
+        else if (existingRooms.Any() && !environment.IsDevelopment())
+        {
+            // In production, skip seeding rooms if they already exist
+            return;
         }
         
         // Now seed fresh rooms
@@ -280,6 +304,8 @@ public static class SeedData
             if (classicDoubleType == null || deluxeKingType == null || premierSuiteType == null || 
                 executiveSuiteType == null || familyRoomType == null || deluxeTwinType == null)
             {
+                var loggerFactory = serviceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILoggerFactory>();
+                var logger = loggerFactory.CreateLogger("SeedData");
                 logger.LogError("Required RoomTypes not found. Please seed RoomTypes first.");
                 return; // Don't create rooms if RoomTypes don't exist
             }
@@ -417,41 +443,7 @@ public static class SeedData
             {
                 await context.HousekeepingTasks.AddRangeAsync(tasks);
                 await context.SaveChangesAsync();
-                logger.LogInformation("Created {Count} housekeeping tasks", tasks.Count);
             }
         }
-
-            // Seed Hotel Settings if not present
-            if (!await context.HotelSettings.AnyAsync())
-            {
-                var defaultSettings = new HotelSetting
-                {
-                    HotelName = "HMS Luxury Hotel",
-                    WelcomeDescription = "Experience the epitome of luxury and comfort in the heart of the city.",
-                    Email = "concierge@hmshotel.com",
-                    Phone = "+1 (555) 123-4567",
-                    Address = "123 Luxury Avenue, Beverly Hills, CA 90210",
-                    CheckInTime = "15:00",
-                    CheckOutTime = "11:00",
-                    TaxRate = 10.0m,
-                    Currency = "USD",
-                    MemberDiscount = 5.0m,
-                    SilverDiscount = 10.0m,
-                    GoldDiscount = 15.0m,
-                    PlatinumDiscount = 20.0m,
-                    MembershipBenefitsJson = System.Text.Json.JsonSerializer.Serialize(new
-                    {
-                        member = new[] { "Standard Member Rates", "Free WiFi" },
-                        silver = new[] { "5% Discount on bookings", "Late Check-out" },
-                        gold = new[] { "10% Discount on bookings", "Room Upgrade (Subject to availability)", "Late Check-out", "Welcome Drink" },
-                        platinum = new[] { "15% Discount on bookings", "Room Upgrade (Subject to availability)", "Late Check-out", "Executive Lounge Access", "Welcome Gift" }
-                    })
-                };
-                context.HotelSettings.Add(defaultSettings);
-                await context.SaveChangesAsync();
-                logger.LogInformation("Seeded default HotelSettings.");
-            }
-
-            logger.LogInformation("Database seeding completed successfully.");
-        }
+    }
 }

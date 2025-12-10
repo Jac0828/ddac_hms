@@ -13,8 +13,6 @@ using Microsoft.EntityFrameworkCore;
 using Google.Apis.Auth; // Kept for potential future use, but not used here now
 using System.Net.Http;
 using System.Net.Http.Json;
-using HMS.Api.Services;
-using HMS.Infrastructure.Services;
 
 namespace HMS.Api.Controllers;
 
@@ -49,66 +47,26 @@ public class AuthController : ControllerBase
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly IConfiguration _configuration;
     private readonly ApplicationDbContext _context;
-    private readonly Services.IEmailSender _emailSender;
-    private readonly IAuditLogService _auditLogService;
 
     public AuthController(
         UserManager<AppUser> userManager,
         SignInManager<AppUser> signInManager,
         RoleManager<IdentityRole> roleManager,
         IConfiguration configuration,
-        ApplicationDbContext context,
-        Services.IEmailSender emailSender,
-        IAuditLogService auditLogService)
+        ApplicationDbContext context)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _roleManager = roleManager;
         _configuration = configuration;
         _context = context;
-        _emailSender = emailSender;
-        _auditLogService = auditLogService;
     }
 
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterModel model)
     {
-        // Log received data for debugging
-        Console.WriteLine($"[Register] Received registration request for: {model.Email}");
-        Console.WriteLine($"[Register] FirstName: {model.FirstName}, LastName: {model.LastName}");
-        Console.WriteLine($"[Register] PhoneNumber: {model.PhoneNumber}, Gender: {model.Gender}, DateOfBirth: {model.DateOfBirth}");
-        
         if (!ModelState.IsValid)
-        {
-            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
-            var errorDetails = ModelState.SelectMany(x => x.Value.Errors.Select(err => $"{x.Key}: {err.ErrorMessage}")).ToList();
-            Console.WriteLine($"[Register] Model validation failed. Errors: {string.Join(", ", errors)}");
-            Console.WriteLine($"[Register] Detailed errors: {string.Join(", ", errorDetails)}");
-            return BadRequest(new { message = "Validation failed", errors = errors, details = errorDetails });
-        }
-
-        // Check if user already exists
-        var existingUser = await _userManager.FindByEmailAsync(model.Email);
-        if (existingUser != null)
-        {
-            Console.WriteLine($"[Register] Email already exists: {model.Email}");
-            return BadRequest(new { 
-                message = "This email address is already registered. Please use a different email or try logging in.",
-                code = "EMAIL_EXISTS"
-            });
-        }
-
-        // Parse DateOfBirth from string if provided
-        DateTime? dateOfBirth = null;
-        if (!string.IsNullOrEmpty(model.DateOfBirth))
-        {
-            if (DateTime.TryParse(model.DateOfBirth, out var parsedDate))
-            {
-                // Ensure date is UTC to fix Npgsql issue
-                dateOfBirth = DateTime.SpecifyKind(parsedDate, DateTimeKind.Utc);
-            }
-            // If parsing fails, we'll just leave it as null (optional field)
-        }
+            return BadRequest(ModelState);
 
         var user = new AppUser
         {
@@ -116,59 +74,16 @@ public class AuthController : ControllerBase
             Email = model.Email,
             FirstName = model.FirstName,
             LastName = model.LastName,
-            PhoneNumber = model.PhoneNumber,
-            Gender = model.Gender,
-            DateOfBirth = dateOfBirth,
-            CreatedAt = DateTime.UtcNow,
-            EmailConfirmed = false // New users need to verify email
+            CreatedAt = DateTime.UtcNow
         };
 
         var result = await _userManager.CreateAsync(user, model.Password);
 
         if (!result.Succeeded)
-        {
-            // Convert Identity errors to user-friendly messages
-            var friendlyErrors = new List<string>();
-            foreach (var error in result.Errors)
-            {
-                string friendlyMessage = error.Code switch
-                {
-                    "DuplicateUserName" or "DuplicateEmail" => "This email address is already registered. Please use a different email or try logging in.",
-                    "PasswordRequiresDigit" => "Password must contain at least one digit (0-9).",
-                    "PasswordRequiresLower" => "Password must contain at least one lowercase letter (a-z).",
-                    "PasswordRequiresUpper" => "Password must contain at least one uppercase letter (A-Z).",
-                    "PasswordRequiresNonAlphanumeric" => "Password must contain at least one special character.",
-                    "PasswordTooShort" => "Password must be at least 6 characters long.",
-                    _ => error.Description // Use default description for other errors
-                };
-                friendlyErrors.Add(friendlyMessage);
-            }
-            
-            var errorMessages = result.Errors.Select(e => e.Description).ToList();
-            Console.WriteLine($"[Register] User creation failed. Errors: {string.Join(", ", errorMessages)}");
-            Console.WriteLine($"[Register] Friendly errors: {string.Join(", ", friendlyErrors)}");
-            
-            // Return the first friendly error as the main message, and all errors in the errors array
-            return BadRequest(new { 
-                message = friendlyErrors.FirstOrDefault() ?? "Failed to create user. Please check your input and try again.",
-                errors = friendlyErrors,
-                code = result.Errors.FirstOrDefault()?.Code ?? "UNKNOWN_ERROR"
-            });
-        }
-        
-        Console.WriteLine($"[Register] User created successfully: {user.Id}");
+            return BadRequest(result.Errors);
 
         // Assign Customer role by default
         await _userManager.AddToRoleAsync(user, "Customer");
-
-        try 
-        {
-            await _auditLogService.LogActionAsync(user.Id, "Register", "User", null, "User registered account");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Failed to log audit: {ex.Message}");
-        }
 
         return Ok(new { message = "User registered successfully" });
     }
@@ -189,30 +104,19 @@ public class AuthController : ControllerBase
         var roles = await _userManager.GetRolesAsync(user);
         var token = GenerateJwtToken(user, roles);
 
-        try 
-        {
-            await _auditLogService.LogActionAsync(user.Id, "Login", "User", null, "User logged in");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Failed to log audit: {ex.Message}");
-        }
-
-        bool isCustomer = roles.Contains("Customer");
-
-        return Ok(new
-        {
-            token = token,
-            id = user.Id,
-            email = user.Email,
-            firstName = user.FirstName,
-            lastName = user.LastName,
-            phoneNumber = user.PhoneNumber,
-            roles = roles,
-            points = isCustomer ? user.Points : 0,
-            membershipTier = (isCustomer && user.EmailConfirmed) ? user.MembershipTier : null, // Only verified customers can be members
-            emailConfirmed = user.EmailConfirmed
-        });
+            return Ok(new
+            {
+                token = token,
+                id = user.Id,
+                email = user.Email,
+                firstName = user.FirstName,
+                lastName = user.LastName,
+                phoneNumber = user.PhoneNumber,
+                roles = roles,
+                points = user.Points,
+                membershipTier = user.EmailConfirmed ? user.MembershipTier : null, // Only verified users can be members
+                emailConfirmed = user.EmailConfirmed
+            });
         }
 
     [HttpPost("google-login")]
@@ -259,8 +163,6 @@ public class AuthController : ControllerBase
             var roles = await _userManager.GetRolesAsync(user);
             var token = GenerateJwtToken(user, roles);
 
-            bool isCustomer = roles.Contains("Customer");
-
             return Ok(new
             {
                 token = token,
@@ -270,8 +172,8 @@ public class AuthController : ControllerBase
                 lastName = user.LastName,
                 phoneNumber = user.PhoneNumber,
                 roles = roles,
-                points = isCustomer ? user.Points : 0,
-                membershipTier = (isCustomer && user.EmailConfirmed) ? user.MembershipTier : null, // Only verified customers can be members
+                points = user.Points,
+                membershipTier = user.EmailConfirmed ? user.MembershipTier : null, // Only verified users can be members
                 emailConfirmed = user.EmailConfirmed
             });
         }
@@ -349,50 +251,24 @@ public class AuthController : ControllerBase
     [HttpPut("profile")]
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileModel model)
     {
-        Console.WriteLine($"[UpdateProfile] Received update request");
-        Console.WriteLine($"[UpdateProfile] FirstName: {model.FirstName}, LastName: {model.LastName}");
-        Console.WriteLine($"[UpdateProfile] Email: {model.Email}, PhoneNumber: {model.PhoneNumber}");
-        
         if (!ModelState.IsValid)
-        {
-            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
-            Console.WriteLine($"[UpdateProfile] Model validation failed. Errors: {string.Join(", ", errors)}");
             return BadRequest(ModelState);
-        }
 
         // Get user ID from JWT claims
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
         if (userIdClaim == null || string.IsNullOrEmpty(userIdClaim.Value))
-        {
-            Console.WriteLine("[UpdateProfile] Invalid token - no user ID found");
             return Unauthorized(new { message = "Invalid token" });
-        }
 
         var user = await _userManager.FindByIdAsync(userIdClaim.Value);
         if (user == null)
-        {
-            Console.WriteLine($"[UpdateProfile] User not found: {userIdClaim.Value}");
             return Unauthorized(new { message = "User not found" });
-        }
 
         if (!user.IsActive)
-        {
-            Console.WriteLine($"[UpdateProfile] Account is inactive: {userIdClaim.Value}");
             return Unauthorized(new { message = "Account is inactive" });
-        }
 
-        Console.WriteLine($"[UpdateProfile] Updating user {user.Id}. Old PhoneNumber: {user.PhoneNumber}");
-        
         user.FirstName = model.FirstName;
         user.LastName = model.LastName;
-        user.PhoneNumber = model.PhoneNumber; // Can be null or empty string
-        
-        if (!string.IsNullOrEmpty(model.ProfilePictureUrl))
-        {
-            user.ProfilePictureUrl = model.ProfilePictureUrl;
-        }
-        
-        Console.WriteLine($"[UpdateProfile] New PhoneNumber: {user.PhoneNumber}");
+        user.PhoneNumber = model.PhoneNumber;
         
         // Only update email if it's different and not empty
         if (!string.IsNullOrEmpty(model.Email) && user.Email != model.Email)
@@ -413,18 +289,13 @@ public class AuthController : ControllerBase
         if (!result.Succeeded)
         {
             var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-            Console.WriteLine($"[UpdateProfile] Update failed. Errors: {errors}");
             return BadRequest(new { message = $"Failed to update profile: {errors}" });
         }
 
-        Console.WriteLine($"[UpdateProfile] User updated successfully. PhoneNumber saved as: {user.PhoneNumber ?? "null"}");
-
         var roles = await _userManager.GetRolesAsync(user);
         var token = GenerateJwtToken(user, roles);
-        
-        bool isCustomer = roles.Contains("Customer");
 
-        var response = new { 
+        return Ok(new { 
             message = "Profile updated successfully",
             token = token,
             user = new {
@@ -432,18 +303,13 @@ public class AuthController : ControllerBase
                 email = user.Email,
                 firstName = user.FirstName,
                 lastName = user.LastName,
-                phoneNumber = user.PhoneNumber ?? string.Empty, // Ensure it's not null
-                profilePictureUrl = user.ProfilePictureUrl,
+                phoneNumber = user.PhoneNumber,
                 roles = roles,
-                points = isCustomer ? user.Points : 0,
-                membershipTier = (isCustomer && user.EmailConfirmed) ? user.MembershipTier : null,
+                points = user.Points,
+                membershipTier = user.EmailConfirmed ? user.MembershipTier : null,
                 emailConfirmed = user.EmailConfirmed
             }
-        };
-        
-        Console.WriteLine($"[UpdateProfile] Returning response. PhoneNumber: {response.user.phoneNumber}");
-        
-        return Ok(response);
+        });
     }
 
     [HttpPost("send-verification-email")]
@@ -490,58 +356,11 @@ public class AuthController : ControllerBase
         _context.EmailVerificationCodes.Add(verificationCode);
         await _context.SaveChangesAsync();
         
-        try
-        {
-            Console.WriteLine($"[SendVerificationEmail] Attempting to send email to {user.Email}");
-            
-            // Send email with code using SMTP service
-            await _emailSender.SendEmailAsync(
-                user.Email!, 
-                "Verify your email for HMS", 
-                $"Your verification code is: <b>{code}</b>. It expires in 15 minutes."
-            );
-            
-            Console.WriteLine($"[SendVerificationEmail] Email sent successfully to {user.Email}");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[SendVerificationEmail] Failed to send email: {ex.Message}");
-            if (ex.InnerException != null)
-            {
-                Console.WriteLine($"[SendVerificationEmail] Inner Exception: {ex.InnerException.Message}");
-            }
-            
-            // In development, we can still return the code for testing even if email fails
-            if (_configuration["ASPNETCORE_ENVIRONMENT"] == "Development")
-            {
-                return Ok(new { 
-                    message = "Failed to send email (check backend logs), but here is the code for testing.",
-                    verificationCode = code 
-                });
-            }
-            return StatusCode(500, new { message = "Failed to send verification email. Please try again later." });
-        }
-        
-        try 
-        {
-            await _auditLogService.LogActionAsync(user.Id, "Request Verification", "User", null, "User requested email verification");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Failed to log audit: {ex.Message}");
-        }
-
-        // In Development, always return the code to help testing if email is delayed/spam
-        if (_configuration["ASPNETCORE_ENVIRONMENT"] == "Development")
-        {
-            return Ok(new { 
-                message = "Verification code sent to your email (Dev: Code included below)",
-                verificationCode = code
-            });
-        }
-
+        // TODO: Send email with code (in production)
+        // For development, return the code (remove in production)
         return Ok(new { 
-            message = "Verification code sent to your email"
+            message = "Verification code sent to your email",
+            verificationCode = code // Remove this in production
         });
     }
 
@@ -591,15 +410,6 @@ public class AuthController : ControllerBase
 
         await _context.SaveChangesAsync();
 
-        try 
-        {
-            await _auditLogService.LogActionAsync(user.Id, "Verify Email", "User", null, "User verified email");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Failed to log audit: {ex.Message}");
-        }
-
         // Update membership tier if user has points (only verified users can be members)
         if (user.Points > 0 && string.IsNullOrEmpty(user.MembershipTier))
         {
@@ -613,15 +423,13 @@ public class AuthController : ControllerBase
         var roles = await _userManager.GetRolesAsync(user);
         var newToken = GenerateJwtToken(user, roles);
 
-        bool isCustomer = roles.Contains("Customer");
-
         return Ok(new
         {
             message = "Email verified successfully",
             token = newToken,
             id = user.Id,
             emailConfirmed = true,
-            membershipTier = (isCustomer) ? user.MembershipTier : null
+            membershipTier = user.MembershipTier
         });
     }
 }
@@ -632,13 +440,6 @@ public class UpdateProfileModel
     public string LastName { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string? PhoneNumber { get; set; }
-    public string? ProfilePictureUrl { get; set; }
-}
-
-public class ChangePasswordModel
-{
-    public string CurrentPassword { get; set; } = string.Empty;
-    public string NewPassword { get; set; } = string.Empty;
 }
 
 public class ChangePasswordModel

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Api/HMS.Api.csproj": {}
+    "/Users/jac/ddac_hms/HMS.Api/HMS.Api.csproj": {}
   },
   "projects": {
-    "/Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Api/HMS.Api.csproj": {
+    "/Users/jac/ddac_hms/HMS.Api/HMS.Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Api/HMS.Api.csproj",
+        "projectUniqueName": "/Users/jac/ddac_hms/HMS.Api/HMS.Api.csproj",
         "projectName": "HMS.Api",
-        "projectPath": "/Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Api/HMS.Api.csproj",
+        "projectPath": "/Users/jac/ddac_hms/HMS.Api/HMS.Api.csproj",
         "packagesPath": "/Users/jac/.nuget/packages/",
-        "outputPath": "/Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Api/obj/",
+        "outputPath": "/Users/jac/ddac_hms/HMS.Api/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/jac/.nuget/NuGet/NuGet.Config"
@@ -27,11 +27,11 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "/Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Domain/HMS.Domain.csproj": {
-                "projectPath": "/Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Domain/HMS.Domain.csproj"
+              "/Users/jac/ddac_hms/HMS.Domain/HMS.Domain.csproj": {
+                "projectPath": "/Users/jac/ddac_hms/HMS.Domain/HMS.Domain.csproj"
               },
-              "/Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Infrastructure/HMS.Infrastructure.csproj": {
-                "projectPath": "/Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Infrastructure/HMS.Infrastructure.csproj"
+              "/Users/jac/ddac_hms/HMS.Infrastructure/HMS.Infrastructure.csproj": {
+                "projectPath": "/Users/jac/ddac_hms/HMS.Infrastructure/HMS.Infrastructure.csproj"
               }
             }
           }
@@ -51,18 +51,6 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
-            "AWSSDK.Extensions.NETCore.Setup": {
-              "target": "Package",
-              "version": "[4.0.3.15, )"
-            },
-            "AWSSDK.S3": {
-              "target": "Package",
-              "version": "[4.0.14.1, )"
-            },
-            "AWSSDK.SimpleEmail": {
-              "target": "Package",
-              "version": "[4.0.2.6, )"
-            },
             "Google.Apis.Auth": {
               "target": "Package",
               "version": "[1.73.0, )"
@@ -117,14 +105,14 @@
         }
       }
     },
-    "/Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Domain/HMS.Domain.csproj": {
+    "/Users/jac/ddac_hms/HMS.Domain/HMS.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Domain/HMS.Domain.csproj",
+        "projectUniqueName": "/Users/jac/ddac_hms/HMS.Domain/HMS.Domain.csproj",
         "projectName": "HMS.Domain",
-        "projectPath": "/Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Domain/HMS.Domain.csproj",
+        "projectPath": "/Users/jac/ddac_hms/HMS.Domain/HMS.Domain.csproj",
         "packagesPath": "/Users/jac/.nuget/packages/",
-        "outputPath": "/Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Domain/obj/",
+        "outputPath": "/Users/jac/ddac_hms/HMS.Domain/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/jac/.nuget/NuGet/NuGet.Config"
@@ -182,14 +170,14 @@
         }
       }
     },
-    "/Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Infrastructure/HMS.Infrastructure.csproj": {
+    "/Users/jac/ddac_hms/HMS.Infrastructure/HMS.Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Infrastructure/HMS.Infrastructure.csproj",
+        "projectUniqueName": "/Users/jac/ddac_hms/HMS.Infrastructure/HMS.Infrastructure.csproj",
         "projectName": "HMS.Infrastructure",
-        "projectPath": "/Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Infrastructure/HMS.Infrastructure.csproj",
+        "projectPath": "/Users/jac/ddac_hms/HMS.Infrastructure/HMS.Infrastructure.csproj",
         "packagesPath": "/Users/jac/.nuget/packages/",
-        "outputPath": "/Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Infrastructure/obj/",
+        "outputPath": "/Users/jac/ddac_hms/HMS.Infrastructure/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/jac/.nuget/NuGet/NuGet.Config"
@@ -205,8 +193,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "/Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Domain/HMS.Domain.csproj": {
-                "projectPath": "/Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Domain/HMS.Domain.csproj"
+              "/Users/jac/ddac_hms/HMS.Domain/HMS.Domain.csproj": {
+                "projectPath": "/Users/jac/ddac_hms/HMS.Domain/HMS.Domain.csproj"
               }
             }
           }

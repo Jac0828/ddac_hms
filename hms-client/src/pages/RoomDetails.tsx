@@ -3,11 +3,9 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCurrency } from '../contexts/CurrencyContext';
-import { useSettings } from '../contexts/SettingsContext';
 import { roomsApi, Room } from '../services/api';
+import { getHotelSettings } from '../utils/hotelSettings';
 import { motion } from 'framer-motion';
-import LoadingSpinner from '../components/common/LoadingSpinner';
-import ImageGallery from '../components/common/ImageGallery'; // Added import
 import '../components/RoomsList.css';
 
 const RoomDetails: React.FC = () => {
@@ -19,24 +17,29 @@ const RoomDetails: React.FC = () => {
   const [room, setRoom] = useState<Room | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { settings } = useSettings();
 
-  const getDiscountMultiplier = (tier?: string) => {
-    const discounts = settings || { 
-        memberDiscount: 10, silverDiscount: 15, goldDiscount: 20, platinumDiscount: 25
+  const getMemberDiscount = () => {
+    if (!user?.membershipTier || !user?.emailConfirmed) return 1.0;
+    const hotelSettings = getHotelSettings();
+    const discounts = hotelSettings.membershipDiscounts || {
+      member: 10,
+      silver: 15,
+      gold: 20,
+      platinum: 25
     };
     
-    let discountPercent = discounts.memberDiscount;
-    if (tier === 'Silver') discountPercent = discounts.silverDiscount;
-    if (tier === 'Gold') discountPercent = discounts.goldDiscount;
-    if (tier === 'Platinum') discountPercent = discounts.platinumDiscount;
+    const tier = user.membershipTier.toLowerCase();
+    let discountPercent = discounts.member || 10;
+    if (tier === 'silver') discountPercent = discounts.silver || 15;
+    if (tier === 'gold') discountPercent = discounts.gold || 20;
+    if (tier === 'platinum') discountPercent = discounts.platinum || 25;
     
-    if (user && !user.emailConfirmed) return 1;
-
     return 1 - (discountPercent / 100);
   };
   
-  const memberPrice = room ? Math.round(room.pricePerNight * getDiscountMultiplier(user?.membershipTier)) : 0;
+  const memberPrice = room && user?.membershipTier && user?.emailConfirmed 
+    ? Math.round(room.pricePerNight * getMemberDiscount()) 
+    : room?.pricePerNight || 0;
 
   useEffect(() => {
     const fetchRoom = async () => {
@@ -56,7 +59,26 @@ const RoomDetails: React.FC = () => {
   }, [id, t]);
 
   if (loading) {
-    return <LoadingSpinner text={t('rooms.loadingDetails') || 'Loading room details...'} />;
+    return (
+      <div className="rooms-container-luxury">
+        <div className="rooms-loading-luxury">
+          <motion.div
+            className="loading-spinner-luxury"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          >
+            <div className="spinner-circle-luxury"></div>
+          </motion.div>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
+            {t('rooms.loadingDetails') || 'Loading room details...'}
+          </motion.p>
+        </div>
+      </div>
+    );
   }
 
   if (error || !room) {
@@ -108,20 +130,11 @@ const RoomDetails: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            {/* Room Image/Header - Replaced with ImageGallery */}
-            <div style={{ marginBottom: '2rem' }}>
-              <ImageGallery 
-                images={room.imageUrls || []} 
-                height="400px" 
-                showThumbnails={true}
-                allowFullscreen={true}
-              />
-            </div>
-            
-            <div style={{ display: 'none' }}> {/* Hidden original header logic but kept for badge reference if needed elsewhere */}
-               <div className={`room-status-badge-luxury status-${room.status.toLowerCase()}`}>
-                 {room.status}
-               </div>
+            {/* Room Image/Header */}
+            <div className="room-details-image-luxury">
+              <div className={`room-status-badge-luxury status-${room.status.toLowerCase()}`}>
+                {room.status}
+              </div>
             </div>
 
             {/* Room Info */}
@@ -206,14 +219,23 @@ const RoomDetails: React.FC = () => {
             <div className="booking-card-luxury">
               <h3 className="booking-title-luxury">{t('rooms.bookingInformation') || 'Booking Information'}</h3>
               <div className="booking-price-luxury">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                  <span className="price-label-luxury" style={{ marginBottom: 0 }}>{t('rooms.standardRate') || 'Standard'}</span>
-                  <span className="price-value-luxury" style={{ fontSize: '1.2rem', textDecoration: 'line-through', color: '#A0AEC0' }}>{formatPrice(room.pricePerNight)}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span className="price-label-luxury" style={{ marginBottom: 0, color: '#C9A961', fontWeight: 'bold' }}>{t('rooms.memberPrice') || 'Member Price'}</span>
-                  <span className="price-value-luxury">{formatPrice(memberPrice)}</span>
-                </div>
+                {user?.membershipTier && user?.emailConfirmed ? (
+                  <>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                      <span className="price-label-luxury" style={{ marginBottom: 0 }}>Standard</span>
+                      <span className="price-value-luxury" style={{ fontSize: '1.2rem', textDecoration: 'line-through', color: '#A0AEC0' }}>{formatPrice(room.pricePerNight)}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span className="price-label-luxury" style={{ marginBottom: 0, color: '#C9A961', fontWeight: 'bold' }}>Member Price</span>
+                      <span className="price-value-luxury">{formatPrice(memberPrice)}</span>
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                    <span className="price-label-luxury" style={{ marginBottom: 0 }}>Price</span>
+                    <span className="price-value-luxury">{formatPrice(room.pricePerNight)}</span>
+                  </div>
+                )}
                 <span className="price-period-luxury" style={{ textAlign: 'right' }}>{t('rooms.perNight') || 'per night'}</span>
               </div>
 

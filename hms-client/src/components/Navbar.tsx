@@ -4,7 +4,6 @@ import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { FaGlobe } from 'react-icons/fa';
 import './Navbar.css';
 
 const Navbar: React.FC = () => {
@@ -131,43 +130,26 @@ const Navbar: React.FC = () => {
                 </li>
                 <li className="nav-item">
                   <Link 
-                    className={`nav-link luxury-nav-link ${location.search.includes('tab=settings') ? 'active' : ''}`}
-                    to="/admin?tab=settings"
+                    className={`nav-link luxury-nav-link ${location.search.includes('tab=bookings') ? 'active' : ''}`}
+                    to="/admin?tab=bookings"
                   >
-                    {t('nav.settings')}
-                  </Link>
-                </li>
-              </>
-            ) : isManager ? (
-              <>
-                <li className="nav-item">
-                  <Link className="nav-link luxury-nav-link" to="/dashboard">
-                    {t('nav.dashboard')}
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link className="nav-link luxury-nav-link" to="/manager/rooms">
-                    {t('nav.rooms')}
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link className="nav-link luxury-nav-link" to="/manager/staff">
-                    {t('nav.staff')}
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link className="nav-link luxury-nav-link" to="/bookings">
                     {t('nav.bookings')}
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link className="nav-link luxury-nav-link" to="/manager/duty-roster">
-                    {t('nav.dutyRoster')}
+                  <Link 
+                    className={`nav-link luxury-nav-link ${location.search.includes('tab=services') ? 'active' : ''}`}
+                    to="/admin?tab=services"
+                  >
+                    {t('nav.serviceRequests')}
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link className="nav-link luxury-nav-link" to="/manager/reviews">
-                    {t('nav.reviews')}
+                  <Link 
+                    className={`nav-link luxury-nav-link ${location.search.includes('tab=settings') ? 'active' : ''}`}
+                    to="/admin?tab=settings"
+                  >
+                    {t('nav.settings')}
                   </Link>
                 </li>
               </>
@@ -189,27 +171,18 @@ const Navbar: React.FC = () => {
                     </Link>
                   </li>
                 )}
-                {!isRoomAttendant && (
-                  <li className="nav-item">
-                    <Link className="nav-link luxury-nav-link" to={isReceptionist ? "/manager/rooms" : "/rooms"}>
-                      {t('nav.rooms')}
-                    </Link>
-                  </li>
-                )}
-                {isAuthenticated && !isRoomAttendant && (
+                <li className="nav-item">
+                  <Link className="nav-link luxury-nav-link" to="/rooms">
+                    {t('nav.rooms')}
+                  </Link>
+                </li>
+                {isAuthenticated && (
                   <>
                     <li className="nav-item">
-                  <Link className="nav-link luxury-nav-link" to="/bookings">
-                    {isReceptionist ? t('nav.bookings') : t('nav.myBookings')}
-                  </Link>
+                      <Link className="nav-link luxury-nav-link" to="/bookings">
+                        {isManager || isReceptionist ? t('nav.bookings') : t('nav.myBookings')}
+                      </Link>
                     </li>
-                    {isReceptionist && (
-                      <li className="nav-item">
-                        <Link className="nav-link luxury-nav-link" to="/manager/payments">
-                          Payments
-                        </Link>
-                      </li>
-                    )}
                     <li className="nav-item">
                       <Link className="nav-link luxury-nav-link" to="/service-requests">
                         {t('nav.services')}
@@ -234,7 +207,7 @@ const Navbar: React.FC = () => {
                 }}
                 style={{ cursor: 'pointer' }}
               >
-                <FaGlobe className="language-icon" style={{ color: '#C9A961', fontSize: '1.2rem' }} />
+                <span className="language-icon" style={{ color: '#C9A961' }}>🌐</span>
               </a>
               {showLanguageDropdown && (
                 <ul className="dropdown-menu dropdown-menu-end luxury-dropdown luxury-dropdown-scrollable show" style={{ display: 'block' }}>

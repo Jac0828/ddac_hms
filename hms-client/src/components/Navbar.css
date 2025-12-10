@@ -117,7 +117,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   border-bottom: 1px solid var(--theme-border);
   position: relative;
-  z-index: 1100;
+  z-index: 1000;
   overflow: visible !important;
   transition: border-color 0.3s ease;
 }

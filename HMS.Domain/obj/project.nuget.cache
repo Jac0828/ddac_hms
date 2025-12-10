@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "RHGc2g6RmsM=",
+  "dgSpecHash": "VcLf12FHkGI=",
   "success": true,
-  "projectFilePath": "/Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Domain/HMS.Domain.csproj",
+  "projectFilePath": "/Users/jac/ddac_hms/HMS.Domain/HMS.Domain.csproj",
   "expectedPackageFiles": [
     "/Users/jac/.nuget/packages/microsoft.aspnetcore.cryptography.internal/8.0.0/microsoft.aspnetcore.cryptography.internal.8.0.0.nupkg.sha512",
     "/Users/jac/.nuget/packages/microsoft.aspnetcore.cryptography.keyderivation/8.0.0/microsoft.aspnetcore.cryptography.keyderivation.8.0.0.nupkg.sha512",

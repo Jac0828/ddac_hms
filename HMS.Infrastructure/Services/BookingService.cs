@@ -147,48 +147,32 @@ public class BookingService : IBookingService
 
         var basePrice = room.PricePerNight * nights;
 
-        // Apply member discount if user is provided and is a verified member
+        // Apply member discount if user is provided and has membership tier
         if (!string.IsNullOrEmpty(userId))
         {
-            var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Id == userId);
-
-            if (user != null && user.EmailConfirmed && !string.IsNullOrEmpty(user.MembershipTier))
+            var user = await _context.Users.FindAsync(userId);
+            if (user != null && !string.IsNullOrEmpty(user.MembershipTier) && user.EmailConfirmed)
             {
-                // Get discount from HotelSettings
-                var hotelSettings = await _context.HotelSettings.FirstOrDefaultAsync();
-                if (hotelSettings != null)
-                {
-                    decimal discountPercent = 0;
-                    
-                    // Determine discount based on membership tier
-                    switch (user.MembershipTier.ToLower())
-                    {
-                        case "member":
-                            discountPercent = hotelSettings.MemberDiscount;
-                            break;
-                        case "silver":
-                            discountPercent = hotelSettings.SilverDiscount;
-                            break;
-                        case "gold":
-                            discountPercent = hotelSettings.GoldDiscount;
-                            break;
-                        case "platinum":
-                            discountPercent = hotelSettings.PlatinumDiscount;
-                            break;
-                    }
-
-                    // Apply discount
-                    if (discountPercent > 0)
-                    {
-                        var discountMultiplier = 1 - (discountPercent / 100m);
-                        basePrice = basePrice * discountMultiplier;
-                    }
-                }
+                var discountMultiplier = GetMemberDiscountMultiplier(user.MembershipTier);
+                basePrice = basePrice * discountMultiplier;
             }
         }
 
-        return basePrice;
+        return Math.Round(basePrice, 2);
+    }
+
+    private static decimal GetMemberDiscountMultiplier(string membershipTier)
+    {
+        // Convert discount percentage to multiplier
+        // Default discounts: Member 10%, Silver 15%, Gold 20%, Platinum 25%
+        return membershipTier.ToLower() switch
+        {
+            "platinum" => 0.75m,  // 25% discount
+            "gold" => 0.80m,      // 20% discount
+            "silver" => 0.85m,    // 15% discount
+            "member" => 0.90m,    // 10% discount
+            _ => 1.0m             // No discount for unknown tiers
+        };
     }
 
     private async Task<bool> IsRoomAvailableAsync(int roomId, DateTime checkIn, DateTime checkOut)

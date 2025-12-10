@@ -4,9 +4,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { adminApi, User } from '../services/api';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import LoadingSpinner from '../components/common/LoadingSpinner';
 import '../components/RoomsList.css';
-import LuxurySelect from '../components/common/LuxurySelect'; // Import LuxurySelect
 
 interface RoleInfo {
   name: string;
@@ -19,7 +17,7 @@ interface RoleInfo {
 
 const Roles: React.FC = () => {
   const { isAdmin } = useAuth();
-  const { t, getRoleName } = useLanguage();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -170,7 +168,26 @@ const Roles: React.FC = () => {
   };
 
   if (loading) {
-    return <LoadingSpinner text={t('roles.loading') || 'Loading roles...'} />;
+    return (
+      <div className="rooms-container-luxury">
+        <div className="rooms-loading-luxury">
+          <motion.div
+            className="loading-spinner-luxury"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          >
+            <div className="spinner-circle-luxury"></div>
+          </motion.div>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
+            {t('roles.loading') || 'Loading roles...'}
+          </motion.p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -231,7 +248,7 @@ const Roles: React.FC = () => {
                 <div className="room-header-luxury" style={{ marginBottom: '1rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
                     <span style={{ fontSize: '2.5rem' }}>{role.icon}</span>
-                    <h3 className="room-type-luxury" style={{ margin: 0 }}>{getRoleName(role.name)}</h3>
+                    <h3 className="room-type-luxury" style={{ margin: 0 }}>{role.name}</h3>
                   </div>
                   <div className="room-number-luxury" style={{ fontSize: '1.1rem', fontWeight: 700, color: role.color }}>
                     {role.userCount} {role.userCount === 1 ? (t('roles.user') || 'user') : (t('roles.users') || 'users')}
@@ -268,7 +285,7 @@ const Roles: React.FC = () => {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <h2 className="section-title-luxury" style={{ margin: 0 }}>
-                {t('roles.usersWithRole') || 'Users with'} {getRoleName(selectedRole || '')} {t('roles.role') || 'Role'}
+                {t('roles.usersWithRole') || 'Users with'} {selectedRole} {t('roles.role') || 'Role'}
               </h2>
               <button
                 onClick={() => setSelectedRole(null)}
@@ -360,22 +377,25 @@ const Roles: React.FC = () => {
                   {t('roles.user') || 'User'}: <strong>{selectedUser.fullName}</strong>
                 </div>
                 <div style={{ marginBottom: '0.5rem', color: '#718096', fontSize: '0.9rem' }}>
-                  {t('roles.currentRole') || 'Current Role'}: <strong>{getRoleName(selectedUser.roles[0] || 'Customer')}</strong>
+                  {t('roles.currentRole') || 'Current Role'}: <strong>{selectedUser.roles[0] || 'Customer'}</strong>
                 </div>
               </div>
               <div style={{ marginBottom: '1.5rem' }}>
                 <label className="search-label-luxury" style={{ marginBottom: '0.5rem', display: 'block' }}>
                   {t('roles.selectRole') || 'Select New Role'}
                 </label>
-                <LuxurySelect
+                <select
                   className="filter-select-luxury"
                   value={newRole}
-                  onChange={setNewRole}
-                  options={roles.map((role) => ({
-                    value: role.name,
-                    label: getRoleName(role.name)
-                  }))}
-                />
+                  onChange={(e) => setNewRole(e.target.value)}
+                  style={{ width: '100%' }}
+                >
+                  {roles.map((role) => (
+                    <option key={role.name} value={role.name}>
+                      {role.name}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div style={{ display: 'flex', gap: '1rem' }}>
                 <button

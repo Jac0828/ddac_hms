@@ -3,7 +3,6 @@ import { useAuth } from '../contexts/AuthContext';
 import { auditLogApi, AuditLog } from '../services/api';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
-import LoadingSpinner from '../components/common/LoadingSpinner';
 import './Dashboard.css';
 
 const AuditLogs: React.FC = () => {
@@ -133,7 +132,11 @@ const AuditLogs: React.FC = () => {
         </motion.div>
 
         {loading ? (
-          <LoadingSpinner text="Loading Audit Logs..." />
+          <div className="text-center py-5">
+            <div className="spinner-border" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+          </div>
         ) : (
           <>
             <motion.div

@@ -24,7 +24,6 @@ public class ApplicationDbContext : IdentityDbContext<AppUser>
     public DbSet<StaffDutyRoster> StaffDutyRosters { get; set; }
     public DbSet<Review> Reviews { get; set; }
     public DbSet<EmailVerificationCode> EmailVerificationCodes { get; set; }
-    public DbSet<HotelSetting> HotelSettings { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -218,7 +217,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser>
         builder.Entity<Payment>()
             .HasIndex(p => p.TransactionId)
             .IsUnique()
-            .HasFilter("\"TransactionId\" IS NOT NULL AND \"TransactionId\" != ''");
+            .HasFilter("\"TransactionId\" IS NOT NULL");
 
         // builder.Entity<Payment>()
         //     .HasIndex(p => p.IsDeleted);

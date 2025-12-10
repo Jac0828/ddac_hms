@@ -85,17 +85,26 @@ public class RoomTypesController : ControllerBase
         if (dto.Amenities != null) roomType.Amenities = dto.Amenities;
         roomType.UpdatedAt = DateTime.UtcNow;
 
-        // Always sync all rooms to ensure price consistency
-        // This handles both price changes and correcting any manual overrides
-        var rooms = await _context.Rooms
-            .Where(r => r.RoomTypeId == id)
-            .ToListAsync();
-        
-        foreach (var room in rooms)
+        // Update all rooms of this type if price changed
+        if (priceChanged)
         {
-            if (room.PricePerNight != dto.BasePricePerNight)
+            var rooms = await _context.Rooms
+                .Where(r => r.RoomTypeId == id)
+                .ToListAsync();
+            
+            foreach (var room in rooms)
             {
-                room.PricePerNight = dto.BasePricePerNight;
+                // Calculate new price proportionally if room had custom price
+                // Otherwise, use the new base price
+                if (oldPrice > 0)
+                {
+                    decimal priceRatio = room.PricePerNight / oldPrice;
+                    room.PricePerNight = dto.BasePricePerNight * priceRatio;
+                }
+                else
+                {
+                    room.PricePerNight = dto.BasePricePerNight;
+                }
                 room.UpdatedAt = DateTime.UtcNow;
             }
         }

@@ -32,7 +32,7 @@ const Register: React.FC = () => {
   const [verifying, setVerifying] = useState(false);
   const [verificationError, setVerificationError] = useState('');
   const [userId, setUserId] = useState<string>('');
-  const { login, updateUser } = useAuth();
+  const { register, updateUser } = useAuth();
   const navigate = useNavigate();
   const datePickerRef = useRef<HTMLDivElement>(null);
 
@@ -153,130 +153,36 @@ const Register: React.FC = () => {
       return;
     }
 
-    // Validate password requirements: at least one digit, one lowercase, one uppercase
-    const hasDigit = /\d/.test(formData.password);
-    const hasLowercase = /[a-z]/.test(formData.password);
-    const hasUppercase = /[A-Z]/.test(formData.password);
-
-    if (!hasDigit || !hasLowercase || !hasUppercase) {
-      setError('Password must contain at least one digit, one lowercase letter, and one uppercase letter');
-      return;
-    }
-
     setLoading(true);
 
     try {
-      // Validate required fields
-      if (!formData.email || !formData.password || !formData.firstName || !formData.lastName) {
-        setError('Please fill in all required fields');
-        setLoading(false);
-        return;
-      }
-
-      // Log data being sent
-      console.log('Registering with data:', {
+      // Register user
+      const registerResponse = await authApi.register({
         email: formData.email,
+        password: formData.password,
         firstName: formData.firstName,
         lastName: formData.lastName,
         phoneNumber: formData.phoneNumber,
         gender: formData.gender,
         dateOfBirth: formData.dateOfBirth,
-        passwordLength: formData.password.length
       });
-
-      // Register user via API
-      await authApi.register({
-        email: formData.email.trim(),
+      
+      // Auto-login after registration
+      await register({
+        email: formData.email,
         password: formData.password,
-        firstName: formData.firstName.trim(),
-        lastName: formData.lastName.trim(),
-        phoneNumber: formData.phoneNumber?.trim() || undefined,
-        gender: formData.gender || undefined,
-        dateOfBirth: formData.dateOfBirth || undefined,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        phoneNumber: formData.phoneNumber,
+        gender: formData.gender,
+        dateOfBirth: formData.dateOfBirth,
       });
       
-      console.log('Registration successful, attempting auto-login...');
-      
-      // Auto-login after successful registration using login API
-      try {
-        await login({
-          email: formData.email.trim(),
-          password: formData.password,
-        });
-        
-        // Wait for user data to be stored
-        await new Promise(resolve => setTimeout(resolve, 200));
-        
-        // Get user data from localStorage
-        const userData = JSON.parse(localStorage.getItem('user') || '{}');
-        setUserId(userData.id);
-        
-        // Check if email needs verification
-        if (!userData.emailConfirmed) {
-          // Send verification email
-          try {
-            const verificationResponse = await authApi.sendVerificationEmail();
-            if (verificationResponse.verificationCode) {
-              setShowVerificationModal(true);
-            }
-          } catch (verifyErr) {
-            console.error('Failed to send verification email:', verifyErr);
-            // Continue anyway - user can verify later
-          }
-        } else {
-          // User is already verified, redirect
-          const isAdminUser = userData.roles?.includes('Admin');
-          navigate(isAdminUser ? '/admin' : '/');
-        }
-      } catch (loginErr: any) {
-        console.error('Auto-login failed:', loginErr);
-        // Registration succeeded but login failed - show success message and redirect to login
-        setError('Registration successful! Please log in.');
-        setTimeout(() => {
-          navigate('/login');
-        }, 2000);
-      }
+      setTimeout(() => {
+        handleRegisterSuccess(registerResponse);
+      }, 100);
     } catch (err: any) {
-      console.error('Registration error:', err);
-      console.error('Error response:', err.response?.data);
-      
-      let errorMessage = t('register.error') || 'Registration failed. Please try again.';
-      
-      if (err.response?.data) {
-        const errorData = err.response.data;
-        
-        // Priority 1: Use the main message if available
-        if (errorData.message) {
-          errorMessage = errorData.message;
-        } 
-        // Priority 2: Use errors array if message is not available
-        else if (errorData.errors && Array.isArray(errorData.errors) && errorData.errors.length > 0) {
-          errorMessage = errorData.errors[0]; // Show first error
-          // If multiple errors, show them all
-          if (errorData.errors.length > 1) {
-            errorMessage = errorData.errors.join('. ');
-          }
-        } 
-        // Priority 3: Use string error
-        else if (typeof errorData === 'string') {
-          errorMessage = errorData;
-        }
-        
-        // Log error code for debugging
-        if (errorData.code) {
-          console.error('Error code:', errorData.code);
-        }
-      } else if (err.message) {
-        errorMessage = err.message;
-      } else if (err.response?.status === 400) {
-        errorMessage = 'Invalid registration data. Please check all fields and try again.';
-      } else if (err.response?.status === 500) {
-        errorMessage = 'Server error. Please try again later.';
-      } else if (!err.response) {
-        errorMessage = 'Network error. Please check your connection and try again.';
-      }
-      
-      setError(errorMessage);
+      setError(err.response?.data?.message || t('register.error') || 'Registration failed. Please try again.');
       setLoading(false);
     }
   };
@@ -452,7 +358,7 @@ const Register: React.FC = () => {
                         calendarClassName="auth-date-picker-calendar"
                         showMonthDropdown
                         showYearDropdown
-                        dropdownMode="scroll"
+                        dropdownMode="select"
                       />
                     </div>
                   )}

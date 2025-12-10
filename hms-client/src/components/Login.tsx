@@ -2,21 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { useSettings } from '../contexts/SettingsContext';
 import { motion } from 'framer-motion';
 import { useGoogleLogin } from '@react-oauth/google';
+import { getHotelSettings } from '../utils/hotelSettings';
 import { FaGoogle } from 'react-icons/fa'; // Added icons
 import './Auth.css';
 
 const Login: React.FC = () => {
   const { t } = useLanguage();
-  const { settings } = useSettings();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false); // Added state
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [hotelSettings, setHotelSettings] = useState(getHotelSettings());
   const { login, googleLogin: googleLoginContext } = useAuth();
   const navigate = useNavigate();
 
@@ -62,9 +62,8 @@ const Login: React.FC = () => {
     }
   });
 
-  const { isAuthenticated, user, isLoading, isAdmin, isManager, isReceptionist, isRoomAttendant, isCustomer } = useAuth();
-
   useEffect(() => {
+    setHotelSettings(getHotelSettings());
     // Check for saved email
     const savedEmail = localStorage.getItem('savedEmail');
     if (savedEmail) {
@@ -72,25 +71,6 @@ const Login: React.FC = () => {
       setRememberMe(true);
     }
   }, []);
-
-  // Redirect if already authenticated (wait for loading to complete)
-  useEffect(() => {
-    if (!isLoading && isAuthenticated && user) {
-      if (isAdmin) {
-        navigate('/admin', { replace: true });
-      } else if (isManager) {
-        navigate('/dashboard', { replace: true });
-      } else if (isReceptionist) {
-        navigate('/dashboard', { replace: true });
-      } else if (isRoomAttendant) {
-        navigate('/dashboard', { replace: true });
-      } else if (isCustomer) {
-        navigate('/', { replace: true });
-      } else {
-        navigate('/dashboard', { replace: true });
-      }
-    }
-  }, [isLoading, isAuthenticated, user, isAdmin, isManager, isReceptionist, isRoomAttendant, isCustomer, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -178,7 +158,7 @@ const Login: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.6 }}
           >
-            {settings?.hotelName || 'HMS Luxury Hotel'}
+            {hotelSettings.hotelName}
           </motion.h2>
           <motion.p 
             className="welcome-description-gold"
@@ -186,7 +166,7 @@ const Login: React.FC = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7, duration: 0.6 }}
           >
-            {settings?.welcomeDescription || t('login.welcomeDescription')}
+            {hotelSettings.welcomeDescription || t('login.welcomeDescription')}
           </motion.p>
         </div>
       </motion.div>

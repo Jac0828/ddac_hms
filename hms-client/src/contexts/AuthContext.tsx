@@ -22,7 +22,6 @@ interface AuthContextType {
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
-  isLoading: boolean;
   isAdmin: boolean;
   isManager: boolean;
   isReceptionist: boolean;
@@ -37,25 +36,15 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Restore authentication state from localStorage
     const storedToken = localStorage.getItem('jwtToken');
     const storedUser = localStorage.getItem('user');
     
     if (storedToken && storedUser) {
-      try {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error('Error parsing stored user data:', error);
-        // Clear invalid data
-        localStorage.removeItem('jwtToken');
-        localStorage.removeItem('user');
-      }
+      setToken(storedToken);
+      setUser(JSON.parse(storedUser));
     }
-    setIsLoading(false);
   }, []);
 
   const updateUser = (updatedUser: User, newToken?: string) => {
@@ -122,8 +111,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const isAdmin = user?.roles.includes('Admin') ?? false;
   const isManager = user?.roles.includes('Manager') ?? false;
   const isReceptionist = user?.roles.includes('Receptionist') ?? false;
-  const isRoomAttendant = user?.roles.includes('RoomAttendant') || user?.roles.includes('Housekeeping') || false;
-  const isHousekeeping = isRoomAttendant;
+  const isRoomAttendant = user?.roles.includes('RoomAttendant') ?? false;
+  const isHousekeeping = user?.roles.includes('Housekeeping') ?? false;
   const isCustomer = user?.roles.includes('Customer') ?? false;
 
   return (
@@ -136,7 +125,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         register,
         logout,
         isAuthenticated,
-        isLoading,
         isAdmin,
         isManager,
         isReceptionist,

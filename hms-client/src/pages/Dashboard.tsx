@@ -9,7 +9,6 @@ import { motion } from 'framer-motion';
 import ManagerDashboard from './ManagerDashboard';
 import FrontDeskDashboard from './FrontDeskDashboard';
 import HousekeepingDashboard from './HousekeepingDashboard';
-import LoadingSpinner from '../components/common/LoadingSpinner';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -98,7 +97,31 @@ const Dashboard = () => {
   };
 
   if (loading) {
-    return <LoadingSpinner text="Loading Dashboard..." />;
+    return (
+      <div className="dashboard-container">
+        <div className="gradient-background">
+          <div className="gradient-shape gradient-shape-1"></div>
+          <div className="gradient-shape gradient-shape-2"></div>
+          <div className="gradient-shape gradient-shape-3"></div>
+        </div>
+        <div className="dashboard-loading">
+          <motion.div
+            className="loading-spinner"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          >
+            <div className="spinner-circle"></div>
+          </motion.div>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
+            Loading dashboard...
+          </motion.p>
+        </div>
+      </div>
+    );
   }
 
   return (

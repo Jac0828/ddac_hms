@@ -3,12 +3,11 @@ import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCurrency } from '../contexts/CurrencyContext';
-import { useSettings } from '../contexts/SettingsContext';
 import { roomsApi, Room } from '../services/api';
 import { motion } from 'framer-motion';
-import LoadingSpinner from '../components/common/LoadingSpinner';
 import DatePicker from 'react-datepicker';
 import { format, differenceInDays, parseISO } from 'date-fns';
+import { getHotelSettings } from '../utils/hotelSettings';
 import 'react-datepicker/dist/react-datepicker.css';
 import '../components/RoomsList.css';
 
@@ -62,7 +61,7 @@ const CheckAvailability: React.FC = () => {
   const [numberOfRooms, setNumberOfRooms] = useState(parseInt(roomsParam));
   const [adults, setAdults] = useState(parseInt(adultsParam));
   const [children, setChildren] = useState(parseInt(childrenParam));
-  const { settings } = useSettings();
+  const [hotelSettings] = useState(getHotelSettings());
 
   const datePickerRef = useRef<HTMLDivElement>(null);
   const guestRef = useRef<HTMLDivElement>(null);
@@ -216,7 +215,7 @@ const CheckAvailability: React.FC = () => {
               <input
                 type="text"
                 className="search-input-luxury"
-                value={settings?.hotelName || t('availability.hotelName') || 'Hotel Name'}
+                value={hotelSettings.hotelName || t('availability.hotelName') || 'Hotel Name'}
                 readOnly
               />
             </div>
@@ -369,7 +368,12 @@ const CheckAvailability: React.FC = () => {
 
         {/* Loading */}
         {loading && (
-          <LoadingSpinner text={t('availability.searching') || 'Searching for available rooms...'} />
+          <div className="availability-loading-luxury">
+            <div className="loading-spinner-luxury">
+              <div className="spinner-circle-luxury"></div>
+            </div>
+            <p>{t('availability.searching') || 'Searching for available rooms...'}</p>
+          </div>
         )}
 
         {/* Results */}

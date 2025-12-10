@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using HMS.Api.DTOs;
@@ -56,23 +55,7 @@ public class AuditLogController : ControllerBase
             .Take(pageSize)
             .ToListAsync();
 
-        // Get User Roles for these logs
-        var userIds = logs.Select(l => l.UserId).Distinct().ToList();
-        
-        // Use Set<IdentityUserRole<string>>() to access the join table
-        var userRolesQuery = from ur in _context.Set<IdentityUserRole<string>>()
-                             join r in _context.Roles on ur.RoleId equals r.Id
-                             where userIds.Contains(ur.UserId)
-                             select new { ur.UserId, RoleName = r.Name };
-
-        var userRoles = await userRolesQuery.ToListAsync();
-
-        var dtos = logs.Select(al => {
-            var dto = MapToDto(al);
-            var role = userRoles.FirstOrDefault(ur => ur.UserId == al.UserId);
-            dto.UserRole = role?.RoleName ?? "User";
-            return dto;
-        });
+        var dtos = logs.Select(al => MapToDto(al));
         
         return Ok(new
         {
@@ -94,16 +77,7 @@ public class AuditLogController : ControllerBase
         if (log == null)
             return NotFound();
 
-        var dto = MapToDto(log);
-        
-        var roleName = await (from ur in _context.Set<IdentityUserRole<string>>()
-                              join r in _context.Roles on ur.RoleId equals r.Id
-                              where ur.UserId == log.UserId
-                              select r.Name).FirstOrDefaultAsync();
-            
-        dto.UserRole = roleName ?? "User";
-
-        return Ok(dto);
+        return Ok(MapToDto(log));
     }
 
     private static AuditLogDto MapToDto(ActivityLog al)
@@ -122,3 +96,4 @@ public class AuditLogController : ControllerBase
         };
     }
 }
+

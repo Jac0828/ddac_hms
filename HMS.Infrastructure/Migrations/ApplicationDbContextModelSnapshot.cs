@@ -84,12 +84,6 @@ namespace HMS.Infrastructure.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("EmailVerificationCode")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("EmailVerified")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasColumnType("text");
@@ -134,9 +128,6 @@ namespace HMS.Infrastructure.Migrations
                     b.Property<int>("Points")
                         .HasColumnType("integer");
 
-                    b.Property<string>("ProfilePictureUrl")
-                        .HasColumnType("text");
-
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
 
@@ -166,12 +157,6 @@ namespace HMS.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("ActualCheckInDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("ActualCheckOutDate")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("CheckInDate")
                         .HasColumnType("timestamp with time zone");
@@ -266,114 +251,6 @@ namespace HMS.Infrastructure.Migrations
                     b.HasIndex("UserId", "Code", "IsUsed");
 
                     b.ToTable("EmailVerificationCodes");
-                });
-
-            modelBuilder.Entity("HMS.Domain.Models.HotelSetting", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AboutDescription")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("AboutImageUrl")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("AboutTitle")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Address")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("CheckInTime")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("CheckOutTime")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Currency")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("FacebookUrl")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("FeaturedOffersJson")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
-                    b.Property<decimal>("GoldDiscount")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("HomeBannerImagesJson")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
-                    b.Property<string>("HotelName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("InstagramUrl")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("MemberDiscount")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("MembershipBenefitsJson")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
-                    b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("PlatinumDiscount")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("PromotionDescription")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("PromotionImageUrl")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("PromotionTitle")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("SilverDiscount")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("TaxRate")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("TwitterUrl")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("WelcomeDescription")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("HotelSettings");
                 });
 
             modelBuilder.Entity("HMS.Domain.Models.HousekeepingTask", b =>
@@ -562,7 +439,7 @@ namespace HMS.Infrastructure.Migrations
 
                     b.HasIndex("TransactionId")
                         .IsUnique()
-                        .HasFilter("\"TransactionId\" IS NOT NULL AND \"TransactionId\" != ''");
+                        .HasFilter("\"TransactionId\" IS NOT NULL");
 
                     b.ToTable("Payments");
                 });

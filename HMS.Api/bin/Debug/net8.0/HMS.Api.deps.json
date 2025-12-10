@@ -8,9 +8,6 @@
     ".NETCoreApp,Version=v8.0": {
       "HMS.Api/1.0.0": {
         "dependencies": {
-          "AWSSDK.Extensions.NETCore.Setup": "4.0.3.15",
-          "AWSSDK.S3": "4.0.14.1",
-          "AWSSDK.SimpleEmail": "4.0.2.6",
           "Google.Apis.Auth": "1.73.0",
           "HMS.Domain": "1.0.0",
           "HMS.Infrastructure": "1.0.0",
@@ -23,50 +20,6 @@
         },
         "runtime": {
           "HMS.Api.dll": {}
-        }
-      },
-      "AWSSDK.Core/4.0.3.4": {
-        "runtime": {
-          "lib/net8.0/AWSSDK.Core.dll": {
-            "assemblyVersion": "4.0.0.0",
-            "fileVersion": "4.0.3.4"
-          }
-        }
-      },
-      "AWSSDK.Extensions.NETCore.Setup/4.0.3.15": {
-        "dependencies": {
-          "AWSSDK.Core": "4.0.3.4",
-          "Microsoft.Extensions.Configuration.Abstractions": "8.0.0",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Logging.Abstractions": "8.0.0"
-        },
-        "runtime": {
-          "lib/net8.0/AWSSDK.Extensions.NETCore.Setup.dll": {
-            "assemblyVersion": "4.0.0.0",
-            "fileVersion": "4.0.3.15"
-          }
-        }
-      },
-      "AWSSDK.S3/4.0.14.1": {
-        "dependencies": {
-          "AWSSDK.Core": "4.0.3.4"
-        },
-        "runtime": {
-          "lib/net8.0/AWSSDK.S3.dll": {
-            "assemblyVersion": "4.0.0.0",
-            "fileVersion": "4.0.14.1"
-          }
-        }
-      },
-      "AWSSDK.SimpleEmail/4.0.2.6": {
-        "dependencies": {
-          "AWSSDK.Core": "4.0.3.4"
-        },
-        "runtime": {
-          "lib/net8.0/AWSSDK.SimpleEmail.dll": {
-            "assemblyVersion": "4.0.0.0",
-            "fileVersion": "4.0.2.6"
-          }
         }
       },
       "Google.Apis/1.73.0": {
@@ -812,34 +765,6 @@
       "type": "project",
       "serviceable": false,
       "sha512": ""
-    },
-    "AWSSDK.Core/4.0.3.4": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-Bykx2u1jNLfPr/otJBPb1QwXiEip4GbjX72Ah+Rhv7QiazUZGo+d+zuhi4uT1HCnzGK7JfQZ7V+vzTysaLcObw==",
-      "path": "awssdk.core/4.0.3.4",
-      "hashPath": "awssdk.core.4.0.3.4.nupkg.sha512"
-    },
-    "AWSSDK.Extensions.NETCore.Setup/4.0.3.15": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-IVKNDVfs6plHvcrAp7bVpGSnINnC1q1DsSqYWzxQ3Xk7lOAkM6hbDXAxHOr77Nw40WHNpZz7ePlDDc94IEUPEA==",
-      "path": "awssdk.extensions.netcore.setup/4.0.3.15",
-      "hashPath": "awssdk.extensions.netcore.setup.4.0.3.15.nupkg.sha512"
-    },
-    "AWSSDK.S3/4.0.14.1": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-9nhBDBtLQM5vs4HKCJeQAvsMU6tiH0q6cv5dg0N7BYphhlDPLPRDL+10aHvYYffj4qA8E48Yyook+/trPqu6Ow==",
-      "path": "awssdk.s3/4.0.14.1",
-      "hashPath": "awssdk.s3.4.0.14.1.nupkg.sha512"
-    },
-    "AWSSDK.SimpleEmail/4.0.2.6": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-vVPuy2UUNa/tt3glC2kAIeoEsBec05IVetppWtPPiSOSlj6vj/zRuyBXw3P2+C/+/xkzDY5ZiLclMsEgQh7+Yg==",
-      "path": "awssdk.simpleemail/4.0.2.6",
-      "hashPath": "awssdk.simpleemail.4.0.2.6.nupkg.sha512"
     },
     "Google.Apis/1.73.0": {
       "type": "package",

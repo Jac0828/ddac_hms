@@ -29,9 +29,6 @@ public class PaymentService : IPaymentService
     {
         return await _context.Payments
             .Include(p => p.Booking)
-                .ThenInclude(b => b.Room)
-            .Include(p => p.Booking)
-                .ThenInclude(b => b.User)
             .Where(p => p.BookingId == bookingId)
             .OrderByDescending(p => p.TransactionDate)
             .ToListAsync();
@@ -41,9 +38,6 @@ public class PaymentService : IPaymentService
     {
         return await _context.Payments
             .Include(p => p.Booking)
-                .ThenInclude(b => b.Room)
-            .Include(p => p.Booking)
-                .ThenInclude(b => b.User)
             .FirstOrDefaultAsync(p => p.Id == id);
     }
 
@@ -59,7 +53,20 @@ public class PaymentService : IPaymentService
         var booking = await _context.Bookings.FindAsync(payment.BookingId);
         if (booking != null)
         {
-            await UpdateBookingPaymentStatusAsync(booking);
+            var totalPaid = await _context.Payments
+                .Where(p => p.BookingId == payment.BookingId && p.Status == PaymentStatus.Paid)
+                .SumAsync(p => p.Amount);
+
+            if (totalPaid >= booking.TotalPrice)
+            {
+                booking.PaymentStatus = PaymentStatus.Paid;
+            }
+            else if (totalPaid > 0)
+            {
+                booking.PaymentStatus = PaymentStatus.Pending; // Partial payment
+            }
+
+            await _context.SaveChangesAsync();
         }
 
         return payment;
@@ -74,7 +81,24 @@ public class PaymentService : IPaymentService
         var booking = await _context.Bookings.FindAsync(payment.BookingId);
         if (booking != null)
         {
-            await UpdateBookingPaymentStatusAsync(booking);
+            var totalPaid = await _context.Payments
+                .Where(p => p.BookingId == payment.BookingId && p.Status == PaymentStatus.Paid)
+                .SumAsync(p => p.Amount);
+
+            if (totalPaid >= booking.TotalPrice)
+            {
+                booking.PaymentStatus = PaymentStatus.Paid;
+            }
+            else if (totalPaid > 0)
+            {
+                booking.PaymentStatus = PaymentStatus.Pending;
+            }
+            else
+            {
+                booking.PaymentStatus = PaymentStatus.Pending;
+            }
+
+            await _context.SaveChangesAsync();
         }
 
         return payment;
@@ -95,47 +119,6 @@ public class PaymentService : IPaymentService
         }
 
         return await query.SumAsync(p => p.Amount);
-    }
-
-    /// <summary>
-    /// Update booking payment status based on total paid amount
-    /// </summary>
-    private async Task UpdateBookingPaymentStatusAsync(Booking booking)
-    {
-        // Calculate total paid amount (only from payments with Paid status)
-        var totalPaid = await _context.Payments
-            .Where(p => p.BookingId == booking.Id && p.Status == PaymentStatus.Paid && !p.IsDeleted)
-            .SumAsync(p => p.Amount);
-
-        // Calculate total refunded amount
-        var totalRefunded = await _context.Payments
-            .Where(p => p.BookingId == booking.Id && 
-                       (p.Status == PaymentStatus.Refunded || p.Status == PaymentStatus.PartiallyRefunded) && 
-                       !p.IsDeleted)
-            .SumAsync(p => p.Amount);
-
-        // Net paid amount (paid - refunded)
-        var netPaid = totalPaid - totalRefunded;
-
-        // Update payment status based on net paid amount
-        if (netPaid <= 0)
-        {
-            // No payment or fully refunded
-            booking.PaymentStatus = PaymentStatus.Pending;
-        }
-        else if (netPaid >= booking.TotalPrice)
-        {
-            // Fully paid
-            booking.PaymentStatus = PaymentStatus.Paid;
-        }
-        else
-        {
-            // Partially paid - keep as Pending (or could use PartiallyPaid if enum supports it)
-            booking.PaymentStatus = PaymentStatus.Pending;
-        }
-
-        booking.UpdatedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
     }
 }
 

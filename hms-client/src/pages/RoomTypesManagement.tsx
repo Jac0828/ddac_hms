@@ -8,8 +8,6 @@ import './Admin.css'; // Reuse Admin styles for consistency
 import FeedbackModal, { FeedbackModalProps } from '../components/common/FeedbackModal';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import EditFormModal from '../components/common/EditFormModal';
-import ImageUpload from '../components/common/ImageUpload';
-import LuxurySelect from '../components/common/LuxurySelect'; // Import LuxurySelect
 
 // Define exchange rates
 const exchangeRates: Record<string, number> = {
@@ -51,7 +49,7 @@ const RoomTypesManagement: React.FC = () => {
     basePricePerNight: 0,
     maxCapacity: 1,
     size: '',
-    imageUrls: [] as string[],
+    imageUrls: [''],
     amenities: [] as string[],
   });
 
@@ -168,7 +166,7 @@ const RoomTypesManagement: React.FC = () => {
       basePricePerNight: roomType.basePricePerNight,
       maxCapacity: roomType.maxCapacity,
       size: roomType.size || '',
-      imageUrls: roomType.imageUrls || [],
+      imageUrls: roomType.imageUrls && roomType.imageUrls.length > 0 ? roomType.imageUrls : [''],
       amenities: roomType.amenities || [],
     });
     // Initial price input state
@@ -205,7 +203,7 @@ const RoomTypesManagement: React.FC = () => {
       basePricePerNight: 0,
       maxCapacity: 1,
       size: '',
-      imageUrls: [],
+      imageUrls: [''],
       amenities: [],
     });
     setInputCurrency('USD');
@@ -240,6 +238,21 @@ const RoomTypesManagement: React.FC = () => {
     } else {
       setFormData({ ...formData, amenities: [...formData.amenities, amenity] });
     }
+  };
+
+  const handleImageUrlChange = (index: number, value: string) => {
+    const newUrls = [...formData.imageUrls];
+    newUrls[index] = value;
+    setFormData({ ...formData, imageUrls: newUrls });
+  };
+
+  const addImageUrlField = () => {
+    setFormData({ ...formData, imageUrls: [...formData.imageUrls, ''] });
+  };
+
+  const removeImageUrlField = (index: number) => {
+    const newUrls = formData.imageUrls.filter((_, i) => i !== index);
+    setFormData({ ...formData, imageUrls: newUrls.length ? newUrls : [''] });
   };
 
   if (!isManager && !isAdmin) {
@@ -325,12 +338,16 @@ const RoomTypesManagement: React.FC = () => {
                 required
                 placeholder="0.00"
               />
-              <LuxurySelect 
-                value={inputCurrency} 
-                onChange={(value) => handleCurrencyChange({ target: { value } } as any)} 
-                options={Object.keys(exchangeRates).map(curr => ({ value: curr, label: curr }))}
-                className="bg-light"
-              />
+              <select 
+                className="form-select" 
+                style={{ maxWidth: '100px', backgroundColor: '#f8f9fa', borderLeft: 'none' }}
+                value={inputCurrency}
+                onChange={handleCurrencyChange}
+              >
+                {Object.keys(exchangeRates).map(curr => (
+                  <option key={curr} value={curr}>{curr}</option>
+                ))}
+              </select>
             </div>
             {inputCurrency !== 'USD' && (
               <small className="text-muted mt-1 d-block">
@@ -393,23 +410,48 @@ const RoomTypesManagement: React.FC = () => {
         </div>
 
         <div className="mb-4">
-          <ImageUpload 
-            existingImages={formData.imageUrls.filter(url => url && url.trim() !== '')}
-            onUploadComplete={(url) => {
-              setFormData(prev => ({
-                ...prev,
-                imageUrls: [...prev.imageUrls.filter(u => u && u.trim() !== ''), url]
-              }));
-            }}
-            onDelete={(url) => {
-              setFormData(prev => ({
-                ...prev,
-                imageUrls: prev.imageUrls.filter(u => u !== url)
-              }));
-            }}
-            maxImages={10}
-            title="Room Images"
-          />
+          <label className="form-label fw-bold">Image URLs</label>
+          <div className="d-flex flex-column gap-3">
+            {formData.imageUrls.map((url, index) => (
+              <div key={index} className="p-3 border rounded bg-light bg-opacity-25">
+                <div className="d-flex gap-2 align-items-center">
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={url}
+                    onChange={(e) => handleImageUrlChange(index, e.target.value)}
+                    placeholder="https://example.com/image.jpg"
+                  />
+                  <button 
+                    type="button" 
+                    className="btn btn-outline-danger"
+                    onClick={() => removeImageUrlField(index)}
+                    title="Remove Image"
+                  >
+                    <FaTimes />
+                  </button>
+                </div>
+                {url && (
+                  <div className="mt-2">
+                    <img 
+                      src={url} 
+                      alt={`Preview ${index + 1}`} 
+                      className="img-fluid rounded border shadow-sm"
+                      style={{ height: '120px', width: 'auto', objectFit: 'cover', display: 'block' }}
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} 
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          <button 
+            type="button" 
+            className="btn btn-sm btn-outline-primary mt-2"
+            onClick={addImageUrlField}
+          >
+            <FaPlus /> Add Another Image URL
+          </button>
         </div>
       </EditFormModal>
 
