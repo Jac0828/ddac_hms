@@ -1,0 +1,412 @@
+/* Shangri-La Luxury Navbar Styles */
+
+/* Animated Gradient Background Keyframes */
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  25% {
+    background-position: 50% 0%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  75% {
+    background-position: 50% 100%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Top Utility Bar */
+.navbar-top-bar {
+  background-color: var(--primary-dark, #1A1A1A);
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(201, 169, 97, 0.1);
+}
+
+.navbar-top-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.navbar-top-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.top-link {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  font-size: 0.75rem;
+  font-weight: 400;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.top-link:hover {
+  color: var(--primary-gold, #C9A961);
+}
+
+.navbar-top-right {
+  display: flex;
+  align-items: center;
+}
+
+.navbar-top-right .luxury-nav-right {
+  margin-left: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.navbar-top-right .luxury-nav-link {
+  padding: 0.25rem 0.75rem !important;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.navbar-top-right .nav-item {
+  display: flex;
+  align-items: center;
+  margin: 0;
+}
+
+.navbar-top-right .luxury-language-link,
+.navbar-top-right .luxury-currency-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem !important;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.navbar-top-right .language-icon,
+.navbar-top-right .currency-icon {
+  font-size: 1rem;
+}
+
+.navbar-top-right .language-text,
+.navbar-top-right .currency-text {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.navbar-luxury {
+  background: var(--theme-bg-gradient) !important;
+  background-size: 400% 400% !important;
+  background-repeat: no-repeat !important;
+  animation: gradientShift 6s ease infinite !important;
+  backdrop-filter: blur(10px);
+  padding: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid var(--theme-border);
+  position: relative;
+  z-index: 1100;
+  overflow: visible !important;
+  transition: border-color 0.3s ease;
+}
+
+.navbar-luxury .container-fluid {
+  max-width: 1400px;
+  position: relative;
+  overflow: visible !important;
+}
+
+.navbar-luxury .navbar-collapse {
+  overflow: visible !important;
+}
+
+.navbar-luxury .navbar-nav {
+  overflow: visible !important;
+}
+
+.navbar-luxury .nav-item {
+  overflow: visible !important;
+}
+
+/* Brand Logo */
+.luxury-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 0;
+  text-decoration: none;
+  color: var(--theme-text-primary) !important;
+  font-weight: 500;
+  font-size: 1.1rem;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.luxury-brand:hover {
+  color: var(--primary-gold, #C9A961) !important;
+}
+
+.brand-icon {
+  font-size: 1.5rem;
+}
+
+.brand-text {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  letter-spacing: 2px;
+}
+
+/* Navigation Links */
+.luxury-nav {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-left: 2rem;
+}
+
+.luxury-nav-link {
+  color: var(--theme-text-primary) !important;
+  font-size: 0.8rem;
+  font-weight: 400;
+  letter-spacing: 0.4px;
+  padding: 1.25rem 1.5rem !important;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  border-bottom: 2px solid transparent;
+  position: relative;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.luxury-nav-link:hover {
+  color: var(--primary-gold, #C9A961) !important;
+  background-color: rgba(201, 169, 97, 0.1);
+  border-bottom-color: var(--primary-gold, #C9A961);
+}
+
+.luxury-nav-link.active {
+  color: var(--primary-gold, #C9A961) !important;
+  border-bottom-color: var(--primary-gold, #C9A961);
+}
+
+/* Right Navigation */
+.luxury-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: auto;
+  position: relative;
+  overflow: visible !important;
+}
+
+/* Language & Currency Selectors */
+.luxury-language-link,
+.luxury-currency-link,
+.luxury-theme-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem !important;
+  font-size: 0.75rem;
+  color: var(--theme-text-primary) !important;
+  white-space: nowrap;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.luxury-language-link:hover,
+.luxury-currency-link:hover,
+.luxury-theme-link:hover {
+  color: var(--primary-gold, #C9A961) !important;
+  background-color: rgba(201, 169, 97, 0.1);
+}
+
+.theme-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  transition: all 0.3s ease;
+}
+
+.theme-icon svg {
+  width: 100%;
+  height: 100%;
+  stroke: currentColor;
+}
+
+.theme-icon-light {
+  color: var(--primary-gold);
+}
+
+.theme-icon-dark {
+  color: var(--primary-gold);
+}
+
+.luxury-theme-link:hover .theme-icon {
+  transform: rotate(15deg) scale(1.1);
+}
+
+.language-icon {
+  font-size: 1.2rem;
+  display: inline-block;
+  line-height: 1;
+}
+
+.language-text,
+.currency-text {
+  font-weight: 500;
+  font-size: 0.9rem;
+  letter-spacing: 0.3px;
+}
+
+.luxury-language-dropdown,
+.luxury-currency-dropdown {
+  position: relative;
+  overflow: visible !important;
+}
+
+.luxury-language-dropdown .luxury-dropdown {
+  right: 0;
+  top: 100%;
+  margin-top: 0.25rem;
+}
+
+.luxury-currency-dropdown .luxury-dropdown {
+  right: 0;
+  top: 100%;
+  margin-top: 0.25rem;
+}
+
+.luxury-nav-button {
+  background: var(--primary-gold, #C9A961) !important;
+  color: var(--primary-white, #FFFFFF) !important;
+  padding: 0.5rem 1.25rem !important;
+  border-radius: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.4px;
+  transition: all 0.3s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  margin-left: 0.5rem;
+}
+
+.luxury-nav-button:hover {
+  background: var(--primary-dark-gold, #B8944F) !important;
+  color: var(--primary-white, #FFFFFF) !important;
+  transform: translateY(-1px);
+}
+
+/* Dropdown Menu */
+.luxury-dropdown {
+  background: var(--theme-card-bg);
+  border: 1px solid var(--theme-border);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  padding: 0.5rem 0;
+  margin-top: 0;
+  position: absolute;
+  z-index: 1050;
+  min-width: 150px;
+  top: 100%;
+  right: 0;
+  margin-top: 0.25rem;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.luxury-dropdown-scrollable {
+  max-height: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.luxury-dropdown-scrollable::-webkit-scrollbar {
+  width: 6px;
+}
+
+.luxury-dropdown-scrollable::-webkit-scrollbar-track {
+  background: rgba(201, 169, 97, 0.1);
+  border-radius: 3px;
+}
+
+.luxury-dropdown-scrollable::-webkit-scrollbar-thumb {
+  background: rgba(201, 169, 97, 0.3);
+  border-radius: 3px;
+}
+
+.luxury-dropdown-scrollable::-webkit-scrollbar-thumb:hover {
+  background: rgba(201, 169, 97, 0.5);
+}
+
+.luxury-dropdown-item {
+  color: var(--theme-text-primary);
+  padding: 0.75rem 1.5rem;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.luxury-dropdown-item:hover {
+  background-color: rgba(201, 169, 97, 0.1);
+  color: var(--primary-gold, #C9A961);
+}
+
+.luxury-dropdown-item.active {
+  background-color: rgba(201, 169, 97, 0.15);
+  color: var(--primary-gold, #C9A961);
+  font-weight: 600;
+}
+
+.luxury-currency-dropdown {
+  position: relative;
+}
+
+.luxury-dropdown .dropdown-divider {
+  margin: 0.5rem 0;
+  border-color: rgba(201, 169, 97, 0.2);
+}
+
+/* Navbar Toggler */
+.navbar-luxury .navbar-toggler {
+  border-color: rgba(201, 169, 97, 0.3);
+  padding: 0.5rem;
+}
+
+.navbar-luxury .navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.9%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+  .luxury-nav {
+    margin-left: 0;
+    padding: 1rem 0;
+  }
+  
+  .luxury-nav-link {
+    padding: 0.75rem 1rem !important;
+    border-bottom: none;
+    border-left: 3px solid transparent;
+  }
+  
+  .luxury-nav-link:hover {
+    border-left-color: var(--primary-gold, #C9A961);
+    border-bottom-color: transparent;
+  }
+}
+

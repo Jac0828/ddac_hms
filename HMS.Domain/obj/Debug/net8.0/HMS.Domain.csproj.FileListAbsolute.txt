@@ -11,3 +11,16 @@
 /Users/jac/ddac_hms/HMS.Domain/obj/Debug/net8.0/refint/HMS.Domain.dll
 /Users/jac/ddac_hms/HMS.Domain/obj/Debug/net8.0/HMS.Domain.pdb
 /Users/jac/ddac_hms/HMS.Domain/obj/Debug/net8.0/ref/HMS.Domain.dll
+/Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Domain/bin/Debug/net8.0/HMS.Domain.deps.json
+/Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Domain/bin/Debug/net8.0/HMS.Domain.dll
+/Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Domain/bin/Debug/net8.0/HMS.Domain.pdb
+/Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Domain/obj/Debug/net8.0/HMS.Domain.csproj.AssemblyReference.cache
+/Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Domain/obj/Debug/net8.0/HMS.Domain.GeneratedMSBuildEditorConfig.editorconfig
+/Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Domain/obj/Debug/net8.0/HMS.Domain.AssemblyInfoInputs.cache
+/Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Domain/obj/Debug/net8.0/HMS.Domain.AssemblyInfo.cs
+/Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Domain/obj/Debug/net8.0/HMS.Domain.csproj.CoreCompileInputs.cache
+/Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Domain/obj/Debug/net8.0/HMS.Domain.sourcelink.json
+/Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Domain/obj/Debug/net8.0/HMS.Domain.dll
+/Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Domain/obj/Debug/net8.0/refint/HMS.Domain.dll
+/Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Domain/obj/Debug/net8.0/HMS.Domain.pdb
+/Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Domain/obj/Debug/net8.0/ref/HMS.Domain.dll

@@ -1,0 +1,594 @@
+Building...
+=== DEBUG: Connection String ===
+Connection String: Host=hotelmanagementsystem.cq7oeyco0q9s.us-east-1.rds.amazonaws.com;Port=5432;Database=postgres;Username=postgres;Password=admin1234;SSL Mode=Require;Trust Server Certificate=true;Include Error Detail=true
+Is Null: False
+Contains '127.0.0.1': False
+Contains 'localhost': False
+Contains '5432': True
+Contains 'rds.amazonaws.com': True
+================================
+=== Using Connection String for DbContext ===
+Connection String: Host=hotelmanagementsystem.cq7oeyco0q9s.us-east-1.rds.amazonaws.com;Port=5432;Database=postgres;Username=postgres;Password=admin1234;SSL Mode=Require;Trust Server Certificate=true;Include Error Detail=true
+==============================================
+info: Program[0]
+      Starting database migration...
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (271ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT 1 FROM "AspNetRoles" LIMIT 1;
+info: Program[0]
+      Database tables already exist (created manually or via SQL).
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (259ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT 1 FROM "__EFMigrationsHistory" LIMIT 1;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (285ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1 FROM pg_catalog.pg_class c
+          JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+          WHERE n.nspname='public' AND
+                c.relname='__EFMigrationsHistory'
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (261ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "MigrationId", "ProductVersion"
+      FROM "__EFMigrationsHistory"
+      ORDER BY "MigrationId";
+info: Program[0]
+      No pending migrations. Database is up to date.
+info: Program[0]
+      Seeding database...
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (264ms) [Parameters=[@__normalizedEmail_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."AccessFailedCount", a."ConcurrencyStamp", a."CreatedAt", a."DateOfBirth", a."Email", a."EmailConfirmed", a."FirstName", a."Gender", a."IsActive", a."LastName", a."LockoutEnabled", a."LockoutEnd", a."MembershipTier", a."NormalizedEmail", a."NormalizedUserName", a."PasswordHash", a."PhoneNumber", a."PhoneNumberConfirmed", a."Points", a."SecurityStamp", a."TwoFactorEnabled", a."UserName"
+      FROM "AspNetUsers" AS a
+      WHERE a."NormalizedEmail" = @__normalizedEmail_0
+      LIMIT 2
+info: SeedData[0]
+      Database already seeded (admin user exists). Skipping seeding.
+info: Program[0]
+      Database seeding completed.
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5024
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: /Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Api
+=== REGISTERED ROUTES ===
+api/admin/users (HMS.Api.Controllers.AdminController.GetUsers (HMS.Api))
+api/admin/users/{id} (HMS.Api.Controllers.AdminController.GetUser (HMS.Api))
+api/admin/users (HMS.Api.Controllers.AdminController.CreateUser (HMS.Api))
+api/admin/users/{id} (HMS.Api.Controllers.AdminController.UpdateUser (HMS.Api))
+api/admin/users/{id} (HMS.Api.Controllers.AdminController.DeleteUser (HMS.Api))
+api/admin/settings (HMS.Api.Controllers.AdminController.GetSettings (HMS.Api))
+api/admin/settings (HMS.Api.Controllers.AdminController.UpdateSettings (HMS.Api))
+api/AuditLog (HMS.Api.Controllers.AuditLogController.GetAuditLogs (HMS.Api))
+api/AuditLog/{id} (HMS.Api.Controllers.AuditLogController.GetAuditLog (HMS.Api))
+api/Auth/register (HMS.Api.Controllers.AuthController.Register (HMS.Api))
+api/Auth/login (HMS.Api.Controllers.AuthController.Login (HMS.Api))
+api/Auth/google-login (HMS.Api.Controllers.AuthController.GoogleLogin (HMS.Api))
+api/Auth/change-password (HMS.Api.Controllers.AuthController.ChangePassword (HMS.Api))
+api/Auth/profile (HMS.Api.Controllers.AuthController.UpdateProfile (HMS.Api))
+api/Auth/send-verification-email (HMS.Api.Controllers.AuthController.SendVerificationEmail (HMS.Api))
+api/Auth/verify-email (HMS.Api.Controllers.AuthController.VerifyEmail (HMS.Api))
+api/Bookings (HMS.Api.Controllers.BookingsController.CreateBooking (HMS.Api))
+api/Bookings (HMS.Api.Controllers.BookingsController.GetBookings (HMS.Api))
+api/Bookings/{id} (HMS.Api.Controllers.BookingsController.GetBooking (HMS.Api))
+api/Bookings/{id} (HMS.Api.Controllers.BookingsController.ModifyBooking (HMS.Api))
+api/Bookings/{id} (HMS.Api.Controllers.BookingsController.CancelBooking (HMS.Api))
+api/Bookings/{id}/checkin (HMS.Api.Controllers.BookingsController.CheckIn (HMS.Api))
+api/Bookings/{id}/checkout (HMS.Api.Controllers.BookingsController.Checkout (HMS.Api))
+api/Bookings/upcoming-checkins (HMS.Api.Controllers.BookingsController.GetUpcomingCheckIns (HMS.Api))
+api/DutyRoster (HMS.Api.Controllers.DutyRosterController.GetAllRosters (HMS.Api))
+api/DutyRoster/staff/{staffId} (HMS.Api.Controllers.DutyRosterController.GetStaffRoster (HMS.Api))
+api/DutyRoster/date/{date} (HMS.Api.Controllers.DutyRosterController.GetRosterByDate (HMS.Api))
+api/DutyRoster (HMS.Api.Controllers.DutyRosterController.CreateRoster (HMS.Api))
+api/DutyRoster/{id} (HMS.Api.Controllers.DutyRosterController.UpdateRoster (HMS.Api))
+api/DutyRoster/{id} (HMS.Api.Controllers.DutyRosterController.DeleteRoster (HMS.Api))
+api/Housekeeping/staff/{staffId} (HMS.Api.Controllers.HousekeepingController.GetStaffTasks (HMS.Api))
+api/Housekeeping (HMS.Api.Controllers.HousekeepingController.GetAllTasks (HMS.Api))
+api/Housekeeping/{id} (HMS.Api.Controllers.HousekeepingController.GetTask (HMS.Api))
+api/Housekeeping/{id}/status (HMS.Api.Controllers.HousekeepingController.UpdateTaskStatus (HMS.Api))
+api/Housekeeping (HMS.Api.Controllers.HousekeepingController.CreateTask (HMS.Api))
+api/Housekeeping/{id} (HMS.Api.Controllers.HousekeepingController.UpdateTask (HMS.Api))
+api/Newsletters (HMS.Api.Controllers.NewslettersController.GetNewsletters (HMS.Api))
+api/Newsletters/{id} (HMS.Api.Controllers.NewslettersController.GetNewsletter (HMS.Api))
+api/Newsletters (HMS.Api.Controllers.NewslettersController.CreateNewsletter (HMS.Api))
+api/Newsletters/{id}/comments (HMS.Api.Controllers.NewslettersController.AddComment (HMS.Api))
+api/Newsletters/comments/{id} (HMS.Api.Controllers.NewslettersController.DeleteComment (HMS.Api))
+api/Newsletters/comments/{id} (HMS.Api.Controllers.NewslettersController.GetComment (HMS.Api))
+api/Payments (HMS.Api.Controllers.PaymentsController.RecordPayment (HMS.Api))
+api/Payments (HMS.Api.Controllers.PaymentsController.GetAllPayments (HMS.Api))
+api/Payments/booking/{bookingId} (HMS.Api.Controllers.PaymentsController.GetBookingPayments (HMS.Api))
+api/Payments/{id} (HMS.Api.Controllers.PaymentsController.GetPayment (HMS.Api))
+api/Reviews (HMS.Api.Controllers.ReviewsController.GetReviews (HMS.Api))
+api/Reviews/stats (HMS.Api.Controllers.ReviewsController.GetReviewStats (HMS.Api))
+api/Reviews (HMS.Api.Controllers.ReviewsController.CreateReview (HMS.Api))
+api/Rooms/available (HMS.Api.Controllers.RoomsController.GetAvailableRooms (HMS.Api))
+api/Rooms (HMS.Api.Controllers.RoomsController.GetAllRooms (HMS.Api))
+api/Rooms/{id} (HMS.Api.Controllers.RoomsController.GetRoom (HMS.Api))
+api/Rooms (HMS.Api.Controllers.RoomsController.CreateRoom (HMS.Api))
+api/Rooms/batch (HMS.Api.Controllers.RoomsController.BatchCreateRooms (HMS.Api))
+api/Rooms/{id} (HMS.Api.Controllers.RoomsController.UpdateRoom (HMS.Api))
+api/Rooms/{id}/status (HMS.Api.Controllers.RoomsController.UpdateRoomStatus (HMS.Api))
+api/Rooms/{id} (HMS.Api.Controllers.RoomsController.DeleteRoom (HMS.Api))
+api/RoomTypes (HMS.Api.Controllers.RoomTypesController.GetAllRoomTypes (HMS.Api))
+api/RoomTypes/{id} (HMS.Api.Controllers.RoomTypesController.GetRoomType (HMS.Api))
+api/RoomTypes (HMS.Api.Controllers.RoomTypesController.CreateRoomType (HMS.Api))
+api/RoomTypes/{id} (HMS.Api.Controllers.RoomTypesController.UpdateRoomType (HMS.Api))
+api/RoomTypes/{id} (HMS.Api.Controllers.RoomTypesController.DeleteRoomType (HMS.Api))
+api/ServiceRequests (HMS.Api.Controllers.ServiceRequestsController.GetServiceRequests (HMS.Api))
+api/ServiceRequests (HMS.Api.Controllers.ServiceRequestsController.CreateServiceRequest (HMS.Api))
+api/ServiceRequests/{id} (HMS.Api.Controllers.ServiceRequestsController.GetServiceRequest (HMS.Api))
+api/ServiceRequests/{id}/assign (HMS.Api.Controllers.ServiceRequestsController.AssignServiceRequest (HMS.Api))
+api/ServiceRequests/{id}/complete (HMS.Api.Controllers.ServiceRequestsController.CompleteServiceRequest (HMS.Api))
+api/Users (HMS.Api.Controllers.UsersController.GetAllUsers (HMS.Api))
+api/Users (HMS.Api.Controllers.UsersController.CreateUser (HMS.Api))
+api/Users/{id} (HMS.Api.Controllers.UsersController.UpdateUser (HMS.Api))
+api/Users/{id} (HMS.Api.Controllers.UsersController.DeleteUser (HMS.Api))
+WeatherForecast (HMS.Api.Controllers.WeatherForecastController.Get (HMS.Api))
+/healthz (HTTP: GET /healthz)
+/api/test-db (HTTP: GET /api/test-db)
+/ (HTTP: GET /)
+========================
+warn: Microsoft.EntityFrameworkCore.Query[10103]
+      The query uses the 'First'/'FirstOrDefault' operator without 'OrderBy' and filter operators. This may lead to unpredictable results.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (261ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT h."Id", h."Address", h."CheckInTime", h."CheckOutTime", h."Currency", h."Email", h."FacebookUrl", h."GoldDiscount", h."HotelName", h."InstagramUrl", h."MemberDiscount", h."MembershipBenefitsJson", h."Phone", h."PlatinumDiscount", h."SilverDiscount", h."TaxRate", h."TwitterUrl", h."WelcomeDescription"
+      FROM "HotelSettings" AS h
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (259ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT h."Id", h."Address", h."CheckInTime", h."CheckOutTime", h."Currency", h."Email", h."FacebookUrl", h."GoldDiscount", h."HotelName", h."InstagramUrl", h."MemberDiscount", h."MembershipBenefitsJson", h."Phone", h."PlatinumDiscount", h."SilverDiscount", h."TaxRate", h."TwitterUrl", h."WelcomeDescription"
+      FROM "HotelSettings" AS h
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (261ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT h."Id", h."Address", h."CheckInTime", h."CheckOutTime", h."Currency", h."Email", h."FacebookUrl", h."GoldDiscount", h."HotelName", h."InstagramUrl", h."MemberDiscount", h."MembershipBenefitsJson", h."Phone", h."PlatinumDiscount", h."SilverDiscount", h."TaxRate", h."TwitterUrl", h."WelcomeDescription"
+      FROM "HotelSettings" AS h
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (261ms) [Parameters=[@p0='?', @p1='?', @p2='?', @p3='?', @p4='?', @p5='?', @p6='?' (DbType = Decimal), @p7='?', @p8='?', @p9='?' (DbType = Decimal), @p10='?' (DbType = Object), @p11='?', @p12='?' (DbType = Decimal), @p13='?' (DbType = Decimal), @p14='?' (DbType = Decimal), @p15='?', @p16='?'], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "HotelSettings" ("Address", "CheckInTime", "CheckOutTime", "Currency", "Email", "FacebookUrl", "GoldDiscount", "HotelName", "InstagramUrl", "MemberDiscount", "MembershipBenefitsJson", "Phone", "PlatinumDiscount", "SilverDiscount", "TaxRate", "TwitterUrl", "WelcomeDescription")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15, @p16)
+      RETURNING "Id";
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (301ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT h."Id", h."Address", h."CheckInTime", h."CheckOutTime", h."Currency", h."Email", h."FacebookUrl", h."GoldDiscount", h."HotelName", h."InstagramUrl", h."MemberDiscount", h."MembershipBenefitsJson", h."Phone", h."PlatinumDiscount", h."SilverDiscount", h."TaxRate", h."TwitterUrl", h."WelcomeDescription"
+      FROM "HotelSettings" AS h
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (280ms) [Parameters=[@p1='?' (DbType = Int32), @p0='?' (DbType = Object)], CommandType='Text', CommandTimeout='30']
+      UPDATE "HotelSettings" SET "MembershipBenefitsJson" = @p0
+      WHERE "Id" = @p1;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (262ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT h."Id", h."Address", h."CheckInTime", h."CheckOutTime", h."Currency", h."Email", h."FacebookUrl", h."GoldDiscount", h."HotelName", h."InstagramUrl", h."MemberDiscount", h."MembershipBenefitsJson", h."Phone", h."PlatinumDiscount", h."SilverDiscount", h."TaxRate", h."TwitterUrl", h."WelcomeDescription"
+      FROM "HotelSettings" AS h
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (260ms) [Parameters=[@p1='?' (DbType = Int32), @p0='?' (DbType = Object)], CommandType='Text', CommandTimeout='30']
+      UPDATE "HotelSettings" SET "MembershipBenefitsJson" = @p0
+      WHERE "Id" = @p1;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (259ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT h."Id", h."Address", h."CheckInTime", h."CheckOutTime", h."Currency", h."Email", h."FacebookUrl", h."GoldDiscount", h."HotelName", h."InstagramUrl", h."MemberDiscount", h."MembershipBenefitsJson", h."Phone", h."PlatinumDiscount", h."SilverDiscount", h."TaxRate", h."TwitterUrl", h."WelcomeDescription"
+      FROM "HotelSettings" AS h
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (347ms) [Parameters=[@p1='?' (DbType = Int32), @p0='?' (DbType = Object)], CommandType='Text', CommandTimeout='30']
+      UPDATE "HotelSettings" SET "MembershipBenefitsJson" = @p0
+      WHERE "Id" = @p1;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (264ms) [Parameters=[@__normalizedEmail_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."AccessFailedCount", a."ConcurrencyStamp", a."CreatedAt", a."DateOfBirth", a."Email", a."EmailConfirmed", a."FirstName", a."Gender", a."IsActive", a."LastName", a."LockoutEnabled", a."LockoutEnd", a."MembershipTier", a."NormalizedEmail", a."NormalizedUserName", a."PasswordHash", a."PhoneNumber", a."PhoneNumberConfirmed", a."Points", a."SecurityStamp", a."TwoFactorEnabled", a."UserName"
+      FROM "AspNetUsers" AS a
+      WHERE a."NormalizedEmail" = @__normalizedEmail_0
+      LIMIT 2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (264ms) [Parameters=[@__userId_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a0."Name"
+      FROM "AspNetUserRoles" AS a
+      INNER JOIN "AspNetRoles" AS a0 ON a."RoleId" = a0."Id"
+      WHERE a."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (262ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."AccessFailedCount", a."ConcurrencyStamp", a."CreatedAt", a."DateOfBirth", a."Email", a."EmailConfirmed", a."FirstName", a."Gender", a."IsActive", a."LastName", a."LockoutEnabled", a."LockoutEnd", a."MembershipTier", a."NormalizedEmail", a."NormalizedUserName", a."PasswordHash", a."PhoneNumber", a."PhoneNumberConfirmed", a."Points", a."SecurityStamp", a."TwoFactorEnabled", a."UserName"
+      FROM "AspNetUsers" AS a
+      ORDER BY a."CreatedAt"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (260ms) [Parameters=[@__userId_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT b."Id", b."CheckInDate", b."CheckOutDate", b."CreatedAt", b."CreatedBy", b."DeletedAt", b."DeletedBy", b."IsDeleted", b."NumberOfGuests", b."PaymentStatus", b."RoomId", b."SpecialRequests", b."Status", b."TotalPrice", b."UpdatedAt", b."UpdatedBy", b."UserId", r."Id", r."Capacity", r."CreatedAt", r."CreatedBy", r."DeletedAt", r."DeletedBy", r."Description", r."HasAirConditioning", r."HasBalcony", r."HasTV", r."HasWifi", r."IsDeleted", r."PricePerNight", r."RoomNumber", r."RoomTypeId", r."Status", r."UpdatedAt", r."UpdatedBy"
+      FROM "Bookings" AS b
+      INNER JOIN "Rooms" AS r ON b."RoomId" = r."Id"
+      WHERE b."UserId" = @__userId_0
+      ORDER BY b."CreatedAt" DESC
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (258ms) [Parameters=[@__userId_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT b."Id", b."CheckInDate", b."CheckOutDate", b."CreatedAt", b."CreatedBy", b."DeletedAt", b."DeletedBy", b."IsDeleted", b."NumberOfGuests", b."PaymentStatus", b."RoomId", b."SpecialRequests", b."Status", b."TotalPrice", b."UpdatedAt", b."UpdatedBy", b."UserId", r."Id", r."Capacity", r."CreatedAt", r."CreatedBy", r."DeletedAt", r."DeletedBy", r."Description", r."HasAirConditioning", r."HasBalcony", r."HasTV", r."HasWifi", r."IsDeleted", r."PricePerNight", r."RoomNumber", r."RoomTypeId", r."Status", r."UpdatedAt", r."UpdatedBy"
+      FROM "Bookings" AS b
+      INNER JOIN "Rooms" AS r ON b."RoomId" = r."Id"
+      WHERE b."UserId" = @__userId_0
+      ORDER BY b."CreatedAt" DESC
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (325ms) [Parameters=[@__userIds_0='?' (DbType = Object)], CommandType='Text', CommandTimeout='30']
+      SELECT a."UserId", COALESCE(a0."Name", '') AS "RoleName"
+      FROM "AspNetUserRoles" AS a
+      INNER JOIN "AspNetRoles" AS a0 ON a."RoleId" = a0."Id"
+      WHERE a."UserId" = ANY (@__userIds_0)
+[GetUsers] Total users: 70, Active: 69, Inactive: 1, Returned DTOs: 70
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (299ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."AccessFailedCount", a."ConcurrencyStamp", a."CreatedAt", a."DateOfBirth", a."Email", a."EmailConfirmed", a."FirstName", a."Gender", a."IsActive", a."LastName", a."LockoutEnabled", a."LockoutEnd", a."MembershipTier", a."NormalizedEmail", a."NormalizedUserName", a."PasswordHash", a."PhoneNumber", a."PhoneNumberConfirmed", a."Points", a."SecurityStamp", a."TwoFactorEnabled", a."UserName"
+      FROM "AspNetUsers" AS a
+      ORDER BY a."CreatedAt"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (301ms) [Parameters=[@__userIds_0='?' (DbType = Object)], CommandType='Text', CommandTimeout='30']
+      SELECT a."UserId", COALESCE(a0."Name", '') AS "RoleName"
+      FROM "AspNetUserRoles" AS a
+      INNER JOIN "AspNetRoles" AS a0 ON a."RoleId" = a0."Id"
+      WHERE a."UserId" = ANY (@__userIds_0)
+[GetUsers] Total users: 70, Active: 69, Inactive: 1, Returned DTOs: 70
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (265ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT count(*)::int
+      FROM "ActivityLogs" AS a
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (265ms) [Parameters=[@__userId_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT s."Id", s."AssignedToUserId", s."BookingId", s."CompletedAt", s."CreatedAt", s."CreatedBy", s."DeletedAt", s."DeletedBy", s."Description", s."IsDeleted", s."Notes", s."RequestedAt", s."ServiceType", s."Status", s."UpdatedAt", s."UpdatedBy", s."UserId", b."Id", b."CheckInDate", b."CheckOutDate", b."CreatedAt", b."CreatedBy", b."DeletedAt", b."DeletedBy", b."IsDeleted", b."NumberOfGuests", b."PaymentStatus", b."RoomId", b."SpecialRequests", b."Status", b."TotalPrice", b."UpdatedAt", b."UpdatedBy", b."UserId", a."Id", a."AccessFailedCount", a."ConcurrencyStamp", a."CreatedAt", a."DateOfBirth", a."Email", a."EmailConfirmed", a."FirstName", a."Gender", a."IsActive", a."LastName", a."LockoutEnabled", a."LockoutEnd", a."MembershipTier", a."NormalizedEmail", a."NormalizedUserName", a."PasswordHash", a."PhoneNumber", a."PhoneNumberConfirmed", a."Points", a."SecurityStamp", a."TwoFactorEnabled", a."UserName", a0."Id", a0."AccessFailedCount", a0."ConcurrencyStamp", a0."CreatedAt", a0."DateOfBirth", a0."Email", a0."EmailConfirmed", a0."FirstName", a0."Gender", a0."IsActive", a0."LastName", a0."LockoutEnabled", a0."LockoutEnd", a0."MembershipTier", a0."NormalizedEmail", a0."NormalizedUserName", a0."PasswordHash", a0."PhoneNumber", a0."PhoneNumberConfirmed", a0."Points", a0."SecurityStamp", a0."TwoFactorEnabled", a0."UserName"
+      FROM "ServiceRequests" AS s
+      INNER JOIN "Bookings" AS b ON s."BookingId" = b."Id"
+      INNER JOIN "AspNetUsers" AS a ON s."UserId" = a."Id"
+      LEFT JOIN "AspNetUsers" AS a0 ON s."AssignedToUserId" = a0."Id"
+      WHERE s."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (265ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT r."Id", r."Capacity", r."CreatedAt", r."CreatedBy", r."DeletedAt", r."DeletedBy", r."Description", r."HasAirConditioning", r."HasBalcony", r."HasTV", r."HasWifi", r."IsDeleted", r."PricePerNight", r."RoomNumber", r."RoomTypeId", r."Status", r."UpdatedAt", r."UpdatedBy", r0."Id", r0."Amenities", r0."BasePricePerNight", r0."CreatedAt", r0."CreatedBy", r0."DeletedAt", r0."DeletedBy", r0."Description", r0."ImageUrls", r0."IsDeleted", r0."MaxCapacity", r0."Name", r0."Size", r0."UpdatedAt", r0."UpdatedBy"
+      FROM "Rooms" AS r
+      INNER JOIN "RoomTypes" AS r0 ON r."RoomTypeId" = r0."Id"
+      ORDER BY r."RoomNumber"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (261ms) [Parameters=[@__p_1='?' (DbType = Int32), @__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."Action", t."CreatedAt", t."Details", t."EntityId", t."EntityType", t."UserId", a0."Id", a0."AccessFailedCount", a0."ConcurrencyStamp", a0."CreatedAt", a0."DateOfBirth", a0."Email", a0."EmailConfirmed", a0."FirstName", a0."Gender", a0."IsActive", a0."LastName", a0."LockoutEnabled", a0."LockoutEnd", a0."MembershipTier", a0."NormalizedEmail", a0."NormalizedUserName", a0."PasswordHash", a0."PhoneNumber", a0."PhoneNumberConfirmed", a0."Points", a0."SecurityStamp", a0."TwoFactorEnabled", a0."UserName"
+      FROM (
+          SELECT a."Id", a."Action", a."CreatedAt", a."Details", a."EntityId", a."EntityType", a."UserId"
+          FROM "ActivityLogs" AS a
+          ORDER BY a."CreatedAt" DESC
+          LIMIT @__p_1 OFFSET @__p_0
+      ) AS t
+      INNER JOIN "AspNetUsers" AS a0 ON t."UserId" = a0."Id"
+      ORDER BY t."CreatedAt" DESC
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (261ms) [Parameters=[@__userId_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT s."Id", s."AssignedToUserId", s."BookingId", s."CompletedAt", s."CreatedAt", s."CreatedBy", s."DeletedAt", s."DeletedBy", s."Description", s."IsDeleted", s."Notes", s."RequestedAt", s."ServiceType", s."Status", s."UpdatedAt", s."UpdatedBy", s."UserId", b."Id", b."CheckInDate", b."CheckOutDate", b."CreatedAt", b."CreatedBy", b."DeletedAt", b."DeletedBy", b."IsDeleted", b."NumberOfGuests", b."PaymentStatus", b."RoomId", b."SpecialRequests", b."Status", b."TotalPrice", b."UpdatedAt", b."UpdatedBy", b."UserId", a."Id", a."AccessFailedCount", a."ConcurrencyStamp", a."CreatedAt", a."DateOfBirth", a."Email", a."EmailConfirmed", a."FirstName", a."Gender", a."IsActive", a."LastName", a."LockoutEnabled", a."LockoutEnd", a."MembershipTier", a."NormalizedEmail", a."NormalizedUserName", a."PasswordHash", a."PhoneNumber", a."PhoneNumberConfirmed", a."Points", a."SecurityStamp", a."TwoFactorEnabled", a."UserName", a0."Id", a0."AccessFailedCount", a0."ConcurrencyStamp", a0."CreatedAt", a0."DateOfBirth", a0."Email", a0."EmailConfirmed", a0."FirstName", a0."Gender", a0."IsActive", a0."LastName", a0."LockoutEnabled", a0."LockoutEnd", a0."MembershipTier", a0."NormalizedEmail", a0."NormalizedUserName", a0."PasswordHash", a0."PhoneNumber", a0."PhoneNumberConfirmed", a0."Points", a0."SecurityStamp", a0."TwoFactorEnabled", a0."UserName"
+      FROM "ServiceRequests" AS s
+      INNER JOIN "Bookings" AS b ON s."BookingId" = b."Id"
+      INNER JOIN "AspNetUsers" AS a ON s."UserId" = a."Id"
+      LEFT JOIN "AspNetUsers" AS a0 ON s."AssignedToUserId" = a0."Id"
+      WHERE s."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (263ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT r."Id", r."Capacity", r."CreatedAt", r."CreatedBy", r."DeletedAt", r."DeletedBy", r."Description", r."HasAirConditioning", r."HasBalcony", r."HasTV", r."HasWifi", r."IsDeleted", r."PricePerNight", r."RoomNumber", r."RoomTypeId", r."Status", r."UpdatedAt", r."UpdatedBy", r0."Id", r0."Amenities", r0."BasePricePerNight", r0."CreatedAt", r0."CreatedBy", r0."DeletedAt", r0."DeletedBy", r0."Description", r0."ImageUrls", r0."IsDeleted", r0."MaxCapacity", r0."Name", r0."Size", r0."UpdatedAt", r0."UpdatedBy"
+      FROM "Rooms" AS r
+      INNER JOIN "RoomTypes" AS r0 ON r."RoomTypeId" = r0."Id"
+      ORDER BY r."RoomNumber"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (307ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT count(*)::int
+      FROM "ActivityLogs" AS a
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (263ms) [Parameters=[@__p_1='?' (DbType = Int32), @__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."Action", t."CreatedAt", t."Details", t."EntityId", t."EntityType", t."UserId", a0."Id", a0."AccessFailedCount", a0."ConcurrencyStamp", a0."CreatedAt", a0."DateOfBirth", a0."Email", a0."EmailConfirmed", a0."FirstName", a0."Gender", a0."IsActive", a0."LastName", a0."LockoutEnabled", a0."LockoutEnd", a0."MembershipTier", a0."NormalizedEmail", a0."NormalizedUserName", a0."PasswordHash", a0."PhoneNumber", a0."PhoneNumberConfirmed", a0."Points", a0."SecurityStamp", a0."TwoFactorEnabled", a0."UserName"
+      FROM (
+          SELECT a."Id", a."Action", a."CreatedAt", a."Details", a."EntityId", a."EntityType", a."UserId"
+          FROM "ActivityLogs" AS a
+          ORDER BY a."CreatedAt" DESC
+          LIMIT @__p_1 OFFSET @__p_0
+      ) AS t
+      INNER JOIN "AspNetUsers" AS a0 ON t."UserId" = a0."Id"
+      ORDER BY t."CreatedAt" DESC
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (292ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT h."Id", h."Address", h."CheckInTime", h."CheckOutTime", h."Currency", h."Email", h."FacebookUrl", h."GoldDiscount", h."HotelName", h."InstagramUrl", h."MemberDiscount", h."MembershipBenefitsJson", h."Phone", h."PlatinumDiscount", h."SilverDiscount", h."TaxRate", h."TwitterUrl", h."WelcomeDescription"
+      FROM "HotelSettings" AS h
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (261ms) [Parameters=[@p1='?' (DbType = Int32), @p0='?' (DbType = Object)], CommandType='Text', CommandTimeout='30']
+      UPDATE "HotelSettings" SET "MembershipBenefitsJson" = @p0
+      WHERE "Id" = @p1;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (260ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT h."Id", h."Address", h."CheckInTime", h."CheckOutTime", h."Currency", h."Email", h."FacebookUrl", h."GoldDiscount", h."HotelName", h."InstagramUrl", h."MemberDiscount", h."MembershipBenefitsJson", h."Phone", h."PlatinumDiscount", h."SilverDiscount", h."TaxRate", h."TwitterUrl", h."WelcomeDescription"
+      FROM "HotelSettings" AS h
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (261ms) [Parameters=[@p1='?' (DbType = Int32), @p0='?' (DbType = Object)], CommandType='Text', CommandTimeout='30']
+      UPDATE "HotelSettings" SET "MembershipBenefitsJson" = @p0
+      WHERE "Id" = @p1;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (261ms) [Parameters=[@__normalizedEmail_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."AccessFailedCount", a."ConcurrencyStamp", a."CreatedAt", a."DateOfBirth", a."Email", a."EmailConfirmed", a."FirstName", a."Gender", a."IsActive", a."LastName", a."LockoutEnabled", a."LockoutEnd", a."MembershipTier", a."NormalizedEmail", a."NormalizedUserName", a."PasswordHash", a."PhoneNumber", a."PhoneNumberConfirmed", a."Points", a."SecurityStamp", a."TwoFactorEnabled", a."UserName"
+      FROM "AspNetUsers" AS a
+      WHERE a."NormalizedEmail" = @__normalizedEmail_0
+      LIMIT 2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (337ms) [Parameters=[@__userId_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a0."Name"
+      FROM "AspNetUserRoles" AS a
+      INNER JOIN "AspNetRoles" AS a0 ON a."RoleId" = a0."Id"
+      WHERE a."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (260ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT r."Id", r."BookingId", r."Comment", r."CreatedAt", r."CreatedBy", r."DeletedAt", r."DeletedBy", r."IsApproved", r."IsDeleted", r."Rating", r."UpdatedAt", r."UpdatedBy", r."UserId"
+      FROM "Reviews" AS r
+      WHERE r."IsApproved" AND NOT (r."IsDeleted")
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (260ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT r."Id", r."BookingId", r."Comment", r."CreatedAt", r."CreatedBy", r."DeletedAt", r."DeletedBy", r."IsApproved", r."IsDeleted", r."Rating", r."UpdatedAt", r."UpdatedBy", r."UserId"
+      FROM "Reviews" AS r
+      WHERE r."IsApproved" AND NOT (r."IsDeleted")
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (263ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT r."Id", r."BookingId", r."Comment", r."CreatedAt", r."CreatedBy", r."DeletedAt", r."DeletedBy", r."IsApproved", r."IsDeleted", r."Rating", r."UpdatedAt", r."UpdatedBy", r."UserId"
+      FROM "Reviews" AS r
+      WHERE r."IsApproved" AND NOT (r."IsDeleted")
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (261ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT r."Id", r."BookingId", r."Comment", r."CreatedAt", r."CreatedBy", r."DeletedAt", r."DeletedBy", r."IsApproved", r."IsDeleted", r."Rating", r."UpdatedAt", r."UpdatedBy", r."UserId"
+      FROM "Reviews" AS r
+      WHERE r."IsApproved" AND NOT (r."IsDeleted")
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (261ms) [Parameters=[@__checkIn_0='?' (DbType = DateTime), @__checkOut_1='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      SELECT DISTINCT b."RoomId"
+      FROM "Bookings" AS b
+      WHERE b."Status" NOT IN (4, 3) AND ((b."CheckInDate" <= @__checkIn_0 AND b."CheckOutDate" > @__checkIn_0) OR (b."CheckInDate" < @__checkOut_1 AND b."CheckOutDate" >= @__checkOut_1) OR (b."CheckInDate" >= @__checkIn_0 AND b."CheckOutDate" <= @__checkOut_1))
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (331ms) [Parameters=[@__bookedRoomIds_0='?' (DbType = Object)], CommandType='Text', CommandTimeout='30']
+      SELECT r."Id", r."Capacity", r."CreatedAt", r."CreatedBy", r."DeletedAt", r."DeletedBy", r."Description", r."HasAirConditioning", r."HasBalcony", r."HasTV", r."HasWifi", r."IsDeleted", r."PricePerNight", r."RoomNumber", r."RoomTypeId", r."Status", r."UpdatedAt", r."UpdatedBy", r0."Id", r0."Amenities", r0."BasePricePerNight", r0."CreatedAt", r0."CreatedBy", r0."DeletedAt", r0."DeletedBy", r0."Description", r0."ImageUrls", r0."IsDeleted", r0."MaxCapacity", r0."Name", r0."Size", r0."UpdatedAt", r0."UpdatedBy"
+      FROM "Rooms" AS r
+      INNER JOIN "RoomTypes" AS r0 ON r."RoomTypeId" = r0."Id"
+      WHERE r."Status" = 0 AND NOT (r."Id" = ANY (@__bookedRoomIds_0) AND r."Id" = ANY (@__bookedRoomIds_0) IS NOT NULL)
+      ORDER BY r."RoomNumber"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (276ms) [Parameters=[@__checkIn_0='?' (DbType = DateTime), @__checkOut_1='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      SELECT DISTINCT b."RoomId"
+      FROM "Bookings" AS b
+      WHERE b."Status" NOT IN (4, 3) AND ((b."CheckInDate" <= @__checkIn_0 AND b."CheckOutDate" > @__checkIn_0) OR (b."CheckInDate" < @__checkOut_1 AND b."CheckOutDate" >= @__checkOut_1) OR (b."CheckInDate" >= @__checkIn_0 AND b."CheckOutDate" <= @__checkOut_1))
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (261ms) [Parameters=[@__bookedRoomIds_0='?' (DbType = Object)], CommandType='Text', CommandTimeout='30']
+      SELECT r."Id", r."Capacity", r."CreatedAt", r."CreatedBy", r."DeletedAt", r."DeletedBy", r."Description", r."HasAirConditioning", r."HasBalcony", r."HasTV", r."HasWifi", r."IsDeleted", r."PricePerNight", r."RoomNumber", r."RoomTypeId", r."Status", r."UpdatedAt", r."UpdatedBy", r0."Id", r0."Amenities", r0."BasePricePerNight", r0."CreatedAt", r0."CreatedBy", r0."DeletedAt", r0."DeletedBy", r0."Description", r0."ImageUrls", r0."IsDeleted", r0."MaxCapacity", r0."Name", r0."Size", r0."UpdatedAt", r0."UpdatedBy"
+      FROM "Rooms" AS r
+      INNER JOIN "RoomTypes" AS r0 ON r."RoomTypeId" = r0."Id"
+      WHERE r."Status" = 0 AND NOT (r."Id" = ANY (@__bookedRoomIds_0) AND r."Id" = ANY (@__bookedRoomIds_0) IS NOT NULL)
+      ORDER BY r."RoomNumber"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (307ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT h."Id", h."Address", h."CheckInTime", h."CheckOutTime", h."Currency", h."Email", h."FacebookUrl", h."GoldDiscount", h."HotelName", h."InstagramUrl", h."MemberDiscount", h."MembershipBenefitsJson", h."Phone", h."PlatinumDiscount", h."SilverDiscount", h."TaxRate", h."TwitterUrl", h."WelcomeDescription"
+      FROM "HotelSettings" AS h
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (307ms) [Parameters=[@__checkIn_0='?' (DbType = DateTime), @__checkOut_1='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      SELECT DISTINCT b."RoomId"
+      FROM "Bookings" AS b
+      WHERE b."Status" NOT IN (4, 3) AND ((b."CheckInDate" <= @__checkIn_0 AND b."CheckOutDate" > @__checkIn_0) OR (b."CheckInDate" < @__checkOut_1 AND b."CheckOutDate" >= @__checkOut_1) OR (b."CheckInDate" >= @__checkIn_0 AND b."CheckOutDate" <= @__checkOut_1))
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (263ms) [Parameters=[@__bookedRoomIds_0='?' (DbType = Object)], CommandType='Text', CommandTimeout='30']
+      SELECT r."Id", r."Capacity", r."CreatedAt", r."CreatedBy", r."DeletedAt", r."DeletedBy", r."Description", r."HasAirConditioning", r."HasBalcony", r."HasTV", r."HasWifi", r."IsDeleted", r."PricePerNight", r."RoomNumber", r."RoomTypeId", r."Status", r."UpdatedAt", r."UpdatedBy", r0."Id", r0."Amenities", r0."BasePricePerNight", r0."CreatedAt", r0."CreatedBy", r0."DeletedAt", r0."DeletedBy", r0."Description", r0."ImageUrls", r0."IsDeleted", r0."MaxCapacity", r0."Name", r0."Size", r0."UpdatedAt", r0."UpdatedBy"
+      FROM "Rooms" AS r
+      INNER JOIN "RoomTypes" AS r0 ON r."RoomTypeId" = r0."Id"
+      WHERE r."Status" = 0 AND NOT (r."Id" = ANY (@__bookedRoomIds_0) AND r."Id" = ANY (@__bookedRoomIds_0) IS NOT NULL)
+      ORDER BY r."RoomNumber"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (258ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT h."Id", h."Address", h."CheckInTime", h."CheckOutTime", h."Currency", h."Email", h."FacebookUrl", h."GoldDiscount", h."HotelName", h."InstagramUrl", h."MemberDiscount", h."MembershipBenefitsJson", h."Phone", h."PlatinumDiscount", h."SilverDiscount", h."TaxRate", h."TwitterUrl", h."WelcomeDescription"
+      FROM "HotelSettings" AS h
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (259ms) [Parameters=[@__checkIn_0='?' (DbType = DateTime), @__checkOut_1='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      SELECT DISTINCT b."RoomId"
+      FROM "Bookings" AS b
+      WHERE b."Status" NOT IN (4, 3) AND ((b."CheckInDate" <= @__checkIn_0 AND b."CheckOutDate" > @__checkIn_0) OR (b."CheckInDate" < @__checkOut_1 AND b."CheckOutDate" >= @__checkOut_1) OR (b."CheckInDate" >= @__checkIn_0 AND b."CheckOutDate" <= @__checkOut_1))
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (263ms) [Parameters=[@__bookedRoomIds_0='?' (DbType = Object)], CommandType='Text', CommandTimeout='30']
+      SELECT r."Id", r."Capacity", r."CreatedAt", r."CreatedBy", r."DeletedAt", r."DeletedBy", r."Description", r."HasAirConditioning", r."HasBalcony", r."HasTV", r."HasWifi", r."IsDeleted", r."PricePerNight", r."RoomNumber", r."RoomTypeId", r."Status", r."UpdatedAt", r."UpdatedBy", r0."Id", r0."Amenities", r0."BasePricePerNight", r0."CreatedAt", r0."CreatedBy", r0."DeletedAt", r0."DeletedBy", r0."Description", r0."ImageUrls", r0."IsDeleted", r0."MaxCapacity", r0."Name", r0."Size", r0."UpdatedAt", r0."UpdatedBy"
+      FROM "Rooms" AS r
+      INNER JOIN "RoomTypes" AS r0 ON r."RoomTypeId" = r0."Id"
+      WHERE r."Status" = 0 AND NOT (r."Id" = ANY (@__bookedRoomIds_0) AND r."Id" = ANY (@__bookedRoomIds_0) IS NOT NULL)
+      ORDER BY r."RoomNumber"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (259ms) [Parameters=[@__checkIn_0='?' (DbType = DateTime), @__checkOut_1='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      SELECT DISTINCT b."RoomId"
+      FROM "Bookings" AS b
+      WHERE b."Status" NOT IN (4, 3) AND ((b."CheckInDate" <= @__checkIn_0 AND b."CheckOutDate" > @__checkIn_0) OR (b."CheckInDate" < @__checkOut_1 AND b."CheckOutDate" >= @__checkOut_1) OR (b."CheckInDate" >= @__checkIn_0 AND b."CheckOutDate" <= @__checkOut_1))
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (262ms) [Parameters=[@__bookedRoomIds_0='?' (DbType = Object)], CommandType='Text', CommandTimeout='30']
+      SELECT r."Id", r."Capacity", r."CreatedAt", r."CreatedBy", r."DeletedAt", r."DeletedBy", r."Description", r."HasAirConditioning", r."HasBalcony", r."HasTV", r."HasWifi", r."IsDeleted", r."PricePerNight", r."RoomNumber", r."RoomTypeId", r."Status", r."UpdatedAt", r."UpdatedBy", r0."Id", r0."Amenities", r0."BasePricePerNight", r0."CreatedAt", r0."CreatedBy", r0."DeletedAt", r0."DeletedBy", r0."Description", r0."ImageUrls", r0."IsDeleted", r0."MaxCapacity", r0."Name", r0."Size", r0."UpdatedAt", r0."UpdatedBy"
+      FROM "Rooms" AS r
+      INNER JOIN "RoomTypes" AS r0 ON r."RoomTypeId" = r0."Id"
+      WHERE r."Status" = 0 AND NOT (r."Id" = ANY (@__bookedRoomIds_0) AND r."Id" = ANY (@__bookedRoomIds_0) IS NOT NULL)
+      ORDER BY r."RoomNumber"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (260ms) [Parameters=[@__checkIn_0='?' (DbType = DateTime), @__checkOut_1='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      SELECT DISTINCT b."RoomId"
+      FROM "Bookings" AS b
+      WHERE b."Status" NOT IN (4, 3) AND ((b."CheckInDate" <= @__checkIn_0 AND b."CheckOutDate" > @__checkIn_0) OR (b."CheckInDate" < @__checkOut_1 AND b."CheckOutDate" >= @__checkOut_1) OR (b."CheckInDate" >= @__checkIn_0 AND b."CheckOutDate" <= @__checkOut_1))
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (260ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT r."Id", r."BookingId", r."Comment", r."CreatedAt", r."CreatedBy", r."DeletedAt", r."DeletedBy", r."IsApproved", r."IsDeleted", r."Rating", r."UpdatedAt", r."UpdatedBy", r."UserId"
+      FROM "Reviews" AS r
+      WHERE r."IsApproved" AND NOT (r."IsDeleted")
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (262ms) [Parameters=[@__bookedRoomIds_0='?' (DbType = Object)], CommandType='Text', CommandTimeout='30']
+      SELECT r."Id", r."Capacity", r."CreatedAt", r."CreatedBy", r."DeletedAt", r."DeletedBy", r."Description", r."HasAirConditioning", r."HasBalcony", r."HasTV", r."HasWifi", r."IsDeleted", r."PricePerNight", r."RoomNumber", r."RoomTypeId", r."Status", r."UpdatedAt", r."UpdatedBy", r0."Id", r0."Amenities", r0."BasePricePerNight", r0."CreatedAt", r0."CreatedBy", r0."DeletedAt", r0."DeletedBy", r0."Description", r0."ImageUrls", r0."IsDeleted", r0."MaxCapacity", r0."Name", r0."Size", r0."UpdatedAt", r0."UpdatedBy"
+      FROM "Rooms" AS r
+      INNER JOIN "RoomTypes" AS r0 ON r."RoomTypeId" = r0."Id"
+      WHERE r."Status" = 0 AND NOT (r."Id" = ANY (@__bookedRoomIds_0) AND r."Id" = ANY (@__bookedRoomIds_0) IS NOT NULL)
+      ORDER BY r."RoomNumber"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (269ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT r."Id", r."BookingId", r."Comment", r."CreatedAt", r."CreatedBy", r."DeletedAt", r."DeletedBy", r."IsApproved", r."IsDeleted", r."Rating", r."UpdatedAt", r."UpdatedBy", r."UserId"
+      FROM "Reviews" AS r
+      WHERE r."IsApproved" AND NOT (r."IsDeleted")
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (261ms) [Parameters=[@__normalizedEmail_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."AccessFailedCount", a."ConcurrencyStamp", a."CreatedAt", a."DateOfBirth", a."Email", a."EmailConfirmed", a."FirstName", a."Gender", a."IsActive", a."LastName", a."LockoutEnabled", a."LockoutEnd", a."MembershipTier", a."NormalizedEmail", a."NormalizedUserName", a."PasswordHash", a."PhoneNumber", a."PhoneNumberConfirmed", a."Points", a."SecurityStamp", a."TwoFactorEnabled", a."UserName"
+      FROM "AspNetUsers" AS a
+      WHERE a."NormalizedEmail" = @__normalizedEmail_0
+      LIMIT 2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (261ms) [Parameters=[@__userId_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a0."Name"
+      FROM "AspNetUserRoles" AS a
+      INNER JOIN "AspNetRoles" AS a0 ON a."RoleId" = a0."Id"
+      WHERE a."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (261ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT count(*)::int
+      FROM "ActivityLogs" AS a
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (261ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT r."Id", r."Capacity", r."CreatedAt", r."CreatedBy", r."DeletedAt", r."DeletedBy", r."Description", r."HasAirConditioning", r."HasBalcony", r."HasTV", r."HasWifi", r."IsDeleted", r."PricePerNight", r."RoomNumber", r."RoomTypeId", r."Status", r."UpdatedAt", r."UpdatedBy", r0."Id", r0."Amenities", r0."BasePricePerNight", r0."CreatedAt", r0."CreatedBy", r0."DeletedAt", r0."DeletedBy", r0."Description", r0."ImageUrls", r0."IsDeleted", r0."MaxCapacity", r0."Name", r0."Size", r0."UpdatedAt", r0."UpdatedBy"
+      FROM "Rooms" AS r
+      INNER JOIN "RoomTypes" AS r0 ON r."RoomTypeId" = r0."Id"
+      ORDER BY r."RoomNumber"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (262ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."AccessFailedCount", a."ConcurrencyStamp", a."CreatedAt", a."DateOfBirth", a."Email", a."EmailConfirmed", a."FirstName", a."Gender", a."IsActive", a."LastName", a."LockoutEnabled", a."LockoutEnd", a."MembershipTier", a."NormalizedEmail", a."NormalizedUserName", a."PasswordHash", a."PhoneNumber", a."PhoneNumberConfirmed", a."Points", a."SecurityStamp", a."TwoFactorEnabled", a."UserName"
+      FROM "AspNetUsers" AS a
+      ORDER BY a."CreatedAt"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (263ms) [Parameters=[@__p_1='?' (DbType = Int32), @__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."Action", t."CreatedAt", t."Details", t."EntityId", t."EntityType", t."UserId", a0."Id", a0."AccessFailedCount", a0."ConcurrencyStamp", a0."CreatedAt", a0."DateOfBirth", a0."Email", a0."EmailConfirmed", a0."FirstName", a0."Gender", a0."IsActive", a0."LastName", a0."LockoutEnabled", a0."LockoutEnd", a0."MembershipTier", a0."NormalizedEmail", a0."NormalizedUserName", a0."PasswordHash", a0."PhoneNumber", a0."PhoneNumberConfirmed", a0."Points", a0."SecurityStamp", a0."TwoFactorEnabled", a0."UserName"
+      FROM (
+          SELECT a."Id", a."Action", a."CreatedAt", a."Details", a."EntityId", a."EntityType", a."UserId"
+          FROM "ActivityLogs" AS a
+          ORDER BY a."CreatedAt" DESC
+          LIMIT @__p_1 OFFSET @__p_0
+      ) AS t
+      INNER JOIN "AspNetUsers" AS a0 ON t."UserId" = a0."Id"
+      ORDER BY t."CreatedAt" DESC
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (278ms) [Parameters=[@__userIds_0='?' (DbType = Object)], CommandType='Text', CommandTimeout='30']
+      SELECT a."UserId", COALESCE(a0."Name", '') AS "RoleName"
+      FROM "AspNetUserRoles" AS a
+      INNER JOIN "AspNetRoles" AS a0 ON a."RoleId" = a0."Id"
+      WHERE a."UserId" = ANY (@__userIds_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (280ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT r."Id", r."Capacity", r."CreatedAt", r."CreatedBy", r."DeletedAt", r."DeletedBy", r."Description", r."HasAirConditioning", r."HasBalcony", r."HasTV", r."HasWifi", r."IsDeleted", r."PricePerNight", r."RoomNumber", r."RoomTypeId", r."Status", r."UpdatedAt", r."UpdatedBy", r0."Id", r0."Amenities", r0."BasePricePerNight", r0."CreatedAt", r0."CreatedBy", r0."DeletedAt", r0."DeletedBy", r0."Description", r0."ImageUrls", r0."IsDeleted", r0."MaxCapacity", r0."Name", r0."Size", r0."UpdatedAt", r0."UpdatedBy"
+      FROM "Rooms" AS r
+      INNER JOIN "RoomTypes" AS r0 ON r."RoomTypeId" = r0."Id"
+      ORDER BY r."RoomNumber"
+[GetUsers] Total users: 70, Active: 69, Inactive: 1, Returned DTOs: 70
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (301ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT count(*)::int
+      FROM "ActivityLogs" AS a
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (301ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."AccessFailedCount", a."ConcurrencyStamp", a."CreatedAt", a."DateOfBirth", a."Email", a."EmailConfirmed", a."FirstName", a."Gender", a."IsActive", a."LastName", a."LockoutEnabled", a."LockoutEnd", a."MembershipTier", a."NormalizedEmail", a."NormalizedUserName", a."PasswordHash", a."PhoneNumber", a."PhoneNumberConfirmed", a."Points", a."SecurityStamp", a."TwoFactorEnabled", a."UserName"
+      FROM "AspNetUsers" AS a
+      ORDER BY a."CreatedAt"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (262ms) [Parameters=[@__userIds_0='?' (DbType = Object)], CommandType='Text', CommandTimeout='30']
+      SELECT a."UserId", COALESCE(a0."Name", '') AS "RoleName"
+      FROM "AspNetUserRoles" AS a
+      INNER JOIN "AspNetRoles" AS a0 ON a."RoleId" = a0."Id"
+      WHERE a."UserId" = ANY (@__userIds_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (262ms) [Parameters=[@__p_1='?' (DbType = Int32), @__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT t."Id", t."Action", t."CreatedAt", t."Details", t."EntityId", t."EntityType", t."UserId", a0."Id", a0."AccessFailedCount", a0."ConcurrencyStamp", a0."CreatedAt", a0."DateOfBirth", a0."Email", a0."EmailConfirmed", a0."FirstName", a0."Gender", a0."IsActive", a0."LastName", a0."LockoutEnabled", a0."LockoutEnd", a0."MembershipTier", a0."NormalizedEmail", a0."NormalizedUserName", a0."PasswordHash", a0."PhoneNumber", a0."PhoneNumberConfirmed", a0."Points", a0."SecurityStamp", a0."TwoFactorEnabled", a0."UserName"
+      FROM (
+          SELECT a."Id", a."Action", a."CreatedAt", a."Details", a."EntityId", a."EntityType", a."UserId"
+          FROM "ActivityLogs" AS a
+          ORDER BY a."CreatedAt" DESC
+          LIMIT @__p_1 OFFSET @__p_0
+      ) AS t
+      INNER JOIN "AspNetUsers" AS a0 ON t."UserId" = a0."Id"
+      ORDER BY t."CreatedAt" DESC
+[GetUsers] Total users: 70, Active: 69, Inactive: 1, Returned DTOs: 70
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (263ms) [Parameters=[@__userId_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT b."Id", b."CheckInDate", b."CheckOutDate", b."CreatedAt", b."CreatedBy", b."DeletedAt", b."DeletedBy", b."IsDeleted", b."NumberOfGuests", b."PaymentStatus", b."RoomId", b."SpecialRequests", b."Status", b."TotalPrice", b."UpdatedAt", b."UpdatedBy", b."UserId", r."Id", r."Capacity", r."CreatedAt", r."CreatedBy", r."DeletedAt", r."DeletedBy", r."Description", r."HasAirConditioning", r."HasBalcony", r."HasTV", r."HasWifi", r."IsDeleted", r."PricePerNight", r."RoomNumber", r."RoomTypeId", r."Status", r."UpdatedAt", r."UpdatedBy"
+      FROM "Bookings" AS b
+      INNER JOIN "Rooms" AS r ON b."RoomId" = r."Id"
+      WHERE b."UserId" = @__userId_0
+      ORDER BY b."CreatedAt" DESC
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (263ms) [Parameters=[@__userId_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT s."Id", s."AssignedToUserId", s."BookingId", s."CompletedAt", s."CreatedAt", s."CreatedBy", s."DeletedAt", s."DeletedBy", s."Description", s."IsDeleted", s."Notes", s."RequestedAt", s."ServiceType", s."Status", s."UpdatedAt", s."UpdatedBy", s."UserId", b."Id", b."CheckInDate", b."CheckOutDate", b."CreatedAt", b."CreatedBy", b."DeletedAt", b."DeletedBy", b."IsDeleted", b."NumberOfGuests", b."PaymentStatus", b."RoomId", b."SpecialRequests", b."Status", b."TotalPrice", b."UpdatedAt", b."UpdatedBy", b."UserId", a."Id", a."AccessFailedCount", a."ConcurrencyStamp", a."CreatedAt", a."DateOfBirth", a."Email", a."EmailConfirmed", a."FirstName", a."Gender", a."IsActive", a."LastName", a."LockoutEnabled", a."LockoutEnd", a."MembershipTier", a."NormalizedEmail", a."NormalizedUserName", a."PasswordHash", a."PhoneNumber", a."PhoneNumberConfirmed", a."Points", a."SecurityStamp", a."TwoFactorEnabled", a."UserName", a0."Id", a0."AccessFailedCount", a0."ConcurrencyStamp", a0."CreatedAt", a0."DateOfBirth", a0."Email", a0."EmailConfirmed", a0."FirstName", a0."Gender", a0."IsActive", a0."LastName", a0."LockoutEnabled", a0."LockoutEnd", a0."MembershipTier", a0."NormalizedEmail", a0."NormalizedUserName", a0."PasswordHash", a0."PhoneNumber", a0."PhoneNumberConfirmed", a0."Points", a0."SecurityStamp", a0."TwoFactorEnabled", a0."UserName"
+      FROM "ServiceRequests" AS s
+      INNER JOIN "Bookings" AS b ON s."BookingId" = b."Id"
+      INNER JOIN "AspNetUsers" AS a ON s."UserId" = a."Id"
+      LEFT JOIN "AspNetUsers" AS a0 ON s."AssignedToUserId" = a0."Id"
+      WHERE s."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (265ms) [Parameters=[@__userId_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT s."Id", s."AssignedToUserId", s."BookingId", s."CompletedAt", s."CreatedAt", s."CreatedBy", s."DeletedAt", s."DeletedBy", s."Description", s."IsDeleted", s."Notes", s."RequestedAt", s."ServiceType", s."Status", s."UpdatedAt", s."UpdatedBy", s."UserId", b."Id", b."CheckInDate", b."CheckOutDate", b."CreatedAt", b."CreatedBy", b."DeletedAt", b."DeletedBy", b."IsDeleted", b."NumberOfGuests", b."PaymentStatus", b."RoomId", b."SpecialRequests", b."Status", b."TotalPrice", b."UpdatedAt", b."UpdatedBy", b."UserId", a."Id", a."AccessFailedCount", a."ConcurrencyStamp", a."CreatedAt", a."DateOfBirth", a."Email", a."EmailConfirmed", a."FirstName", a."Gender", a."IsActive", a."LastName", a."LockoutEnabled", a."LockoutEnd", a."MembershipTier", a."NormalizedEmail", a."NormalizedUserName", a."PasswordHash", a."PhoneNumber", a."PhoneNumberConfirmed", a."Points", a."SecurityStamp", a."TwoFactorEnabled", a."UserName", a0."Id", a0."AccessFailedCount", a0."ConcurrencyStamp", a0."CreatedAt", a0."DateOfBirth", a0."Email", a0."EmailConfirmed", a0."FirstName", a0."Gender", a0."IsActive", a0."LastName", a0."LockoutEnabled", a0."LockoutEnd", a0."MembershipTier", a0."NormalizedEmail", a0."NormalizedUserName", a0."PasswordHash", a0."PhoneNumber", a0."PhoneNumberConfirmed", a0."Points", a0."SecurityStamp", a0."TwoFactorEnabled", a0."UserName"
+      FROM "ServiceRequests" AS s
+      INNER JOIN "Bookings" AS b ON s."BookingId" = b."Id"
+      INNER JOIN "AspNetUsers" AS a ON s."UserId" = a."Id"
+      LEFT JOIN "AspNetUsers" AS a0 ON s."AssignedToUserId" = a0."Id"
+      WHERE s."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (266ms) [Parameters=[@__userId_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT b."Id", b."CheckInDate", b."CheckOutDate", b."CreatedAt", b."CreatedBy", b."DeletedAt", b."DeletedBy", b."IsDeleted", b."NumberOfGuests", b."PaymentStatus", b."RoomId", b."SpecialRequests", b."Status", b."TotalPrice", b."UpdatedAt", b."UpdatedBy", b."UserId", r."Id", r."Capacity", r."CreatedAt", r."CreatedBy", r."DeletedAt", r."DeletedBy", r."Description", r."HasAirConditioning", r."HasBalcony", r."HasTV", r."HasWifi", r."IsDeleted", r."PricePerNight", r."RoomNumber", r."RoomTypeId", r."Status", r."UpdatedAt", r."UpdatedBy"
+      FROM "Bookings" AS b
+      INNER JOIN "Rooms" AS r ON b."RoomId" = r."Id"
+      WHERE b."UserId" = @__userId_0
+      ORDER BY b."CreatedAt" DESC
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (351ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT r."Id", r."Amenities", r."BasePricePerNight", r."CreatedAt", r."CreatedBy", r."DeletedAt", r."DeletedBy", r."Description", r."ImageUrls", r."IsDeleted", r."MaxCapacity", r."Name", r."Size", r."UpdatedAt", r."UpdatedBy"
+      FROM "RoomTypes" AS r
+      ORDER BY r."Name"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (361ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT r."Id", r."Capacity", r."CreatedAt", r."CreatedBy", r."DeletedAt", r."DeletedBy", r."Description", r."HasAirConditioning", r."HasBalcony", r."HasTV", r."HasWifi", r."IsDeleted", r."PricePerNight", r."RoomNumber", r."RoomTypeId", r."Status", r."UpdatedAt", r."UpdatedBy", r0."Id", r0."Amenities", r0."BasePricePerNight", r0."CreatedAt", r0."CreatedBy", r0."DeletedAt", r0."DeletedBy", r0."Description", r0."ImageUrls", r0."IsDeleted", r0."MaxCapacity", r0."Name", r0."Size", r0."UpdatedAt", r0."UpdatedBy"
+      FROM "Rooms" AS r
+      INNER JOIN "RoomTypes" AS r0 ON r."RoomTypeId" = r0."Id"
+      ORDER BY r."RoomNumber"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (335ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT r."Id", r."Amenities", r."BasePricePerNight", r."CreatedAt", r."CreatedBy", r."DeletedAt", r."DeletedBy", r."Description", r."ImageUrls", r."IsDeleted", r."MaxCapacity", r."Name", r."Size", r."UpdatedAt", r."UpdatedBy"
+      FROM "RoomTypes" AS r
+      ORDER BY r."Name"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (303ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT r."Id", r."Amenities", r."BasePricePerNight", r."CreatedAt", r."CreatedBy", r."DeletedAt", r."DeletedBy", r."Description", r."ImageUrls", r."IsDeleted", r."MaxCapacity", r."Name", r."Size", r."UpdatedAt", r."UpdatedBy"
+      FROM "RoomTypes" AS r
+      ORDER BY r."Name"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (314ms) [Parameters=[@__p_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT r."Id", r."Amenities", r."BasePricePerNight", r."CreatedAt", r."CreatedBy", r."DeletedAt", r."DeletedBy", r."Description", r."ImageUrls", r."IsDeleted", r."MaxCapacity", r."Name", r."Size", r."UpdatedAt", r."UpdatedBy"
+      FROM "RoomTypes" AS r
+      WHERE r."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (303ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT r."Id", r."Capacity", r."CreatedAt", r."CreatedBy", r."DeletedAt", r."DeletedBy", r."Description", r."HasAirConditioning", r."HasBalcony", r."HasTV", r."HasWifi", r."IsDeleted", r."PricePerNight", r."RoomNumber", r."RoomTypeId", r."Status", r."UpdatedAt", r."UpdatedBy"
+      FROM "Rooms" AS r
+      WHERE r."RoomTypeId" = @__id_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (277ms) [Parameters=[@p2='?' (DbType = Int32), @p0='?' (DbType = Decimal), @p1='?' (DbType = DateTime), @p5='?' (DbType = Int32), @p3='?' (DbType = Decimal), @p4='?' (DbType = DateTime), @p8='?' (DbType = Int32), @p6='?' (DbType = Decimal), @p7='?' (DbType = DateTime), @p11='?' (DbType = Int32), @p9='?' (DbType = Decimal), @p10='?' (DbType = DateTime), @p14='?' (DbType = Int32), @p12='?' (DbType = Decimal), @p13='?' (DbType = DateTime), @p17='?' (DbType = Int32), @p15='?' (DbType = Decimal), @p16='?' (DbType = DateTime), @p20='?' (DbType = Int32), @p18='?' (DbType = Decimal), @p19='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      UPDATE "RoomTypes" SET "BasePricePerNight" = @p0, "UpdatedAt" = @p1
+      WHERE "Id" = @p2;
+      UPDATE "Rooms" SET "PricePerNight" = @p3, "UpdatedAt" = @p4
+      WHERE "Id" = @p5;
+      UPDATE "Rooms" SET "PricePerNight" = @p6, "UpdatedAt" = @p7
+      WHERE "Id" = @p8;
+      UPDATE "Rooms" SET "PricePerNight" = @p9, "UpdatedAt" = @p10
+      WHERE "Id" = @p11;
+      UPDATE "Rooms" SET "PricePerNight" = @p12, "UpdatedAt" = @p13
+      WHERE "Id" = @p14;
+      UPDATE "Rooms" SET "PricePerNight" = @p15, "UpdatedAt" = @p16
+      WHERE "Id" = @p17;
+      UPDATE "Rooms" SET "PricePerNight" = @p18, "UpdatedAt" = @p19
+      WHERE "Id" = @p20;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (262ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT r."Id", r."Amenities", r."BasePricePerNight", r."CreatedAt", r."CreatedBy", r."DeletedAt", r."DeletedBy", r."Description", r."ImageUrls", r."IsDeleted", r."MaxCapacity", r."Name", r."Size", r."UpdatedAt", r."UpdatedBy"
+      FROM "RoomTypes" AS r
+      ORDER BY r."Name"

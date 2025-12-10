@@ -1,0 +1,1225 @@
+/* Rooms Container with Gold Luxury Background */
+.rooms-container-luxury {
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  background: var(--theme-bg-gradient);
+  background-size: 400% 400%;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  animation: gradientShift 6s ease infinite;
+  padding: 2rem;
+  width: 100%;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Content */
+.rooms-content-luxury {
+  position: relative;
+  z-index: 1;
+  max-width: 98%;
+  margin: 0 auto;
+}
+
+/* Header */
+.rooms-header-luxury {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.rooms-title-luxury {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  color: #8B6F47;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.rooms-subtitle-luxury {
+  color: #718096;
+  font-size: 1.1rem;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Filters */
+.rooms-filters-luxury {
+  margin-bottom: 2rem;
+}
+
+.filter-card-luxury {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(30px);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(201, 169, 97, 0.15);
+  border: 2px solid rgba(201, 169, 97, 0.2);
+}
+
+.filter-row-luxury {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1.5fr auto;
+  gap: 1.5rem;
+  align-items: end;
+}
+
+.filter-group-luxury {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-input-luxury,
+.filter-select-luxury {
+  padding: 0.875rem 1rem;
+  border: 1px solid rgba(201, 169, 97, 0.3);
+  border-radius: 12px;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  background: white;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  color: #4A4A4A;
+}
+
+.filter-input-luxury:focus,
+.filter-select-luxury:focus {
+  outline: none;
+  border-color: #C9A961;
+  box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.1);
+}
+
+.filter-button-luxury {
+  padding: 0.875rem 1.5rem;
+  background: linear-gradient(135deg, #C9A961 0%, #B8944F 50%, #8B6F47 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  box-shadow: 0 8px 25px rgba(201, 169, 97, 0.3);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.filter-button-luxury:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(201, 169, 97, 0.4);
+}
+
+/* Results Count */
+.results-count-luxury {
+  color: #8B6F47;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Loading */
+.rooms-loading-luxury {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  color: #8B6F47;
+  gap: 1.5rem;
+}
+
+.loading-spinner-luxury {
+  width: 60px;
+  height: 60px;
+}
+
+.spinner-circle-luxury {
+  width: 100%;
+  height: 100%;
+  border: 4px solid rgba(201, 169, 97, 0.3);
+  border-top-color: #C9A961;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Rooms Grid */
+.rooms-grid-luxury {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 2rem;
+}
+
+/* Room Card */
+.room-card-luxury {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(30px);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(201, 169, 97, 0.15);
+  border: 2px solid rgba(201, 169, 97, 0.2);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.room-card-luxury:hover {
+  box-shadow: 0 12px 48px rgba(201, 169, 97, 0.25);
+  transform: translateY(-4px);
+}
+
+.room-image-placeholder-luxury {
+  height: 220px;
+  background: linear-gradient(135deg, #8B6F47 0%, #B8944F 25%, #C9A961 50%, #B8944F 75%, #8B6F47 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 8s ease infinite;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.room-status-badge-luxury {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: capitalize;
+  color: white;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.status-available {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.status-occupied {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.status-maintenance,
+.status-cleaning {
+  background: linear-gradient(135deg, #fad961 0%, #f76b1c 100%);
+}
+
+.room-card-content-luxury {
+  padding: 2rem;
+}
+
+.room-header-luxury {
+  margin-bottom: 1rem;
+}
+
+.room-type-luxury {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  color: #8B6F47;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.room-number-luxury {
+  font-size: 0.9rem;
+  color: #718096;
+  font-weight: 600;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.room-description-luxury {
+  color: #4a5568;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.room-details-luxury {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(201, 169, 97, 0.2);
+}
+
+.room-detail-item-luxury {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #2d3748;
+  font-weight: 600;
+  font-size: 0.9rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.detail-icon-luxury {
+  font-size: 1.1rem;
+}
+
+.room-amenities-luxury {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.amenity-badge-luxury {
+  padding: 0.4rem 0.8rem;
+  background: rgba(201, 169, 97, 0.1);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #8B6F47;
+  font-weight: 600;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.room-actions-luxury {
+  display: flex;
+  gap: 1rem;
+}
+
+.room-button-primary-luxury,
+.room-button-secondary-luxury {
+  flex: 1;
+  padding: 0.875rem 1rem;
+  border-radius: 12px;
+  text-decoration: none;
+  text-align: center;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 0.9rem;
+}
+
+.room-button-primary-luxury {
+  background: linear-gradient(135deg, #C9A961 0%, #B8944F 50%, #8B6F47 100%);
+  color: white;
+  box-shadow: 0 8px 25px rgba(201, 169, 97, 0.3);
+}
+
+.room-button-primary-luxury:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(201, 169, 97, 0.4);
+}
+
+.room-button-secondary-luxury {
+  background: rgba(255, 255, 255, 0.9);
+  color: #8B6F47;
+  border: 2px solid rgba(201, 169, 97, 0.3);
+}
+
+.room-button-secondary-luxury:hover {
+  background: rgba(201, 169, 97, 0.1);
+  border-color: #C9A961;
+  transform: translateY(-2px);
+}
+
+/* Empty State */
+.empty-state-luxury {
+  text-align: center;
+  padding: 6rem 2rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(30px);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(201, 169, 97, 0.15);
+  border: 2px solid rgba(201, 169, 97, 0.2);
+}
+
+.empty-icon-luxury {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  display: inline-block;
+}
+
+.empty-state-luxury h3 {
+  font-size: 1.75rem;
+  color: #8B6F47;
+  margin-bottom: 0.5rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.empty-state-luxury p {
+  color: #718096;
+  font-size: 1.1rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .filter-row-luxury {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .rooms-grid-luxury {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .rooms-container-luxury {
+    padding: 1rem;
+  }
+
+  .rooms-title-luxury {
+    font-size: 2rem;
+  }
+
+  .filter-card-luxury {
+    padding: 1.5rem;
+  }
+
+  .rooms-grid-luxury {
+    grid-template-columns: 1fr;
+  }
+
+  .room-actions-luxury {
+    flex-direction: column;
+  }
+}
+
+/* Room Details Page Styles */
+.back-button-luxury {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(30px);
+  color: #8B6F47;
+  text-decoration: none;
+  border-radius: 12px;
+  font-weight: 600;
+  margin-bottom: 2rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 25px rgba(201, 169, 97, 0.15);
+  border: 2px solid rgba(201, 169, 97, 0.2);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.back-button-luxury:hover {
+  transform: translateX(-5px);
+  box-shadow: 0 10px 30px rgba(201, 169, 97, 0.25);
+  color: #B8944F;
+}
+
+.room-details-layout-luxury {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+}
+
+.room-details-main-luxury {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(30px);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(201, 169, 97, 0.15);
+  border: 2px solid rgba(201, 169, 97, 0.2);
+}
+
+.room-details-image-luxury {
+  height: 250px;
+  background: linear-gradient(135deg, #8B6F47 0%, #B8944F 25%, #C9A961 50%, #B8944F 75%, #8B6F47 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 8s ease infinite;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.room-details-info-luxury {
+  padding: 1.5rem;
+}
+
+.room-details-title-luxury {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  color: #8B6F47;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.room-details-number-luxury {
+  font-size: 1rem;
+  color: #718096;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.room-details-description-luxury {
+  font-size: 1rem;
+  color: #4a5568;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.room-details-grid-luxury {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.detail-card-luxury {
+  background: rgba(201, 169, 97, 0.1);
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: center;
+  border: 1px solid rgba(201, 169, 97, 0.2);
+}
+
+.detail-card-icon-luxury {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.detail-card-content-luxury h4 {
+  font-size: 0.9rem;
+  color: #718096;
+  margin: 0 0 0.5rem 0;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.detail-card-content-luxury p {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #8B6F47;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.room-amenities-section-luxury {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 2px solid rgba(201, 169, 97, 0.2);
+}
+
+.section-title-luxury {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #8B6F47;
+  margin-bottom: 1.5rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.amenities-grid-luxury {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.amenity-item-luxury {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: rgba(201, 169, 97, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(201, 169, 97, 0.2);
+  transition: all 0.3s ease;
+}
+
+.amenity-item-luxury:hover {
+  background: rgba(201, 169, 97, 0.2);
+  transform: translateY(-2px);
+}
+
+.amenity-icon-luxury {
+  font-size: 2rem;
+}
+
+.amenity-label-luxury {
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 0.9rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.room-booking-sidebar-luxury {
+  position: sticky;
+  top: 2rem;
+  height: fit-content;
+}
+
+.booking-card-luxury {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(30px);
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 32px rgba(201, 169, 97, 0.15);
+  border: 2px solid rgba(201, 169, 97, 0.2);
+}
+
+.booking-title-luxury {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #8B6F47;
+  margin-bottom: 1rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.booking-price-luxury {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid rgba(201, 169, 97, 0.2);
+}
+
+.price-label-luxury {
+  font-size: 0.9rem;
+  color: #718096;
+  margin-bottom: 0.5rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.price-value-luxury {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #8B6F47;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.price-period-luxury {
+  font-size: 1rem;
+  color: #718096;
+  margin-top: 0.25rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.booking-login-prompt-luxury {
+  text-align: center;
+  padding: 1.5rem 0;
+}
+
+.booking-login-prompt-luxury p {
+  color: #718096;
+  margin-bottom: 1rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.booking-unavailable-luxury {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.unavailable-icon-luxury {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.booking-unavailable-luxury p {
+  color: #718096;
+  margin-bottom: 1rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.booking-features-luxury {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 2px solid rgba(201, 169, 97, 0.2);
+}
+
+.booking-feature-luxury {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  color: #2d3748;
+  font-weight: 600;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.booking-feature-luxury span {
+  color: #8B6F47;
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+@media (max-width: 1024px) {
+  .room-details-layout-luxury {
+    grid-template-columns: 1fr;
+  }
+
+  .room-booking-sidebar-luxury {
+    position: relative;
+    top: 0;
+  }
+}
+
+/* ============================================
+   CHECK AVAILABILITY PAGE STYLES
+   ============================================ */
+
+.availability-container-luxury {
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  background: var(--theme-bg-gradient);
+  background-size: 400% 400%;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  animation: gradientShift 6s ease infinite;
+  padding: 2rem;
+  width: 100%;
+}
+
+.availability-content-luxury {
+  position: relative;
+  z-index: 1;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* Search Bar */
+.availability-search-bar-luxury {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(30px);
+  border-radius: 16px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 32px rgba(201, 169, 97, 0.15);
+  border: 2px solid rgba(201, 169, 97, 0.2);
+  position: relative; /* Ensure z-index works */
+  z-index: 100; /* Higher than results content */
+}
+
+.search-bar-content-luxury {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 1.5rem;
+  align-items: end;
+}
+
+.search-field-luxury {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.search-label-luxury {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #8B6F47;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.search-input-luxury {
+  padding: 0.875rem 1rem;
+  border: 1px solid rgba(201, 169, 97, 0.3);
+  border-radius: 12px;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  background: white;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  color: #4A4A4A;
+  cursor: pointer;
+}
+
+.search-input-luxury:focus {
+  outline: none;
+  border-color: #C9A961;
+  box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.1);
+}
+
+.date-input-luxury,
+.guest-input-luxury {
+  cursor: pointer;
+}
+
+.search-btn-luxury {
+  padding: 0.875rem 2rem;
+  background: linear-gradient(135deg, #C9A961 0%, #B8944F 50%, #8B6F47 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  box-shadow: 0 8px 25px rgba(201, 169, 97, 0.3);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.search-btn-luxury:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(201, 169, 97, 0.4);
+}
+
+.search-btn-luxury:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Date Picker Popup */
+.date-picker-popup-availability {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  z-index: 10000;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(201, 169, 97, 0.2);
+  padding: 0.5rem;
+  overflow: hidden;
+}
+
+.availability-date-picker-calendar {
+  width: 100% !important;
+}
+
+.availability-date-picker-calendar .react-datepicker {
+  border: none !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.availability-date-picker-calendar .react-datepicker__header {
+  background: linear-gradient(135deg, rgba(201, 169, 97, 0.15) 0%, rgba(184, 148, 79, 0.1) 100%);
+  border-bottom: 1px solid rgba(201, 169, 97, 0.2);
+}
+
+.availability-date-picker-calendar .react-datepicker__day--selected,
+.availability-date-picker-calendar .react-datepicker__day--in-range {
+  background: linear-gradient(135deg, #C9A961 0%, #B8944F 100%);
+  color: white;
+}
+
+.availability-date-picker-calendar .react-datepicker__day--in-selecting-range {
+  background: rgba(201, 169, 97, 0.2);
+}
+
+/* Guest Picker Popup */
+.guest-picker-popup-luxury {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  z-index: 10000;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(201, 169, 97, 0.2);
+  padding: 1.5rem;
+  min-width: 300px;
+}
+
+.guest-picker-row-luxury {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.guest-picker-row-luxury label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #4A4A4A;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.guest-picker-controls-luxury {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.guest-control-btn-luxury {
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(201, 169, 97, 0.3);
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: #8B6F47;
+  transition: all 0.2s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.guest-control-btn-luxury:hover {
+  background: rgba(201, 169, 97, 0.1);
+  border-color: #C9A961;
+}
+
+.guest-picker-controls-luxury span {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #4A4A4A;
+  min-width: 2rem;
+  text-align: center;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.special-code-input-luxury {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(201, 169, 97, 0.3);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.special-code-input-luxury:focus {
+  outline: none;
+  border-color: #C9A961;
+  box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.1);
+}
+
+/* Average Header */
+.average-header-luxury {
+  text-align: right;
+  margin-bottom: 1rem;
+  padding-right: 1rem;
+}
+
+.average-header-luxury h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #8B6F47;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Error & Loading */
+.availability-error-luxury {
+  background: rgba(245, 101, 101, 0.1);
+  border: 1px solid rgba(245, 101, 101, 0.3);
+  color: #c53030;
+  padding: 1rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.availability-loading-luxury {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 40vh;
+  gap: 1.5rem;
+  color: #8B6F47;
+}
+
+.availability-loading-luxury p {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Results */
+.availability-results-luxury {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.room-availability-card-luxury {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(30px);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(201, 169, 97, 0.15);
+  border: 2px solid rgba(201, 169, 97, 0.2);
+}
+
+/* Room Availability Layout - Updated for new combined design */
+.room-availability-layout-luxury {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 2rem;
+}
+
+/* ... (Room Info Section stays same) ... */
+
+/* Rate Plans Section - Now contains everything */
+.rate-plans-section-luxury {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.rate-plan-card-luxury {
+  padding: 0; /* Remove padding from outer card as inner wrapper handles it */
+  border: 1px solid rgba(201, 169, 97, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.6);
+  overflow: hidden; /* Ensure border radius works */
+}
+
+.rate-plan-content-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.rate-plan-details-luxury {
+  flex: 1;
+  padding: 1.5rem;
+  border-right: 1px solid rgba(201, 169, 97, 0.1);
+  min-width: 300px;
+}
+
+.rate-plan-pricing-luxury {
+  width: 280px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* Responsive adjustments for new layout */
+@media (max-width: 900px) {
+  .rate-plan-content-wrapper {
+    flex-direction: column;
+  }
+  
+  .rate-plan-details-luxury {
+    border-right: none;
+    border-bottom: 1px solid rgba(201, 169, 97, 0.1);
+  }
+  
+  .rate-plan-pricing-luxury {
+    width: 100%;
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .book-now-btn-luxury {
+    width: auto;
+    margin-top: 0;
+    min-width: 140px;
+  }
+  
+  .availability-warning-luxury {
+    display: none; /* Hide warning on mobile compact view or move it */
+  }
+}
+
+@media (max-width: 600px) {
+  .rate-plan-pricing-luxury {
+    flex-direction: column;
+    align-items: flex-end;
+  }
+  
+  .book-now-btn-luxury {
+    width: 100%;
+  }
+}
+
+.rate-plan-header-luxury {
+  margin-bottom: 1rem;
+}
+
+.rate-plan-name-luxury {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #8B6F47;
+  margin: 0 0 0.75rem 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.rate-plan-tags-luxury {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.rate-plan-tag-luxury {
+  padding: 0.25rem 0.75rem;
+  background: rgba(201, 169, 97, 0.1);
+  border: 1px solid rgba(201, 169, 97, 0.2);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #8B6F47;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.rate-plan-info-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.rate-plan-detail-item-luxury {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  border-bottom: 1px dashed rgba(0,0,0,0.05);
+  padding-bottom: 0.25rem;
+}
+
+.detail-label-luxury {
+  color: #718096;
+  font-weight: 500;
+}
+
+.detail-value-luxury {
+  color: #4A4A4A;
+  font-weight: 600;
+}
+
+.rate-details-link-luxury {
+  color: #C9A961;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+  display: inline-block;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.rate-details-link-luxury:hover {
+  color: #B8944F;
+}
+
+/* Pricing Styles in new layout */
+.price-display-container {
+  text-align: right;
+  margin-bottom: 1rem;
+}
+
+.original-price-luxury {
+  font-size: 0.9rem;
+  color: #A0AEC0;
+  text-decoration: line-through;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  margin-bottom: 0.25rem;
+}
+
+.current-price-luxury {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #8B6F47;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  line-height: 1.2;
+}
+
+.book-now-btn-luxury {
+  padding: 0.875rem 2rem;
+  background: linear-gradient(135deg, #C9A961 0%, #B8944F 50%, #8B6F47 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 25px rgba(201, 169, 97, 0.3);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  text-align: center;
+  width: 100%;
+  display: block;
+}
+
+.book-now-btn-luxury:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(201, 169, 97, 0.4);
+  color: white;
+}
+
+.availability-warning-luxury {
+  font-size: 0.75rem;
+  color: #e53e3e;
+  font-weight: 600;
+  margin-top: 0.5rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .room-availability-layout-luxury {
+    grid-template-columns: 250px 1fr 250px;
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 1024px) {
+  .search-bar-content-luxury {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .room-availability-layout-luxury {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .pricing-section-luxury {
+    align-items: flex-start;
+  }
+
+  .pricing-card-luxury {
+    width: 100%;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .availability-container-luxury {
+    padding: 1rem;
+  }
+
+  .availability-search-bar-luxury {
+    padding: 1rem;
+  }
+
+  .room-availability-card-luxury {
+    padding: 1.5rem;
+  }
+}
+
+.room-details-btn-luxury {
+  display: inline-block;
+  padding: 0.5rem 1.25rem;
+  background: linear-gradient(135deg, #C9A961 0%, #B8944F 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(201, 169, 97, 0.3);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  margin-top: 1rem;
+  border: none;
+}
+
+.room-details-btn-luxury:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(201, 169, 97, 0.4);
+  color: white;
+  background: linear-gradient(135deg, #B8944F 0%, #8B6F47 100%);
+}

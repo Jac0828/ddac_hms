@@ -1,0 +1,252 @@
+/* Phone Input Wrapper */
+.phone-input-wrapper {
+  position: relative;
+  width: 100%;
+  z-index: 1;
+}
+
+.phone-input-wrapper.auth-input-split {
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+/* Main Phone Input Container */
+.phone-input-wrapper .PhoneInput {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  border: 1px solid rgba(201, 169, 97, 0.3);
+  border-radius: 12px;
+  padding: 0;
+  background: white;
+  transition: all 0.3s ease;
+  min-height: 2.75rem;
+}
+
+.phone-input-wrapper .PhoneInput:focus-within {
+  border-color: #C9A961;
+  box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.1);
+}
+
+.phone-input-wrapper .PhoneInput:hover {
+  border-color: rgba(201, 169, 97, 0.5);
+}
+
+/* Country Selector Button */
+.phone-input-wrapper .PhoneInputCountry {
+  margin-right: 0;
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding: 0.75rem 0.75rem;
+  border-right: 1px solid rgba(201, 169, 97, 0.2);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.phone-input-wrapper .PhoneInputCountry:hover {
+  background: rgba(201, 169, 97, 0.05);
+}
+
+.phone-input-wrapper .PhoneInputCountryIcon {
+  width: 24px;
+  height: 18px;
+  border-radius: 3px;
+  margin-right: 0.5rem;
+  display: block;
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  object-fit: cover;
+}
+
+.phone-input-wrapper .PhoneInputCountrySelect {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.875rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  color: #4A4A4A;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  outline: none;
+}
+
+.phone-input-wrapper .PhoneInputCountrySelectArrow {
+  width: 10px;
+  height: 10px;
+  opacity: 1;
+  display: block;
+  margin-left: 0.25rem;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid #8B6F47;
+  transition: transform 0.2s ease;
+}
+
+.phone-input-wrapper .PhoneInputCountrySelectArrow--open {
+  transform: rotate(180deg);
+}
+
+/* Phone Number Input Field */
+.phone-input-wrapper .PhoneInputInput {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  background: transparent;
+  color: #4A4A4A;
+}
+
+.phone-input-wrapper .PhoneInputInput::placeholder {
+  color: #A0AEC0;
+}
+
+/* Country Dropdown Menu */
+.phone-input-wrapper .PhoneInputCountrySelectMenu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  background: white;
+  border: 1px solid rgba(201, 169, 97, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  max-height: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 10000;
+  min-width: 320px;
+  max-width: 400px;
+}
+
+/* Search Input in Dropdown */
+.phone-input-wrapper .PhoneInputCountrySelectMenu input[type="search"],
+.phone-input-wrapper .PhoneInputCountrySelectMenu input[type="text"] {
+  width: calc(100% - 2rem);
+  margin: 0.75rem 1rem;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid rgba(201, 169, 97, 0.3);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.phone-input-wrapper .PhoneInputCountrySelectMenu input[type="search"]:focus,
+.phone-input-wrapper .PhoneInputCountrySelectMenu input[type="text"]:focus {
+  border-color: #C9A961;
+  box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.1);
+}
+
+/* Country Options in Dropdown */
+.phone-input-wrapper .PhoneInputCountryOption {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border-bottom: 1px solid rgba(201, 169, 97, 0.05);
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  box-sizing: border-box;
+}
+
+.phone-input-wrapper .PhoneInputCountryOption:hover {
+  background: rgba(201, 169, 97, 0.1);
+}
+
+.phone-input-wrapper .PhoneInputCountryOption--selected {
+  background: rgba(201, 169, 97, 0.15);
+  font-weight: 600;
+}
+
+/* Flag Icon in Dropdown Options */
+.phone-input-wrapper .PhoneInputCountryOptionIcon {
+  width: 24px;
+  height: 18px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  display: block;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  object-fit: cover;
+}
+
+/* Country Name in Dropdown */
+.phone-input-wrapper .PhoneInputCountryOptionName {
+  flex: 1;
+  font-size: 0.875rem;
+  color: #4A4A4A;
+  font-weight: 500;
+  text-align: left;
+}
+
+/* Country Code in Dropdown */
+.phone-input-wrapper .PhoneInputCountryOptionCode {
+  font-size: 0.875rem;
+  color: #8B6F47;
+  font-weight: 600;
+  margin-left: auto;
+  padding-left: 0.5rem;
+}
+
+/* Custom Scrollbar for Dropdown */
+.phone-input-wrapper .PhoneInputCountrySelectMenu::-webkit-scrollbar {
+  width: 8px;
+}
+
+.phone-input-wrapper .PhoneInputCountrySelectMenu::-webkit-scrollbar-track {
+  background: rgba(201, 169, 97, 0.05);
+  border-radius: 4px;
+}
+
+.phone-input-wrapper .PhoneInputCountrySelectMenu::-webkit-scrollbar-thumb {
+  background: rgba(201, 169, 97, 0.3);
+  border-radius: 4px;
+}
+
+.phone-input-wrapper .PhoneInputCountrySelectMenu::-webkit-scrollbar-thumb:hover {
+  background: rgba(201, 169, 97, 0.5);
+}
+
+/* Ensure dropdown appears correctly */
+.input-wrapper .phone-input-wrapper {
+  position: relative;
+  overflow: visible !important;
+  z-index: 1;
+}
+
+.input-wrapper .phone-input-wrapper .PhoneInputCountry {
+  position: relative;
+  z-index: 2;
+}
+
+.input-wrapper .phone-input-wrapper .PhoneInputCountrySelectMenu {
+  position: absolute !important;
+  top: calc(100% + 0.5rem) !important;
+  left: 0 !important;
+  z-index: 10000 !important;
+}
+
+/* Hide native select if present */
+.phone-input-wrapper .PhoneInputCountrySelectNative {
+  display: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .phone-input-wrapper .PhoneInputCountrySelectMenu {
+    min-width: 280px;
+    max-width: 100%;
+    left: 0;
+    right: 0;
+  }
+}

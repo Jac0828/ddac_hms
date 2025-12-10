@@ -5,7 +5,7 @@
 
 // Get API base URL from env var, with fallback to localhost for development
 // Handle empty string (from .env.production placeholder) by checking truthiness
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.trim() || 'http://localhost:5272';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.trim() || 'http://localhost:5024';
 
 interface ApiResponse<T = any> {
   data?: T;

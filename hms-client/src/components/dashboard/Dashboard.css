@@ -1,0 +1,337 @@
+/* Dashboard Components Styles - Luxury Theme */
+
+/* Top Navigation - if used */
+.dashboard-topnav {
+  padding: 1rem 0;
+  z-index: 1030;
+}
+
+.dashboard-topnav .navbar-brand {
+  font-size: 1.25rem;
+  color: #8B6F47 !important; /* Gold/Brown */
+  font-family: 'Playfair Display', serif;
+}
+
+.dashboard-topnav .nav-link {
+  color: #495057 !important;
+  font-weight: 500;
+  padding: 0.5rem 1rem !important;
+  transition: color 0.2s ease;
+}
+
+.dashboard-topnav .nav-link:hover {
+  color: #C9A961 !important; /* Gold */
+}
+
+/* Stats Card */
+.stats-card {
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border-radius: 16px !important;
+  background: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+  box-shadow: 0 4px 20px rgba(139, 111, 71, 0.08) !important;
+  overflow: hidden;
+  position: relative;
+  height: 100%;
+}
+
+.stats-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, #C9A961, #F5E6D3, #C9A961);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.stats-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 30px rgba(139, 111, 71, 0.15) !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+}
+
+.stats-card:hover::before {
+  opacity: 1;
+}
+
+.stats-icon {
+  width: 64px;
+  height: 64px;
+  font-size: 1.75rem;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #F5E6D3 0%, #FFFFFF 100%);
+  color: #8B6F47;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(139, 111, 71, 0.1);
+  border: 1px solid rgba(201, 169, 97, 0.2);
+  transition: all 0.3s ease;
+}
+
+.stats-card:hover .stats-icon {
+  background: linear-gradient(135deg, #8B6F47 0%, #C9A961 100%);
+  color: #FFFFFF;
+  transform: rotateY(180deg);
+}
+
+.stats-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.stats-card h2 {
+  font-size: 2.25rem;
+  line-height: 1.2;
+  font-weight: 700;
+  color: #2C2C2C;
+  margin-bottom: 0.25rem;
+  background: linear-gradient(45deg, #2C2C2C, #5A5A5A);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.stats-card h6 {
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #8B6F47;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+/* Chart Cards */
+.chart-card {
+  border-radius: 16px !important;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+  box-shadow: 0 4px 20px rgba(139, 111, 71, 0.08) !important;
+}
+
+.chart-card:hover {
+  box-shadow: 0 15px 30px rgba(139, 111, 71, 0.15) !important;
+  transform: translateY(-4px);
+}
+
+.chart-card .card-title {
+  font-size: 1.25rem;
+  color: #2C2C2C;
+  font-weight: 600;
+  font-family: 'Playfair Display', serif;
+  border-bottom: 2px solid rgba(201, 169, 97, 0.15);
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Bookings Table */
+.bookings-table-card {
+  border-radius: 16px !important;
+  background: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+  box-shadow: 0 4px 20px rgba(139, 111, 71, 0.08) !important;
+}
+
+.bookings-table-card .card-header {
+  padding: 1.5rem 2rem 1rem;
+  background: transparent;
+  border-bottom: 1px solid rgba(201, 169, 97, 0.1);
+}
+
+.bookings-table-card .card-title {
+  font-size: 1.25rem;
+  color: #2C2C2C;
+  font-weight: 600;
+  font-family: 'Playfair Display', serif;
+}
+
+.bookings-table-card .table {
+  font-size: 0.95rem;
+  margin-bottom: 0;
+}
+
+.bookings-table-card .table thead th {
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #8B6F47;
+  padding: 1.25rem 1rem;
+  background: rgba(245, 230, 211, 0.3);
+  border-bottom: 2px solid rgba(201, 169, 97, 0.2);
+}
+
+.bookings-table-card .table tbody td {
+  padding: 1.25rem 1rem;
+  vertical-align: middle;
+  border-top: 1px solid rgba(201, 169, 97, 0.1);
+  color: #4A4A4A;
+}
+
+.bookings-table-card .table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.bookings-table-card .table tbody tr:hover {
+  background-color: rgba(201, 169, 97, 0.05);
+}
+
+.bookings-table-card .badge {
+  padding: 0.5rem 0.85rem;
+  font-weight: 600;
+  font-size: 0.7rem;
+  border-radius: 30px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* Dashboard Page Layout */
+.dashboard-page {
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  background: linear-gradient(135deg, #FDFBF7 0%, #F5F0E8 100%);
+}
+
+/* Background decoration */
+.dashboard-page::before {
+  content: '';
+  position: absolute;
+  top: -10%;
+  right: -5%;
+  width: 50vw;
+  height: 50vw;
+  background: radial-gradient(circle, rgba(201, 169, 97, 0.08) 0%, rgba(255, 255, 255, 0) 70%);
+  border-radius: 50%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.dashboard-page::after {
+  content: '';
+  position: absolute;
+  bottom: -10%;
+  left: -5%;
+  width: 40vw;
+  height: 40vw;
+  background: radial-gradient(circle, rgba(139, 111, 71, 0.05) 0%, rgba(255, 255, 255, 0) 70%);
+  border-radius: 50%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.dashboard-header {
+  padding: 2.5rem 0 2rem;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 1rem;
+}
+
+.dashboard-header h1, .dashboard-header h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #2C2C2C;
+  margin-bottom: 0.5rem;
+  font-family: 'Playfair Display', serif;
+  background: linear-gradient(45deg, #8B6F47, #C9A961);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.dashboard-header p {
+  color: #6C757D;
+  font-size: 1.1rem;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+/* Action Cards */
+.action-card-container {
+  border-radius: 16px;
+  border: 1px solid rgba(201, 169, 97, 0.4); /* Gold border */
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 20px rgba(139, 111, 71, 0.08);
+  padding: 2rem;
+}
+
+.action-card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  color: #2C2C2C;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(201, 169, 97, 0.2);
+}
+
+.action-button {
+  border: 1px solid rgba(201, 169, 97, 0.4) !important; /* Gold border */
+  background: white;
+  color: #8B6F47;
+  border-radius: 12px;
+  padding: 1.5rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  width: 100%;
+}
+
+.action-button:hover {
+  background: rgba(201, 169, 97, 0.05);
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(139, 111, 71, 0.15);
+  border-color: #C9A961 !important;
+}
+
+.action-button svg {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  color: #C9A961;
+  transition: transform 0.3s ease;
+}
+
+.action-button:hover svg {
+  transform: scale(1.1);
+  color: #8B6F47;
+}
+
+.action-button span {
+  font-weight: 600;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dashboard-topnav .navbar-nav {
+    margin-top: 1rem;
+  }
+  
+  .stats-card h2 {
+    font-size: 1.75rem;
+  }
+  
+  .stats-icon {
+    width: 56px;
+    height: 56px;
+    font-size: 1.5rem;
+  }
+  
+  .dashboard-header h1, .dashboard-header h2 {
+    font-size: 2rem;
+  }
+}

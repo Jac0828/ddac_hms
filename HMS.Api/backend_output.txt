@@ -1,0 +1,138 @@
+Building...
+=== DEBUG: Connection String ===
+Connection String: Host=hotelmanagementsystem.cq7oeyco0q9s.us-east-1.rds.amazonaws.com;Port=5432;Database=postgres;Username=postgres;Password=admin1234;SSL Mode=Require;Trust Server Certificate=true;Include Error Detail=true
+Is Null: False
+Contains '127.0.0.1': False
+Contains 'localhost': False
+Contains '5432': True
+Contains 'rds.amazonaws.com': True
+================================
+=== Using Connection String for DbContext ===
+Connection String: Host=hotelmanagementsystem.cq7oeyco0q9s.us-east-1.rds.amazonaws.com;Port=5432;Database=postgres;Username=postgres;Password=admin1234;SSL Mode=Require;Trust Server Certificate=true;Include Error Detail=true
+==============================================
+info: Program[0]
+      Starting database migration...
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (278ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT 1 FROM "AspNetRoles" LIMIT 1;
+info: Program[0]
+      Database tables already exist (created manually or via SQL).
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (262ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT 1 FROM "__EFMigrationsHistory" LIMIT 1;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (285ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1 FROM pg_catalog.pg_class c
+          JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+          WHERE n.nspname='public' AND
+                c.relname='__EFMigrationsHistory'
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (261ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "MigrationId", "ProductVersion"
+      FROM "__EFMigrationsHistory"
+      ORDER BY "MigrationId";
+info: Program[0]
+      No pending migrations. Database is up to date.
+info: Program[0]
+      Seeding database...
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (277ms) [Parameters=[@__normalizedEmail_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."AccessFailedCount", a."ConcurrencyStamp", a."CreatedAt", a."DateOfBirth", a."Email", a."EmailConfirmed", a."FirstName", a."Gender", a."IsActive", a."LastName", a."LockoutEnabled", a."LockoutEnd", a."MembershipTier", a."NormalizedEmail", a."NormalizedUserName", a."PasswordHash", a."PhoneNumber", a."PhoneNumberConfirmed", a."Points", a."SecurityStamp", a."TwoFactorEnabled", a."UserName"
+      FROM "AspNetUsers" AS a
+      WHERE a."NormalizedEmail" = @__normalizedEmail_0
+      LIMIT 2
+info: SeedData[0]
+      Database already seeded (admin user exists). Skipping seeding.
+info: Program[0]
+      Database seeding completed.
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5024
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: /Users/jac/.cursor/worktrees/ddac_hms/mpy/HMS.Api
+=== REGISTERED ROUTES ===
+api/admin/users (HMS.Api.Controllers.AdminController.GetUsers (HMS.Api))
+api/admin/users/{id} (HMS.Api.Controllers.AdminController.GetUser (HMS.Api))
+api/admin/users (HMS.Api.Controllers.AdminController.CreateUser (HMS.Api))
+api/admin/users/{id} (HMS.Api.Controllers.AdminController.UpdateUser (HMS.Api))
+api/admin/users/{id} (HMS.Api.Controllers.AdminController.DeleteUser (HMS.Api))
+api/admin/settings (HMS.Api.Controllers.AdminController.GetSettings (HMS.Api))
+api/admin/settings (HMS.Api.Controllers.AdminController.UpdateSettings (HMS.Api))
+api/AuditLog (HMS.Api.Controllers.AuditLogController.GetAuditLogs (HMS.Api))
+api/AuditLog/{id} (HMS.Api.Controllers.AuditLogController.GetAuditLog (HMS.Api))
+api/Auth/register (HMS.Api.Controllers.AuthController.Register (HMS.Api))
+api/Auth/login (HMS.Api.Controllers.AuthController.Login (HMS.Api))
+api/Auth/google-login (HMS.Api.Controllers.AuthController.GoogleLogin (HMS.Api))
+api/Auth/change-password (HMS.Api.Controllers.AuthController.ChangePassword (HMS.Api))
+api/Auth/profile (HMS.Api.Controllers.AuthController.UpdateProfile (HMS.Api))
+api/Auth/send-verification-email (HMS.Api.Controllers.AuthController.SendVerificationEmail (HMS.Api))
+api/Auth/verify-email (HMS.Api.Controllers.AuthController.VerifyEmail (HMS.Api))
+api/Bookings (HMS.Api.Controllers.BookingsController.CreateBooking (HMS.Api))
+api/Bookings (HMS.Api.Controllers.BookingsController.GetBookings (HMS.Api))
+api/Bookings/{id} (HMS.Api.Controllers.BookingsController.GetBooking (HMS.Api))
+api/Bookings/{id} (HMS.Api.Controllers.BookingsController.ModifyBooking (HMS.Api))
+api/Bookings/{id} (HMS.Api.Controllers.BookingsController.CancelBooking (HMS.Api))
+api/Bookings/{id}/checkin (HMS.Api.Controllers.BookingsController.CheckIn (HMS.Api))
+api/Bookings/{id}/checkout (HMS.Api.Controllers.BookingsController.Checkout (HMS.Api))
+api/Bookings/upcoming-checkins (HMS.Api.Controllers.BookingsController.GetUpcomingCheckIns (HMS.Api))
+api/DutyRoster (HMS.Api.Controllers.DutyRosterController.GetAllRosters (HMS.Api))
+api/DutyRoster/staff/{staffId} (HMS.Api.Controllers.DutyRosterController.GetStaffRoster (HMS.Api))
+api/DutyRoster/date/{date} (HMS.Api.Controllers.DutyRosterController.GetRosterByDate (HMS.Api))
+api/DutyRoster (HMS.Api.Controllers.DutyRosterController.CreateRoster (HMS.Api))
+api/DutyRoster/{id} (HMS.Api.Controllers.DutyRosterController.UpdateRoster (HMS.Api))
+api/DutyRoster/{id} (HMS.Api.Controllers.DutyRosterController.DeleteRoster (HMS.Api))
+api/hotel-settings (HMS.Api.Controllers.HotelSettingsController.GetSettings (HMS.Api))
+api/hotel-settings (HMS.Api.Controllers.HotelSettingsController.UpdateSettings (HMS.Api))
+api/Housekeeping/staff/{staffId} (HMS.Api.Controllers.HousekeepingController.GetStaffTasks (HMS.Api))
+api/Housekeeping (HMS.Api.Controllers.HousekeepingController.GetAllTasks (HMS.Api))
+api/Housekeeping/{id} (HMS.Api.Controllers.HousekeepingController.GetTask (HMS.Api))
+api/Housekeeping/{id}/status (HMS.Api.Controllers.HousekeepingController.UpdateTaskStatus (HMS.Api))
+api/Housekeeping (HMS.Api.Controllers.HousekeepingController.CreateTask (HMS.Api))
+api/Housekeeping/{id} (HMS.Api.Controllers.HousekeepingController.UpdateTask (HMS.Api))
+api/Newsletters (HMS.Api.Controllers.NewslettersController.GetNewsletters (HMS.Api))
+api/Newsletters/{id} (HMS.Api.Controllers.NewslettersController.GetNewsletter (HMS.Api))
+api/Newsletters (HMS.Api.Controllers.NewslettersController.CreateNewsletter (HMS.Api))
+api/Newsletters/{id}/comments (HMS.Api.Controllers.NewslettersController.AddComment (HMS.Api))
+api/Newsletters/comments/{id} (HMS.Api.Controllers.NewslettersController.DeleteComment (HMS.Api))
+api/Newsletters/comments/{id} (HMS.Api.Controllers.NewslettersController.GetComment (HMS.Api))
+api/Payments (HMS.Api.Controllers.PaymentsController.RecordPayment (HMS.Api))
+api/Payments (HMS.Api.Controllers.PaymentsController.GetAllPayments (HMS.Api))
+api/Payments/booking/{bookingId} (HMS.Api.Controllers.PaymentsController.GetBookingPayments (HMS.Api))
+api/Payments/{id} (HMS.Api.Controllers.PaymentsController.GetPayment (HMS.Api))
+api/Reviews (HMS.Api.Controllers.ReviewsController.GetReviews (HMS.Api))
+api/Reviews/stats (HMS.Api.Controllers.ReviewsController.GetReviewStats (HMS.Api))
+api/Reviews (HMS.Api.Controllers.ReviewsController.CreateReview (HMS.Api))
+api/Rooms/available (HMS.Api.Controllers.RoomsController.GetAvailableRooms (HMS.Api))
+api/Rooms (HMS.Api.Controllers.RoomsController.GetAllRooms (HMS.Api))
+api/Rooms/{id} (HMS.Api.Controllers.RoomsController.GetRoom (HMS.Api))
+api/Rooms (HMS.Api.Controllers.RoomsController.CreateRoom (HMS.Api))
+api/Rooms/batch (HMS.Api.Controllers.RoomsController.BatchCreateRooms (HMS.Api))
+api/Rooms/{id} (HMS.Api.Controllers.RoomsController.UpdateRoom (HMS.Api))
+api/Rooms/{id}/status (HMS.Api.Controllers.RoomsController.UpdateRoomStatus (HMS.Api))
+api/Rooms/{id} (HMS.Api.Controllers.RoomsController.DeleteRoom (HMS.Api))
+api/RoomTypes (HMS.Api.Controllers.RoomTypesController.GetAllRoomTypes (HMS.Api))
+api/RoomTypes/{id} (HMS.Api.Controllers.RoomTypesController.GetRoomType (HMS.Api))
+api/RoomTypes (HMS.Api.Controllers.RoomTypesController.CreateRoomType (HMS.Api))
+api/RoomTypes/{id} (HMS.Api.Controllers.RoomTypesController.UpdateRoomType (HMS.Api))
+api/RoomTypes/{id} (HMS.Api.Controllers.RoomTypesController.DeleteRoomType (HMS.Api))
+api/ServiceRequests (HMS.Api.Controllers.ServiceRequestsController.GetServiceRequests (HMS.Api))
+api/ServiceRequests (HMS.Api.Controllers.ServiceRequestsController.CreateServiceRequest (HMS.Api))
+api/ServiceRequests/{id} (HMS.Api.Controllers.ServiceRequestsController.GetServiceRequest (HMS.Api))
+api/ServiceRequests/{id}/assign (HMS.Api.Controllers.ServiceRequestsController.AssignServiceRequest (HMS.Api))
+api/ServiceRequests/{id}/complete (HMS.Api.Controllers.ServiceRequestsController.CompleteServiceRequest (HMS.Api))
+api/Users (HMS.Api.Controllers.UsersController.GetAllUsers (HMS.Api))
+api/Users (HMS.Api.Controllers.UsersController.CreateUser (HMS.Api))
+api/Users/{id} (HMS.Api.Controllers.UsersController.UpdateUser (HMS.Api))
+api/Users/{id} (HMS.Api.Controllers.UsersController.DeleteUser (HMS.Api))
+WeatherForecast (HMS.Api.Controllers.WeatherForecastController.Get (HMS.Api))
+/healthz (HTTP: GET /healthz)
+/api/test-db (HTTP: GET /api/test-db)
+/ (HTTP: GET /)
+========================
+info: Microsoft.Hosting.Lifetime[0]
+      Application is shutting down...
