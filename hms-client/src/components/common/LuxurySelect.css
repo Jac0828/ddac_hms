@@ -1,0 +1,107 @@
+.luxury-select-container {
+  position: relative;
+  width: 100%;
+}
+
+.luxury-select-trigger {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 1rem;
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.luxury-select-trigger:hover {
+  border-color: #C9A961;
+}
+
+.luxury-select-trigger.is-open {
+  border-color: #C9A961;
+  box-shadow: 0 0 0 2px rgba(201, 169, 97, 0.1);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.luxury-select-value {
+  color: #495057;
+  font-size: 0.95rem;
+}
+
+.luxury-select-arrow {
+  color: #8B6F47;
+  font-size: 0.8rem;
+  transition: transform 0.2s ease;
+}
+
+.luxury-select-arrow.rotated {
+  transform: rotate(180deg);
+}
+
+.luxury-select-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: white;
+  border: 1px solid #C9A961;
+  border-top: none;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  z-index: 1000;
+  max-height: 250px;
+  overflow-y: auto;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.luxury-select-option {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  color: #495057;
+  font-size: 0.95rem;
+}
+
+.luxury-select-option:hover {
+  background-color: rgba(201, 169, 97, 0.1);
+  color: #8B6F47;
+}
+
+.luxury-select-option.selected {
+  background-color: rgba(201, 169, 97, 0.2);
+  color: #8B6F47;
+  font-weight: 600;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Scrollbar styling for dropdown */
+.luxury-select-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.luxury-select-dropdown::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.luxury-select-dropdown::-webkit-scrollbar-thumb {
+  background: #C9A961;
+  border-radius: 3px;
+}
+
+.luxury-select-dropdown::-webkit-scrollbar-thumb:hover {
+  background: #8B6F47;
+}
+
+
+
+
+

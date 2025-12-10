@@ -8,6 +8,10 @@ using System.Text;
 using Npgsql;
 using HMS.Domain.Models;
 using HMS.Infrastructure.Data;
+using Amazon.S3;
+using Amazon.SimpleEmail;
+using HMS.Api.Services;
+using HMS.Api.Converters;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +31,14 @@ builder.Services.AddControllers()
     {
         options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
         options.JsonSerializerOptions.WriteIndented = true;
+        // Handle circular references by ignoring them
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        // Preserve references to avoid cycles
+        options.JsonSerializerOptions.MaxDepth = 32;
+        // Add TimeSpan converters for JSON serialization
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+        options.JsonSerializerOptions.Converters.Add(new TimeSpanConverter());
+        options.JsonSerializerOptions.Converters.Add(new NullableTimeSpanConverter());
     });
 
 // DEBUG: Check connection string
@@ -61,20 +73,57 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
             errorCodesToAdd: null);
     }));
 
+// Add distributed cache for CacheService (must be registered before services that depend on it)
+builder.Services.AddDistributedMemoryCache();
+
 // Register Services
 builder.Services.AddScoped<HMS.Infrastructure.Services.IUserService, HMS.Infrastructure.Services.UserService>();
 builder.Services.AddScoped<HMS.Infrastructure.Services.IRoomService, HMS.Infrastructure.Services.RoomService>();
 builder.Services.AddScoped<HMS.Infrastructure.Services.IBookingService, HMS.Infrastructure.Services.BookingService>();
 builder.Services.AddScoped<HMS.Infrastructure.Services.IHousekeepingService, HMS.Infrastructure.Services.HousekeepingService>();
 builder.Services.AddScoped<HMS.Infrastructure.Services.IPaymentService, HMS.Infrastructure.Services.PaymentService>();
+builder.Services.AddScoped<HMS.Infrastructure.Services.IAuditLogService, HMS.Infrastructure.Services.AuditLogService>();
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddScoped<IEmailSender, EmailService>();
+builder.Services.AddScoped<EmailService>(); // Register concrete type as well if needed
+
+// Configure AWS Options
+var awsOptions = builder.Configuration.GetAWSOptions();
+// Only set credentials if keys are present in configuration, otherwise fallback to default chain (e.g. env vars, profile)
+if (!string.IsNullOrEmpty(builder.Configuration["AWS:AccessKey"]) && !string.IsNullOrEmpty(builder.Configuration["AWS:SecretKey"]))
+{
+    var accessKey = builder.Configuration["AWS:AccessKey"];
+    var secretKey = builder.Configuration["AWS:SecretKey"];
+    var sessionToken = builder.Configuration["AWS:SessionToken"];
+
+    if (!string.IsNullOrEmpty(sessionToken))
+    {
+        awsOptions.Credentials = new Amazon.Runtime.SessionAWSCredentials(accessKey, secretKey, sessionToken);
+    }
+    else
+    {
+        awsOptions.Credentials = new Amazon.Runtime.BasicAWSCredentials(accessKey, secretKey);
+    }
+}
+if (!string.IsNullOrEmpty(builder.Configuration["AWS:Region"]))
+{
+    awsOptions.Region = Amazon.RegionEndpoint.GetBySystemName(builder.Configuration["AWS:Region"]);
+}
+
+builder.Services.AddDefaultAWSOptions(awsOptions);
+builder.Services.AddAWSService<IAmazonS3>();
+builder.Services.AddAWSService<IAmazonSimpleEmailService>();
+
+// Register Image Service
+builder.Services.AddScoped<IImageService, S3ImageService>();
 
 // Configure Identity
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 {
     // Password settings
-    options.Password.RequireDigit = true;
-    options.Password.RequireLowercase = true;
-    options.Password.RequireUppercase = true;
+    options.Password.RequireDigit = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireUppercase = false;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequiredLength = 6;
 
@@ -87,7 +136,27 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 
 // Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
-var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
+var jwtKey = jwtSettings["Key"];
+
+// Validate JWT Key
+if (string.IsNullOrEmpty(jwtKey))
+{
+    throw new InvalidOperationException(
+        "JWT Key is not configured. Please set 'Jwt:Key' in appsettings.json or environment variables. " +
+        "For development, you can use appsettings.Development.json. " +
+        "For production, set the 'Jwt__Key' environment variable."
+    );
+}
+
+if (jwtKey.Length < 32)
+{
+    throw new InvalidOperationException(
+        $"JWT Key must be at least 32 characters long. Current length: {jwtKey.Length}. " +
+        "Generate a strong key using: openssl rand -base64 32"
+    );
+}
+
+var key = Encoding.UTF8.GetBytes(jwtKey);
 
 builder.Services.AddAuthentication(options =>
 {
@@ -183,12 +252,33 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = "swagger";
 });
 
-app.UseHttpsRedirection();
+// Only use HTTPS redirection in production
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseCors("AppCors");
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapControllers();
+
+// DEBUG: Print all registered routes
+app.Lifetime.ApplicationStarted.Register(() =>
+{
+    var endpoints = app.Services.GetRequiredService<IEnumerable<Microsoft.AspNetCore.Routing.EndpointDataSource>>()
+        .SelectMany(es => es.Endpoints)
+        .OfType<RouteEndpoint>();
+
+    Console.WriteLine("=== REGISTERED ROUTES ===");
+    foreach (var endpoint in endpoints)
+    {
+        Console.WriteLine($"{endpoint.RoutePattern.RawText} ({endpoint.DisplayName})");
+    }
+    Console.WriteLine("========================");
+});
 
 // Health check endpoint
 app.MapGet("/healthz", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }))
@@ -350,7 +440,8 @@ if (runMigrations)
             }
             
             // Seed database (will skip if data already exists)
-            logger.LogInformation("Seeding database...");
+            // This ensures data persistence - seeding only creates missing data, never deletes existing data
+            logger.LogInformation("Seeding database (will preserve all existing data)...");
             await HMS.Api.Data.SeedData.SeedRolesAndUsers(services);
             logger.LogInformation("Database seeding completed.");
         }

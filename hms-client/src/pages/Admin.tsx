@@ -5,9 +5,10 @@ import { useCurrency } from '../contexts/CurrencyContext';
 import { bookingsApi, Booking } from '../services/api';
 import { roomsApi, roomTypesApi, Room, RoomType } from '../services/api';
 import { serviceRequestsApi, ServiceRequest } from '../services/api';
-import { adminApi, User, CreateUserData, UpdateUserData, DatabaseData, auditLogApi, AuditLog } from '../services/api'; // Added auditLogApi
+import { adminApi, User, CreateUserData, UpdateUserData, DatabaseData, auditLogApi, AuditLog, ParsedHotelSetting } from '../services/api';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { getHotelSettings, setHotelSettings, HotelSettings } from '../utils/hotelSettings';
+import { useSettings } from '../contexts/SettingsContext';
+import axios from 'axios'; // Import axios directly for debugging
 import { motion } from 'framer-motion';
 import {
   LineChart,
@@ -41,28 +42,38 @@ import {
   FaTrash,
   FaHistory,
   FaEnvelope,
-  FaCheckCircle
+  FaCheckCircle,
+  FaHotel,
+  FaPhone,
+  FaClock,
+  FaShareAlt,
+  FaPlus,
+  FaUserTie,
+  FaTools
 } from 'react-icons/fa';
 import StatsCard from '../components/dashboard/StatsCard';
 import RevenueChart from '../components/dashboard/RevenueChart';
 import OccupancyChart from '../components/dashboard/OccupancyChart';
-import BookingsTable from '../components/dashboard/BookingsTable';
 import FeedbackModal, { FeedbackModalProps } from '../components/common/FeedbackModal';
 import EditFormModal from '../components/common/EditFormModal';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import SettingsTab from '../components/admin/SettingsTab'; // Added import
 import './Admin.css';
+import LuxurySelect from '../components/common/LuxurySelect'; // Import LuxurySelect
 
 const Admin: React.FC = () => {
   const { isAdmin, user } = useAuth();
-  const { t } = useLanguage();
+  const { t, getRoleName } = useLanguage();
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get('tab') || 'overview';
-  const validTabs = ['overview', 'users', 'rooms', 'bookings', 'services', 'settings', 'auditLogs'];
+  const validTabs = ['overview', 'users', 'rooms', 'services', 'settings', 'auditLogs'];
   const initialTab = validTabs.includes(tabParam) ? tabParam as typeof validTabs[number] : 'overview';
   const [activeTab, setActiveTab] = useState<typeof validTabs[number]>(initialTab);
-  const [hotelSettings, setHotelSettingsState] = useState<HotelSettings>(getHotelSettings());
+  
+  // Settings from API
+  const { settings, updateSettings } = useSettings();
   
   // Modal state
   const [feedbackModal, setFeedbackModal] = useState<FeedbackModalProps>({
@@ -77,6 +88,8 @@ const Admin: React.FC = () => {
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalRooms: 0,
+    totalStaff: 0,
+    maintenanceRooms: 0,
     totalBookings: 0,
     totalServiceRequests: 0,
     revenue: 0,
@@ -85,8 +98,9 @@ const Admin: React.FC = () => {
 
   // Chart data
   const [chartData, setChartData] = useState<any[]>([]);
-  const [bookingStatusData, setBookingStatusData] = useState<any[]>([]);
+  const [userGrowthData, setUserGrowthData] = useState<any[]>([]);
   const [roomStatusData, setRoomStatusData] = useState<any[]>([]);
+  const [revenueData, setRevenueData] = useState<any[]>([]);
   
   // Bookings data for table
   const [allBookings, setAllBookings] = useState<Booking[]>([]);
@@ -103,10 +117,17 @@ const Admin: React.FC = () => {
   
   // Users data
   const [users, setUsers] = useState<User[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]); // Added filtered state
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [showUserForm, setShowUserForm] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([]); // Batch selection
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]); 
+  
+  // User Filters
+  const [userFilterRole, setUserFilterRole] = useState('All');
+  const [userFilterStatus, setUserFilterStatus] = useState('All');
+  const [userSearchTerm, setUserSearchTerm] = useState('');
+
   const [userFormData, setUserFormData] = useState({
     email: '',
     firstName: '',
@@ -117,15 +138,23 @@ const Admin: React.FC = () => {
     gender: '',
     dateOfBirth: '',
     isActive: true,
+    membershipTier: '',
   });
 
   // Rooms data
   const [rooms, setRooms] = useState<Room[]>([]);
+  const [filteredRooms, setFilteredRooms] = useState<Room[]>([]); // Added filtered state
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
   const [loadingRooms, setLoadingRooms] = useState(false);
   const [showRoomForm, setShowRoomForm] = useState(false);
   const [editingRoom, setEditingRoom] = useState<Room | null>(null);
-  const [selectedRooms, setSelectedRooms] = useState<number[]>([]); // Batch selection
+  const [selectedRooms, setSelectedRooms] = useState<number[]>([]); 
+  
+  // Room Filters
+  const [roomFilterType, setRoomFilterType] = useState('All');
+  const [roomFilterStatus, setRoomFilterStatus] = useState('All');
+  const [roomSearchTerm, setRoomSearchTerm] = useState('');
+
   const [roomFormData, setRoomFormData] = useState({
     roomNumber: '',
     roomTypeId: 0,
@@ -138,10 +167,6 @@ const Admin: React.FC = () => {
     hasTV: true,
     hasAirConditioning: true,
   });
-
-  // Bookings data
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [loadingBookings, setLoadingBookings] = useState(false);
 
   // Service requests data
   const [serviceRequests, setServiceRequests] = useState<ServiceRequest[]>([]);
@@ -162,9 +187,6 @@ const Admin: React.FC = () => {
       const newTab = tabParam as typeof validTabs[number];
       if (newTab !== activeTab) {
         setActiveTab(newTab);
-        if (newTab === 'settings') {
-          setHotelSettingsState(getHotelSettings());
-        }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -182,8 +204,6 @@ const Admin: React.FC = () => {
     } else if (activeTab === 'rooms') {
       loadRooms();
       loadRoomTypes();
-    } else if (activeTab === 'bookings') {
-      loadBookings();
     } else if (activeTab === 'services') {
       loadServiceRequests();
     } else if (activeTab === 'auditLogs') {
@@ -191,6 +211,53 @@ const Admin: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAdmin, activeTab]);
+
+  // Filter Users Effect
+  useEffect(() => {
+    let result = users;
+
+    if (userFilterRole !== 'All') {
+      result = result.filter(u => u.roles?.includes(userFilterRole) || u.role === userFilterRole);
+    }
+
+    if (userFilterStatus !== 'All') {
+      const isActive = userFilterStatus === 'Active';
+      result = result.filter(u => u.isActive === isActive);
+    }
+
+    if (userSearchTerm) {
+      const term = userSearchTerm.toLowerCase();
+      result = result.filter(u => 
+        u.firstName?.toLowerCase().includes(term) || 
+        u.lastName?.toLowerCase().includes(term) || 
+        u.email?.toLowerCase().includes(term)
+      );
+    }
+
+    setFilteredUsers(result);
+  }, [users, userFilterRole, userFilterStatus, userSearchTerm]);
+
+  // Filter Rooms Effect
+  useEffect(() => {
+    let result = rooms;
+
+    if (roomFilterType !== 'All') {
+      result = result.filter(r => r.roomType === roomFilterType);
+    }
+
+    if (roomFilterStatus !== 'All') {
+      result = result.filter(r => r.status === roomFilterStatus);
+    }
+
+    if (roomSearchTerm) {
+      const term = roomSearchTerm.toLowerCase();
+      result = result.filter(r => 
+        r.roomNumber.toLowerCase().includes(term)
+      );
+    }
+
+    setFilteredRooms(result);
+  }, [rooms, roomFilterType, roomFilterStatus, roomSearchTerm]);
 
   const showSuccess = (title: string, message: string) => {
     setFeedbackModal({
@@ -200,10 +267,8 @@ const Admin: React.FC = () => {
       message,
       onClose: () => setFeedbackModal(prev => ({ ...prev, isOpen: false }))
     });
-    // Auto-close success modal after 2 seconds
     setTimeout(() => {
       setFeedbackModal(prev => {
-        // Only close if it's still the same success modal
         if (prev.type === 'success' && prev.title === title) {
           return { ...prev, isOpen: false };
         }
@@ -222,11 +287,9 @@ const Admin: React.FC = () => {
     });
   };
 
-  // ... loadOverviewData, prepareChartData ... (omitted for brevity, same as before)
   const loadOverviewData = async () => {
     try {
       console.log('🔄 Loading overview data...');
-      // Execute all API calls in parallel for better performance
       const [bookingsResult, roomsResult, serviceRequestsResult, usersResult, auditLogsResult] = await Promise.allSettled([
         bookingsApi.getAll().catch(err => {
           console.error('❌ bookingsApi.getAll error:', err);
@@ -244,9 +307,9 @@ const Admin: React.FC = () => {
           console.error('❌ adminApi.getUsers error:', err);
           return [];
         }),
-        auditLogApi.getAll().catch(err => {
+        auditLogApi.getAll({ pageSize: 10 }).catch(err => { // Fetch fewer logs for overview, but backend handles roles
           console.error('❌ auditLogApi.getAll error:', err);
-          return [];
+          return { data: [], totalCount: 0, page: 1, pageSize: 10, totalPages: 0 };
         })
       ]);
 
@@ -254,32 +317,10 @@ const Admin: React.FC = () => {
       const roomsData: Room[] = roomsResult.status === 'fulfilled' ? roomsResult.value : [];
       const serviceRequestsData: ServiceRequest[] = serviceRequestsResult.status === 'fulfilled' ? serviceRequestsResult.value : [];
       const usersData: User[] = usersResult.status === 'fulfilled' ? usersResult.value : [];
-      // auditLogApi.getAll() returns { data: AuditLog[], ... }, so extract the data array
       const auditLogsData: AuditLog[] = auditLogsResult.status === 'fulfilled' 
-        ? (Array.isArray(auditLogsResult.value) 
-            ? auditLogsResult.value 
-            : (auditLogsResult.value as any)?.data || [])
+        ? (auditLogsResult.value as any).data || []
         : [];
 
-      console.log('📊 Overview data loaded:', {
-        bookings: bookingsData.length,
-        rooms: roomsData.length,
-        serviceRequests: serviceRequestsData.length,
-        users: usersData.length,
-        auditLogs: auditLogsData.length
-      });
-
-      // Log room data details
-      if (roomsResult.status === 'rejected') {
-        console.error('❌ Rooms API call rejected:', roomsResult.reason);
-      } else if (roomsData.length === 0) {
-        console.warn('⚠️ No rooms found in database. Check if rooms are seeded.');
-      } else {
-        console.log('✅ Rooms data:', roomsData.slice(0, 3)); // Log first 3 rooms
-      }
-
-      // Calculate total revenue from confirmed/completed bookings
-      // Include checkedout bookings as they represent realized revenue
       const totalRevenue = bookingsData
         .filter(b => {
           const status = (b.status || '').toLowerCase();
@@ -287,7 +328,12 @@ const Admin: React.FC = () => {
         })
         .reduce((sum, b) => sum + ((b as any).totalPrice || b.totalAmount || 0), 0);
 
-      // Calculate occupancy rate based on booked/occupied rooms
+      const totalStaff = usersData.filter(u => 
+        u.roles && u.roles.some(r => ['Manager', 'Receptionist', 'Housekeeping', 'Admin'].includes(r))
+      ).length;
+
+      const maintenanceRooms = roomsData.filter(r => r.status === 'Maintenance').length;
+
       const bookedRooms = roomsData.filter(r => {
         const status = (r.status || '').toLowerCase();
         return status === 'booked' || status === 'occupied';
@@ -297,9 +343,22 @@ const Admin: React.FC = () => {
         ? Number(((bookedRooms / roomsData.length) * 100).toFixed(1))
         : 0;
 
+      const statusCounts = roomsData.reduce((acc, room) => {
+        const status = room.status || 'Available';
+        acc[status] = (acc[status] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+      const roomStatusChartData = Object.entries(statusCounts).map(([name, value]) => ({
+        name,
+        value
+      }));
+
       const newStats = {
         totalUsers: usersData.length || 0,
         totalRooms: roomsData.length || 0,
+        totalStaff,
+        maintenanceRooms,
         totalBookings: bookingsData.length || 0,
         totalServiceRequests: serviceRequestsData.length || 0,
         revenue: totalRevenue || 0,
@@ -307,49 +366,46 @@ const Admin: React.FC = () => {
       };
 
       setStats(newStats);
+      setRoomStatusData(roomStatusChartData);
       setAllBookings(bookingsData);
       setAuditLogs(auditLogsData);
-      prepareChartData(bookingsData, roomsData, serviceRequestsData);
+      prepareChartData(bookingsData, roomsData, serviceRequestsData, usersData);
     } catch (err: any) {
       console.error('❌ Failed to load overview data:', err);
     }
   };
 
-  const prepareChartData = (bookings: Booking[], rooms: Room[], serviceRequests: ServiceRequest[]) => {
+  const prepareChartData = (bookings: Booking[], rooms: Room[], serviceRequests: ServiceRequest[], users: User[]) => {
+    // Prepare User Growth Data (Last 7 Days)
     const last7Days = Array.from({ length: 7 }, (_, i) => {
       const date = new Date();
       date.setDate(date.getDate() - (6 - i));
       const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       
+      const dayUsers = users.filter(u => {
+        const createdDate = new Date(u.createdAt);
+        return createdDate.toDateString() === date.toDateString();
+      }).length;
+
+      // Calculate daily revenue
       const dayRevenue = bookings
         .filter(b => {
-          const bookingDate = new Date(b.checkInDate || b.createdAt || ''); // Use createdAt if checkInDate is future
-          // For revenue chart, usually we track when booking was MADE or when payment received.
-          // Here simplified to checkInDate for now as per user request previously.
-          return bookingDate.toDateString() === date.toDateString();
+          const createdDate = new Date((b as any).createdAt || b.checkInDate); // Fallback if createdAt missing
+          return createdDate.toDateString() === date.toDateString() && b.status !== 'Cancelled';
         })
-        .reduce((sum, b) => sum + ((b as any).totalPrice || b.totalAmount || 0), 0);
-
-      const dayOccupancy = rooms.length > 0 
-        ? (rooms.filter(r => {
-            const status = (r.status || '').toLowerCase();
-            return status === 'booked' || status === 'occupied';
-          }).length / rooms.length) * 100
-        : 0;
+        .reduce((sum, b) => sum + (b.totalPrice || 0), 0);
 
       return {
         date: dateStr,
-        revenue: dayRevenue,
-        occupancy: dayOccupancy,
-        bookings: bookings.filter(b => {
-          const bookingDate = new Date(b.checkInDate || b.createdAt || ''); // Same here
-          return bookingDate.toDateString() === date.toDateString();
-        }).length,
+        newUsers: dayUsers,
+        revenue: dayRevenue
       };
     });
-    setChartData(last7Days);
+    setUserGrowthData(last7Days);
+    setRevenueData(last7Days);
   };
 
+  // ... loadUsers, loadRooms, etc. (keeping existing logic)
   const loadUsers = async () => {
     setLoadingUsers(true);
     try {
@@ -368,11 +424,7 @@ const Admin: React.FC = () => {
     setLoadingRooms(true);
     try {
       const data = await roomsApi.getAll();
-      console.log('Loaded rooms:', data.length, data);
       setRooms(data);
-      if (data.length === 0) {
-        console.warn('No rooms found in database');
-      }
     } catch (err) {
       console.error('Failed to load rooms:', err);
       setRooms([]);
@@ -390,18 +442,6 @@ const Admin: React.FC = () => {
     }
   };
 
-  const loadBookings = async () => {
-    setLoadingBookings(true);
-    try {
-      const data = await bookingsApi.getAll();
-      setBookings(data);
-    } catch (err) {
-      console.error('Failed to load bookings:', err);
-    } finally {
-      setLoadingBookings(false);
-    }
-  };
-
   const loadServiceRequests = async () => {
     setLoadingServiceRequests(true);
     try {
@@ -411,30 +451,6 @@ const Admin: React.FC = () => {
       console.error('Failed to load service requests:', err);
     } finally {
       setLoadingServiceRequests(false);
-    }
-  };
-
-  const loadDatabaseData = async () => {
-    setLoadingDatabase(true);
-    try {
-      const data = await adminApi.getDatabaseData();
-      // Normalize property names
-      const normalizedData: DatabaseData = {
-        users: data.users || data.Users || [],
-        roomTypes: data.roomTypes || data.RoomTypes || [],
-        rooms: data.rooms || data.Rooms || [],
-        bookings: data.bookings || data.Bookings || [],
-        payments: data.payments || data.Payments || [],
-        serviceRequests: data.serviceRequests || data.ServiceRequests || [],
-        housekeepingTasks: data.housekeepingTasks || data.HousekeepingTasks || [],
-        activityLogs: data.activityLogs || data.ActivityLogs || [],
-        queryTickets: data.queryTickets || data.QueryTickets || [],
-      };
-      setDatabaseData(normalizedData);
-    } catch (err: any) {
-      console.error('❌ Failed to load database data:', err);
-    } finally {
-      setLoadingDatabase(false);
     }
   };
 
@@ -450,7 +466,7 @@ const Admin: React.FC = () => {
     }
   };
 
-  // ... User Handlers (handleCreateUser, executeDeleteUser, handleDeleteUser, openEditUser)
+  // ... Handlers (handleCreateUser, etc.) - Keeping them as is, just copying necessary parts
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -463,6 +479,7 @@ const Admin: React.FC = () => {
           phoneNumber: userFormData.phoneNumber || undefined,
           gender: userFormData.gender || undefined,
           dateOfBirth: userFormData.dateOfBirth || undefined,
+          membershipTier: userFormData.membershipTier || undefined,
         };
         if (userFormData.email !== editingUser.email) updateData.email = userFormData.email;
         if (userFormData.password) updateData.password = userFormData.password;
@@ -485,17 +502,7 @@ const Admin: React.FC = () => {
       }
       setShowUserForm(false);
       setEditingUser(null);
-      setUserFormData({ 
-        email: '', 
-        firstName: '', 
-        lastName: '', 
-        password: '', 
-        role: 'Customer', 
-        phoneNumber: '', 
-        gender: '', 
-        dateOfBirth: '', 
-        isActive: true 
-      });
+      setUserFormData({ email: '', firstName: '', lastName: '', password: '', role: 'Customer', phoneNumber: '', gender: '', dateOfBirth: '', isActive: true, membershipTier: '' });
       loadUsers();
       loadOverviewData();
     } catch (err: any) {
@@ -506,9 +513,8 @@ const Admin: React.FC = () => {
 
   const executeDeleteUser = async (id: string) => {
     try {
-      const response = await adminApi.deleteUser(id);
-      const message = response?.data?.message || 'User deleted successfully';
-      showSuccess('Success', message);
+      await adminApi.deleteUser(id);
+      showSuccess('Success', 'User deleted successfully');
       loadUsers();
     } catch (err: any) {
       showError('Error', err.response?.data?.message || 'Failed to delete user');
@@ -522,7 +528,7 @@ const Admin: React.FC = () => {
       isOpen: true,
       type: 'confirm',
       title: 'Delete User',
-      message: `Are you sure you want to delete ${userName}? This will permanently delete all related bookings and data.`,
+      message: `Are you sure you want to delete ${userName}?`,
       confirmText: 'Delete',
       cancelText: 'Cancel',
       onClose: () => setFeedbackModal(prev => ({ ...prev, isOpen: false })),
@@ -537,16 +543,16 @@ const Admin: React.FC = () => {
       firstName: user.firstName,
       lastName: user.lastName,
       password: '',
-      role: user.roles[0] || 'Customer',
+      role: user.roles?.[0] || 'Customer',
       phoneNumber: user.phoneNumber || '',
       gender: user.gender || '',
       dateOfBirth: user.dateOfBirth ? new Date(user.dateOfBirth).toISOString().split('T')[0] : '',
       isActive: user.isActive,
+      membershipTier: user.membershipTier || '',
     });
     setShowUserForm(true);
   };
 
-  // ... Room Handlers (handleCreateRoom, executeDeleteRoom, handleDeleteRoom, openEditRoom, handleRoomTypeChange)
   const handleCreateRoom = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -670,36 +676,140 @@ const Admin: React.FC = () => {
         {activeTab === 'overview' && (
           <div className="admin-overview">
             <div className="stats-grid">
-              <StatsCard title="TOTAL USERS" value={stats.totalUsers} icon={<FaUsers />} iconColor="#C9A961" />
-              <StatsCard title="TOTAL ROOMS" value={stats.totalRooms} icon={<FaBuilding />} iconColor="#8B6F47" />
-              <StatsCard title="TOTAL BOOKINGS" value={stats.totalBookings} icon={<FaCalendarAlt />} iconColor="#D4AF37" />
-              <StatsCard title="TOTAL REVENUE" value={`$${stats.revenue.toFixed(2)}`} icon={<FaDollarSign />} iconColor="#B8941F" />
+              <StatsCard title={t('admin.totalUsers') || 'TOTAL USERS'} value={stats.totalUsers} icon={<FaUsers />} iconColor="#C9A961" />
+              <StatsCard title={t('admin.totalStaff') || 'TOTAL STAFF'} value={stats.totalStaff} icon={<FaUserTie />} iconColor="#8B6F47" />
+              <StatsCard title={t('admin.totalRooms') || 'TOTAL ROOMS'} value={stats.totalRooms} icon={<FaBuilding />} iconColor="#D4AF37" />
+              <StatsCard title={t('admin.maintenanceRooms') || 'MAINTENANCE ROOMS'} value={stats.maintenanceRooms} icon={<FaTools />} iconColor="#B8941F" />
             </div>
-            <div className="charts-grid">
-              <div className="chart-column"><RevenueChart data={chartData} /></div>
-              <div className="chart-column"><OccupancyChart data={chartData} /></div>
+            <div className="charts-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+              <div className="chart-column">
+                <div className="chart-card p-4 h-100">
+                  <h5 className="card-title mb-4">{t('admin.userGrowth') || 'User Growth (Last 7 Days)'}</h5>
+                  <div style={{ width: '100%', height: 300 }}>
+                    <ResponsiveContainer>
+                      <LineChart data={userGrowthData}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E0E0E0" />
+                        <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#8B6F47', fontSize: 12 }} dy={10} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#8B6F47', fontSize: 12 }} />
+                        <Tooltip 
+                          contentStyle={{ backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #C9A961', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                          itemStyle={{ color: '#2C2C2C' }}
+                          formatter={(value: number) => [value, t('admin.newUsers') || 'New Users']}
+                          labelFormatter={(label) => `${t('admin.date') || 'Date'}: ${label}`}
+                        />
+                        <Line type="monotone" dataKey="newUsers" stroke="#C9A961" strokeWidth={3} dot={{ fill: '#C9A961', strokeWidth: 2, r: 4 }} activeDot={{ r: 6, strokeWidth: 0 }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="chart-column">
+                <div className="chart-card p-4 h-100">
+                  <h5 className="card-title mb-4">{t('admin.revenueLast7Days') || 'Revenue (Last 7 Days)'}</h5>
+                  <div style={{ width: '100%', height: 300 }}>
+                    <ResponsiveContainer>
+                      <BarChart data={revenueData}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E0E0E0" />
+                        <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#8B6F47', fontSize: 12 }} dy={10} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#8B6F47', fontSize: 12 }} />
+                        <Tooltip 
+                          contentStyle={{ backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #C9A961', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                          itemStyle={{ color: '#2C2C2C' }}
+                          formatter={(value: number) => [formatPrice(value), t('admin.revenue') || 'Revenue']}
+                        />
+                        <Bar dataKey="revenue" fill="url(#goldGradient)" radius={[4, 4, 0, 0]} />
+                        <defs>
+                          <linearGradient id="goldGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#C9A961" stopOpacity={1}/>
+                            <stop offset="100%" stopColor="#8B6F47" stopOpacity={0.8}/>
+                          </linearGradient>
+                        </defs>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </div>
+
+              <div className="chart-column">
+                <div className="chart-card p-4 h-100">
+                  <h5 className="card-title mb-4">{t('admin.roomStatusOverview') || 'Room Status Overview'}</h5>
+                  <div style={{ width: '100%', height: 300 }}>
+                    <ResponsiveContainer>
+                      <PieChart>
+                        <Pie
+                          data={roomStatusData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={60}
+                          outerRadius={80}
+                          paddingAngle={5}
+                          dataKey="value"
+                          label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
+                        >
+                          {roomStatusData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={
+                              // Gold Theme Colors
+                              entry.name === 'Available' ? '#C9A961' : // Gold
+                              entry.name === 'Occupied' ? '#8B6F47' : // Dark Gold/Brown
+                              entry.name === 'Booked' ? '#E5D3B3' : // Light Gold
+                              entry.name === 'Maintenance' ? '#A09080' : // Grey-Brown
+                              entry.name === 'Cleaning' ? '#D4AF37' : '#F0E6D2' // Classic Gold or Very Light Gold
+                            } />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          formatter={(value: number, name: string) => [
+                            value, 
+                            t(`rooms.${name.toLowerCase()}`) || name
+                          ]}
+                          contentStyle={{ backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #C9A961', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                        />
+                        <Legend 
+                          verticalAlign="bottom" 
+                          height={36}
+                          iconType="circle"
+                          formatter={(value) => <span style={{ color: '#2C2C2C', marginLeft: '5px', marginRight: '15px' }}>{t(`rooms.${value.toLowerCase()}`) || value}</span>}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </div>
             </div>
             <div className="mt-4">
-              <h4 className="mb-3" style={{ fontFamily: 'Playfair Display, serif', color: '#2C2C2C' }}>Recent System Activities</h4>
+              <h4 className="mb-3" style={{ fontFamily: 'Playfair Display, serif', color: '#2C2C2C' }}>{t('admin.recentActivities') || 'Recent System Activities'}</h4>
               <div className="card shadow-sm border-0" style={{ borderRadius: '16px', overflow: 'hidden' }}>
                 <div className="table-responsive">
                   <table className="table table-luxury mb-0 align-middle">
                     <thead className="bg-light">
                       <tr>
                         <th className="py-3 ps-4" style={{ width: '20%' }}>{t('admin.timestamp') || 'Timestamp'}</th>
-                        <th className="py-3" style={{ width: '20%' }}>{t('admin.user') || 'User'}</th>
+                        <th className="py-3" style={{ width: '15%' }}>{t('admin.user') || 'User'}</th>
+                        <th className="py-3" style={{ width: '15%' }}>{t('admin.role') || 'Role'}</th>
                         <th className="py-3" style={{ width: '10%' }}>{t('admin.action') || 'Action'}</th>
-                        <th className="py-3 pe-4" style={{ width: '50%' }}>{t('admin.details') || 'Details'}</th>
+                        <th className="py-3 pe-4" style={{ width: '40%' }}>{t('admin.details') || 'Details'}</th>
                       </tr>
                     </thead>
                     <tbody>
                       {(!auditLogs || !Array.isArray(auditLogs) || auditLogs.length === 0) ? (
-                        <tr><td colSpan={4} className="text-center py-4 text-muted"><FaHistory className="mb-2 d-block mx-auto fs-3" />No recent activities</td></tr>
+                        <tr><td colSpan={5} className="text-center py-4 text-muted"><FaHistory className="mb-2 d-block mx-auto fs-3" />{t('admin.noActivities') || 'No recent activities'}</td></tr>
                       ) : (
                         auditLogs.slice(0, 5).map((log) => (
                           <tr key={log.id}>
                             <td className="ps-4 text-muted small">{new Date(log.createdAt).toLocaleString()}</td>
                             <td className="fw-bold">{log.userName}</td>
+                            <td>
+                              <span className="badge" style={{ 
+                                backgroundColor: 
+                                  log.userRole === 'Admin' ? '#C9A961' : 
+                                  log.userRole === 'Manager' ? '#8B6F47' : 
+                                  log.userRole === 'Receptionist' ? '#A09080' : '#E5D3B3',
+                                color: log.userRole === 'Customer' ? '#2C2C2C' : '#FFF'
+                              }}>
+                                {log.userRole || 'User'}
+                              </span>
+                            </td>
                             <td>
                               <span className={`badge rounded-pill bg-${
                                 log.action.includes('Create') ? 'success' : 
@@ -725,6 +835,7 @@ const Admin: React.FC = () => {
 
         {/* Users Tab */}
         {activeTab === 'users' && (
+          // ... (Same as before, using EditFormModal and Users Table)
           <div>
             <EditFormModal
               isOpen={showUserForm}
@@ -741,17 +852,18 @@ const Admin: React.FC = () => {
                   gender: '',
                   dateOfBirth: '',
                   isActive: true,
+                  membershipTier: '',
                 });
               }}
-              title={editingUser ? 'Edit User' : 'Create New User'}
+              title={editingUser ? (t('admin.editUser') || 'Edit User') : (t('admin.createNewUser') || 'Create New User')}
               onSubmit={handleCreateUser}
-              submitText={editingUser ? 'Update User' : 'Create User'}
+              submitText={editingUser ? (t('common.update') || 'Update') : (t('common.create') || 'Create')}
               maxWidth="700px"
             >
               <div className="row">
                 <div className="col-md-6 mb-3">
                   <label className="form-label">
-                    Email <span className="text-danger">*</span>
+                    {t('admin.email') || 'Email'} <span className="text-danger">*</span>
                   </label>
                   <input 
                     type="email" 
@@ -764,7 +876,7 @@ const Admin: React.FC = () => {
                 </div>
                 <div className="col-md-6 mb-3">
                   <label className="form-label">
-                    Password {editingUser && <span className="text-muted" style={{ fontSize: '0.85rem', fontWeight: 'normal' }}>(optional)</span>}
+                    {t('login.password') || 'Password'} {editingUser && <span className="text-muted" style={{ fontSize: '0.85rem', fontWeight: 'normal' }}>(optional)</span>}
                     {!editingUser && <span className="text-danger">*</span>}
                   </label>
                   <input 
@@ -780,7 +892,7 @@ const Admin: React.FC = () => {
               <div className="row">
                 <div className="col-md-6 mb-3">
                   <label className="form-label">
-                    First Name <span className="text-danger">*</span>
+                    {t('profile.firstName') || 'First Name'} <span className="text-danger">*</span>
                   </label>
                   <input 
                     type="text" 
@@ -793,7 +905,7 @@ const Admin: React.FC = () => {
                 </div>
                 <div className="col-md-6 mb-3">
                   <label className="form-label">
-                    Last Name <span className="text-danger">*</span>
+                    {t('profile.lastName') || 'Last Name'} <span className="text-danger">*</span>
                   </label>
                   <input 
                     type="text" 
@@ -808,16 +920,16 @@ const Admin: React.FC = () => {
               <div className="row">
                 <div className="col-md-6 mb-3">
                   <label className="form-label">Gender</label>
-                  <select 
-                    className="form-select" 
+                  <LuxurySelect 
                     value={userFormData.gender} 
-                    onChange={e => setUserFormData({...userFormData, gender: e.target.value})}
-                  >
-                    <option value="">Select Gender</option>
-                    <option value="Mr">Mr.</option>
-                    <option value="Ms">Ms.</option>
-                    <option value="Mrs">Mrs.</option>
-                  </select>
+                    onChange={(value) => setUserFormData({...userFormData, gender: value})}
+                    options={[
+                      { value: '', label: 'Select Gender' },
+                      { value: 'Mr', label: 'Mr.' },
+                      { value: 'Ms', label: 'Ms.' },
+                      { value: 'Mrs', label: 'Mrs.' },
+                    ]}
+                  />
                 </div>
                 <div className="col-md-6 mb-3">
                   <label className="form-label">Date of Birth</label>
@@ -844,108 +956,166 @@ const Admin: React.FC = () => {
                   <label className="form-label">
                     Role <span className="text-danger">*</span>
                   </label>
-                  <select 
-                    className="form-select" 
+                  <LuxurySelect 
                     value={userFormData.role} 
-                    onChange={e => setUserFormData({...userFormData, role: e.target.value})} 
-                    required
-                  >
-                    <option value="">Select Role</option>
-                    <option value="Customer">Customer</option>
-                    <option value="Receptionist">Receptionist</option>
-                    <option value="Housekeeping">Housekeeping</option>
-                    <option value="Manager">Manager</option>
-                    <option value="Admin">Admin</option>
-                  </select>
+                    onChange={(value) => setUserFormData({...userFormData, role: value})}
+                    options={[
+                      { value: '', label: t('roles.selectRole') || 'Select Role' },
+                      { value: 'Customer', label: getRoleName('Customer') },
+                      { value: 'Receptionist', label: getRoleName('Receptionist') },
+                      { value: 'Housekeeping', label: getRoleName('Housekeeping') },
+                      { value: 'Manager', label: getRoleName('Manager') },
+                      { value: 'Admin', label: getRoleName('Admin') },
+                    ]}
+                  />
                 </div>
                 <div className="col-md-4 mb-3">
                   <label className="form-label">
                     Status <span className="text-danger">*</span>
                   </label>
-                  <select 
-                    className="form-select" 
+                  <LuxurySelect 
                     value={userFormData.isActive ? 'Active' : 'Inactive'} 
-                    onChange={e => setUserFormData({...userFormData, isActive: e.target.value === 'Active'})}
-                    required
-                  >
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                  </select>
+                    onChange={(value) => setUserFormData({...userFormData, isActive: value === 'Active'})}
+                    options={[
+                      { value: 'Active', label: 'Active' },
+                      { value: 'Inactive', label: 'Inactive' },
+                    ]}
+                  />
+                </div>
+                <div className="col-md-4 mb-3">
+                  <label className="form-label">Membership Tier</label>
+                  <LuxurySelect 
+                    value={userFormData.membershipTier || ''} 
+                    onChange={(value) => setUserFormData({...userFormData, membershipTier: value})}
+                    options={[
+                      { value: '', label: 'Auto (Based on points)' },
+                      { value: 'Member', label: 'Member' },
+                      { value: 'Silver', label: 'Silver' },
+                      { value: 'Gold', label: 'Gold' },
+                      { value: 'Platinum', label: 'Platinum' },
+                    ]}
+                  />
                 </div>
               </div>
             </EditFormModal>
             
             {loadingUsers ? <LoadingSpinner text="Loading Users..." /> : (
-              <motion.div className="users-table-container" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <div className="users-table-header">
-                  <div className="d-flex align-items-center gap-3">
-                    <h4>Users ({users.length})</h4>
-                    {selectedUsers.length > 0 && (
-                      <motion.div 
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="d-flex align-items-center gap-2"
-                      >
-                        <span className="badge" style={{ background: '#C9A961', color: 'white', fontSize: '0.85rem', padding: '0.4rem 0.8rem' }}>
-                          {selectedUsers.length} selected
-                        </span>
-                        <button 
-                          className="btn btn-sm"
-                          style={{ background: '#DC3545', border: '1px solid #C9A961', color: 'white' }}
-                          onClick={() => {
-                            setFeedbackModal({
-                              isOpen: true,
-                              type: 'confirm',
-                              title: 'Delete Selected Users',
-                              message: `Are you sure you want to delete ${selectedUsers.length} user(s)?`,
-                              confirmText: 'Delete',
-                              cancelText: 'Cancel',
-                              onClose: () => setFeedbackModal(prev => ({ ...prev, isOpen: false })),
-                              onConfirm: async () => {
-                                let successCount = 0;
-                                let failCount = 0;
-                                for (const id of selectedUsers) {
-                                  try {
-                                    await adminApi.deleteUser(id);
-                                    successCount++;
-                                  } catch (err) {
-                                    failCount++;
+              <div className="users-container">
+                {/* User Filters - Moved outside users-table-container */}
+                <div className="card border-0 shadow-sm mb-4" style={{ borderRadius: '12px', background: '#fff', overflow: 'visible' }}>
+                  <div className="card-body p-3">
+                    <div className="row g-3">
+                      <div className="col-md-4">
+                        <label className="form-label small text-muted fw-bold">Search</label>
+                        <input 
+                          type="text" 
+                          className="form-control" 
+                          placeholder="Name or Email..." 
+                          value={userSearchTerm}
+                          onChange={e => setUserSearchTerm(e.target.value)}
+                        />
+                      </div>
+                      <div className="col-md-4">
+                        <label className="form-label small text-muted fw-bold">Filter by Role</label>
+                        <LuxurySelect
+                          value={userFilterRole}
+                          onChange={setUserFilterRole}
+                          options={[
+                            { value: 'All', label: 'All Roles' },
+                            { value: 'Customer', label: getRoleName('Customer') },
+                            { value: 'Manager', label: getRoleName('Manager') },
+                            { value: 'Receptionist', label: getRoleName('Receptionist') },
+                            { value: 'Housekeeping', label: getRoleName('Housekeeping') },
+                            { value: 'Admin', label: getRoleName('Admin') },
+                          ]}
+                        />
+                      </div>
+                      <div className="col-md-4">
+                        <label className="form-label small text-muted fw-bold">Filter by Status</label>
+                        <LuxurySelect
+                          value={userFilterStatus}
+                          onChange={setUserFilterStatus}
+                          options={[
+                            { value: 'All', label: 'All Statuses' },
+                            { value: 'Active', label: 'Active' },
+                            { value: 'Inactive', label: 'Inactive' },
+                          ]}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <motion.div className="users-table-container" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                  <div className="users-table-header">
+                    <div className="d-flex align-items-center gap-3">
+                      <h4>{t('admin.usersList') || 'Users'} ({filteredUsers.length})</h4>
+                      {selectedUsers.length > 0 && (
+                        <motion.div 
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          className="d-flex align-items-center gap-2"
+                        >
+                          <span className="badge" style={{ background: '#C9A961', color: 'white', fontSize: '0.85rem', padding: '0.4rem 0.8rem' }}>
+                            {selectedUsers.length} selected
+                          </span>
+                          <button 
+                            className="btn btn-sm"
+                            style={{ background: '#DC3545', border: '1px solid #C9A961', color: 'white' }}
+                            onClick={() => {
+                              setFeedbackModal({
+                                isOpen: true,
+                                type: 'confirm',
+                                title: 'Delete Selected Users',
+                                message: `Are you sure you want to delete ${selectedUsers.length} user(s)?`,
+                                confirmText: 'Delete',
+                                cancelText: 'Cancel',
+                                onClose: () => setFeedbackModal(prev => ({ ...prev, isOpen: false })),
+                                onConfirm: async () => {
+                                  let successCount = 0;
+                                  let failCount = 0;
+                                  for (const id of selectedUsers) {
+                                    try {
+                                      await adminApi.deleteUser(id);
+                                      successCount++;
+                                    } catch (err) {
+                                      failCount++;
+                                    }
+                                  }
+                                  setSelectedUsers([]);
+                                  loadUsers();
+                                  loadOverviewData();
+                                  if (failCount > 0) {
+                                    showError('Batch Delete Completed', `Deleted ${successCount} users. Failed to delete ${failCount} users.`);
+                                  } else {
+                                    showSuccess('Success', `Successfully deleted ${successCount} users.`);
                                   }
                                 }
-                                setSelectedUsers([]);
-                                loadUsers();
-                                loadOverviewData();
-                                if (failCount > 0) {
-                                  showError('Batch Delete Completed', `Deleted ${successCount} users. Failed to delete ${failCount} users.`);
-                                } else {
-                                  showSuccess('Success', `Successfully deleted ${successCount} users.`);
-                                }
-                              }
-                            });
-                          }}
-                        >
-                          Delete Selected
-                        </button>
-                        <button 
-                          className="btn btn-sm"
-                          style={{ background: 'transparent', border: '1px solid #C9A961', color: '#F0E6D2' }}
-                          onClick={() => setSelectedUsers([])}
-                        >
-                          Clear Selection
-                        </button>
-                      </motion.div>
-                    )}
+                              });
+                            }}
+                          >
+                            Delete Selected
+                          </button>
+                          <button 
+                            className="btn btn-sm"
+                            style={{ background: 'transparent', border: '1px solid #C9A961', color: '#F0E6D2' }}
+                            onClick={() => setSelectedUsers([])}
+                          >
+                            Clear Selection
+                          </button>
+                        </motion.div>
+                      )}
+                    </div>
+                    <button 
+                      className="btn btn-primary" 
+                      style={{ background: 'linear-gradient(135deg, #C9A961 0%, #8B6F47 100%)', border: 'none', borderRadius: '10px', padding: '0.6rem 1.5rem', fontWeight: 600, boxShadow: '0 4px 12px rgba(139, 111, 71, 0.25)' }}
+                      onClick={() => { setShowUserForm(true); setEditingUser(null); setUserFormData({ email: '', firstName: '', lastName: '', password: '', role: 'Customer', phoneNumber: '', gender: '', dateOfBirth: '', isActive: true, membershipTier: '' }); }}
+                    >
+                      {t('admin.addNewUser') || 'Add New User'}
+                    </button>
                   </div>
-                  <button 
-                    className="btn btn-primary" 
-                    style={{ background: 'linear-gradient(135deg, #C9A961 0%, #8B6F47 100%)', border: 'none', borderRadius: '10px', padding: '0.6rem 1.5rem', fontWeight: 600, boxShadow: '0 4px 12px rgba(139, 111, 71, 0.25)' }}
-                    onClick={() => { setShowUserForm(true); setEditingUser(null); setUserFormData({ email: '', firstName: '', lastName: '', password: '', role: 'Customer', phoneNumber: '', gender: '', dateOfBirth: '', isActive: true }); }}
-                  >
-                    Add New User
-                  </button>
-                </div>
-                <div className="users-table-wrapper">
-                  <table className="users-table">
+                  <div className="users-table-wrapper">
+                    <table className="users-table">
                     <thead>
                       <tr>
                         <th style={{ width: '50px' }}>
@@ -973,7 +1143,7 @@ const Admin: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {users.map(user => (
+                      {filteredUsers.map(user => (
                         <tr key={user.id}>
                           <td data-label="Select">
                             <input 
@@ -991,7 +1161,7 @@ const Admin: React.FC = () => {
                           </td>
                           <td data-label={t('admin.name') || 'Name'}><strong>{user.firstName} {user.lastName}</strong></td>
                           <td data-label={t('admin.email') || 'Email'} className="email-cell">{user.email}</td>
-                          <td data-label={t('admin.role') || 'Role'}>{user.roles.map((role, i) => <span key={i} className={`role-badge role-badge-${role.toLowerCase()}`}>{role}</span>)}</td>
+                          <td data-label={t('admin.role') || 'Role'}>{user.roles?.map((role, i) => <span key={i} className={`role-badge role-badge-${role.toLowerCase()}`}>{getRoleName(role)}</span>)}</td>
                           <td data-label={t('admin.tier') || 'Tier'}>
                             <span className={`status-badge status-badge-${(user.membershipTier || 'Member').toLowerCase()}`}>
                               {user.membershipTier || 'Member'}
@@ -1022,6 +1192,7 @@ const Admin: React.FC = () => {
                   </table>
                 </div>
               </motion.div>
+            </div>
             )}
           </div>
         )}
@@ -1029,16 +1200,17 @@ const Admin: React.FC = () => {
         {/* Rooms Tab */}
         {activeTab === 'rooms' && (
           <div>
+            {/* ... same content as before ... */}
             <div className="d-flex justify-content-between align-items-center mb-3">
-              <h4 style={{ fontFamily: 'Playfair Display, serif', color: '#2C2C2C' }}>Room Management</h4>
+              <h4 style={{ fontFamily: 'Playfair Display, serif', color: '#2C2C2C' }}>{t('admin.roomManagement') || 'Room Management'}</h4>
               <div className="d-flex gap-2">
-                <button className="btn btn-outline-primary d-flex align-items-center gap-2" onClick={() => navigate('/manager/room-types')}><FaCog /> Manage Room Types</button>
+                <button className="btn btn-outline-primary d-flex align-items-center gap-2" onClick={() => navigate('/manager/room-types')}><FaCog /> {t('admin.manageRoomTypes') || 'Manage Room Types'}</button>
                 <button 
                   className="btn btn-primary d-flex align-items-center gap-2" 
                   style={{ background: 'linear-gradient(135deg, #C9A961 0%, #8B6F47 100%)', border: 'none', borderRadius: '10px', padding: '0.6rem 1.5rem', fontWeight: 600, boxShadow: '0 4px 12px rgba(139, 111, 71, 0.25)' }}
                   onClick={() => { setShowRoomForm(true); setEditingRoom(null); resetRoomForm(); }}
                 >
-                  <FaList /> Add New Room
+                  <FaList /> {t('admin.addNewRoom') || 'Add New Room'}
                 </button>
               </div>
             </div>
@@ -1050,14 +1222,14 @@ const Admin: React.FC = () => {
                 setEditingRoom(null);
                 resetRoomForm();
               }}
-              title={editingRoom ? 'Edit Room' : 'Create New Room'}
+              title={editingRoom ? (t('admin.editRoom') || 'Edit Room') : (t('admin.createNewRoom') || 'Create New Room')}
               onSubmit={handleCreateRoom}
-              submitText={editingRoom ? 'Update Room' : 'Create Room'}
+              submitText={editingRoom ? (t('common.update') || 'Update Room') : (t('common.create') || 'Create Room')}
               maxWidth="900px"
             >
               <div className="row">
                 <div className="col-md-4 mb-3">
-                  <label className="form-label">Room Number</label>
+                  <label className="form-label">{t('admin.roomNumber') || 'Room Number'}</label>
                   <input 
                     type="text" 
                     className="form-control" 
@@ -1067,52 +1239,54 @@ const Admin: React.FC = () => {
                   />
                 </div>
                 <div className="col-md-4 mb-3">
-                  <label className="form-label">Room Type</label>
-                  <select 
-                    className="form-select" 
+                  <label className="form-label">{t('admin.roomType') || 'Room Type'}</label>
+                  <LuxurySelect 
                     value={roomFormData.roomTypeId} 
-                    onChange={handleRoomTypeChange} 
-                    required
-                  >
-                    <option value={0}>Select Room Type</option>
-                    {roomTypes.map(rt => (
-                      <option key={rt.id} value={rt.id}>{rt.name}</option>
-                    ))}
-                  </select>
+                    onChange={(value) => handleRoomTypeChange({ target: { value } } as any)} 
+                    options={[
+                      { value: 0, label: 'Select Room Type' },
+                      ...roomTypes.map(rt => ({ value: rt.id, label: rt.name }))
+                    ]}
+                  />
                   {roomTypes.length === 0 && (
                     <small className="text-danger">No room types defined. Please create one first.</small>
                   )}
                 </div>
                 <div className="col-md-4 mb-3">
-                  <label className="form-label">Price per Night</label>
-                  <input 
-                    type="number" 
-                    className="form-control" 
-                    value={roomFormData.pricePerNight} 
-                    onChange={e => setRoomFormData({...roomFormData, pricePerNight: parseFloat(e.target.value)})} 
-                    min="0"
-                    step="0.01"
-                    required 
-                  />
+                  <label className="form-label">{t('admin.price') || 'Price per Night'}</label>
+                  <div className="input-group">
+                    <input 
+                      type="number" 
+                      className="form-control bg-light" 
+                      value={roomFormData.pricePerNight} 
+                      readOnly
+                      title="Price is determined by Room Type"
+                    />
+                    <span className="input-group-text bg-light text-muted">
+                      <FaDollarSign size={12} />
+                    </span>
+                  </div>
+                  <small className="text-muted" style={{ fontSize: '0.75rem' }}>
+                    Auto-set by Room Type
+                  </small>
                 </div>
               </div>
               <div className="row">
                 <div className="col-md-4 mb-3">
-                  <label className="form-label">Status</label>
-                  <select 
-                    className="form-select" 
+                  <label className="form-label">{t('admin.status') || 'Status'}</label>
+                  <LuxurySelect 
                     value={roomFormData.status} 
-                    onChange={e => setRoomFormData({...roomFormData, status: e.target.value})}
-                    required
-                  >
-                    <option value="Available">Available</option>
-                    <option value="Occupied">Occupied</option>
-                    <option value="Maintenance">Maintenance</option>
-                    <option value="Cleaning">Cleaning</option>
-                  </select>
+                    onChange={(value) => setRoomFormData({...roomFormData, status: value})}
+                    options={[
+                      { value: 'Available', label: 'Available' },
+                      { value: 'Occupied', label: 'Occupied' },
+                      { value: 'Maintenance', label: 'Maintenance' },
+                      { value: 'Cleaning', label: 'Cleaning' },
+                    ]}
+                  />
                 </div>
                 <div className="col-md-4 mb-3">
-                  <label className="form-label">Capacity</label>
+                  <label className="form-label">{t('admin.capacity') || 'Capacity'}</label>
                   <input 
                     type="number" 
                     className="form-control" 
@@ -1123,7 +1297,7 @@ const Admin: React.FC = () => {
                   />
                 </div>
                 <div className="col-md-4 mb-3">
-                  <label className="form-label">Description</label>
+                  <label className="form-label">{t('services.description') || 'Description'}</label>
                   <input 
                     type="text" 
                     className="form-control" 
@@ -1133,7 +1307,7 @@ const Admin: React.FC = () => {
                 </div>
               </div>
               <div className="mb-3">
-                <label className="form-label">Amenities</label>
+                <label className="form-label">{t('admin.amenities') || 'Amenities'}</label>
                 <div className="d-flex gap-3 flex-wrap">
                   <div className="form-check">
                     <input
@@ -1176,65 +1350,110 @@ const Admin: React.FC = () => {
             </EditFormModal>
 
             {loadingRooms ? <LoadingSpinner text="Loading Rooms..." /> : (
-              <div className="users-table-container">
-                <div className="users-table-header">
-                  <div className="d-flex align-items-center gap-3">
-                    <h4>Rooms ({rooms.length})</h4>
-                    {selectedRooms.length > 0 && (
-                      <motion.div 
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="d-flex align-items-center gap-2"
-                      >
-                        <span className="badge" style={{ background: '#C9A961', color: 'white', fontSize: '0.85rem', padding: '0.4rem 0.8rem' }}>
-                          {selectedRooms.length} selected
-                        </span>
-                        <button 
-                          className="btn btn-sm"
-                          style={{ background: '#DC3545', border: '1px solid #C9A961', color: 'white' }}
-                          onClick={() => {
-                            setFeedbackModal({
-                              isOpen: true,
-                              type: 'confirm',
-                              title: 'Delete Selected Rooms',
-                              message: `Are you sure you want to delete ${selectedRooms.length} room(s)?`,
-                              confirmText: 'Delete',
-                              cancelText: 'Cancel',
-                              onClose: () => setFeedbackModal(prev => ({ ...prev, isOpen: false })),
-                              onConfirm: async () => {
-                                let successCount = 0;
-                                let failCount = 0;
-                                for (const id of selectedRooms) {
-                                  try {
-                                    await roomsApi.delete(id);
-                                    successCount++;
-                                  } catch (err) {
-                                    failCount++;
+              <div className="users-container">
+                {/* Room Filters - Moved outside users-table-container */}
+                <div className="card border-0 shadow-sm mb-4" style={{ borderRadius: '12px', background: '#fff' }}>
+                  <div className="card-body p-3">
+                    <div className="row g-3">
+                      <div className="col-md-4">
+                        <label className="form-label small text-muted fw-bold">Search</label>
+                        <input 
+                          type="text" 
+                          className="form-control" 
+                          placeholder="Room Number..." 
+                          value={roomSearchTerm}
+                          onChange={e => setRoomSearchTerm(e.target.value)}
+                        />
+                      </div>
+                      <div className="col-md-4">
+                        <label className="form-label small text-muted fw-bold">Filter by Type</label>
+                        <LuxurySelect
+                          value={roomFilterType}
+                          onChange={setRoomFilterType}
+                          options={[
+                            { value: 'All', label: 'All Types' },
+                            ...roomTypes.map(rt => ({ value: rt.name, label: rt.name }))
+                          ]}
+                        />
+                      </div>
+                      <div className="col-md-4">
+                        <label className="form-label small text-muted fw-bold">Filter by Status</label>
+                        <LuxurySelect
+                          value={roomFilterStatus}
+                          onChange={setRoomFilterStatus}
+                          options={[
+                            { value: 'All', label: 'All Statuses' },
+                            { value: 'Available', label: 'Available' },
+                            { value: 'Occupied', label: 'Occupied' },
+                            { value: 'Maintenance', label: 'Maintenance' },
+                            { value: 'Cleaning', label: 'Cleaning' },
+                          ]}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="users-table-container">
+                  <div className="users-table-header">
+                    <div className="d-flex align-items-center gap-3">
+                      <h4>Rooms ({filteredRooms.length})</h4>
+                      {selectedRooms.length > 0 && (
+                        <motion.div 
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          className="d-flex align-items-center gap-2"
+                        >
+                          <span className="badge" style={{ background: '#C9A961', color: 'white', fontSize: '0.85rem', padding: '0.4rem 0.8rem' }}>
+                            {selectedRooms.length} selected
+                          </span>
+                          <button 
+                            className="btn btn-sm"
+                            style={{ background: '#DC3545', border: '1px solid #C9A961', color: 'white' }}
+                            onClick={() => {
+                              setFeedbackModal({
+                                isOpen: true,
+                                type: 'confirm',
+                                title: 'Delete Selected Rooms',
+                                message: `Are you sure you want to delete ${selectedRooms.length} room(s)?`,
+                                confirmText: 'Delete',
+                                cancelText: 'Cancel',
+                                onClose: () => setFeedbackModal(prev => ({ ...prev, isOpen: false })),
+                                onConfirm: async () => {
+                                  let successCount = 0;
+                                  let failCount = 0;
+                                  for (const id of selectedRooms) {
+                                    try {
+                                      await roomsApi.delete(id);
+                                      successCount++;
+                                    } catch (err) {
+                                      failCount++;
+                                    }
+                                  }
+                                  setSelectedRooms([]);
+                                  loadRooms();
+                                  loadOverviewData();
+                                  if (failCount > 0) {
+                                    showError('Batch Delete Completed', `Deleted ${successCount} rooms. Failed to delete ${failCount} rooms.`);
+                                  } else {
+                                    showSuccess('Success', `Successfully deleted ${successCount} rooms.`);
                                   }
                                 }
-                                setSelectedRooms([]);
-                                loadRooms();
-                                loadOverviewData();
-                                if (failCount > 0) {
-                                  showError('Batch Delete Completed', `Deleted ${successCount} rooms. Failed to delete ${failCount} rooms.`);
-                                } else {
-                                  showSuccess('Success', `Successfully deleted ${successCount} rooms.`);
-                                }
-                              }
-                            });
-                          }}
-                        >
-                          Delete Selected
-                        </button>
-                        <button 
-                          className="btn btn-sm"
-                          style={{ background: 'transparent', border: '1px solid #C9A961', color: '#F0E6D2' }}
-                          onClick={() => setSelectedRooms([])}
-                        >
-                          Clear Selection
-                        </button>
-                      </motion.div>
-                    )}
+                              });
+                            }}
+                          >
+                            Delete Selected
+                          </button>
+                          <button 
+                            className="btn btn-sm"
+                            style={{ background: 'transparent', border: '1px solid #C9A961', color: '#F0E6D2' }}
+                            onClick={() => setSelectedRooms([])}
+                          >
+                            Clear Selection
+                          </button>
+                        </motion.div>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div className="users-table-wrapper">
@@ -1264,14 +1483,14 @@ const Admin: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {rooms.length === 0 ? (
+                      {filteredRooms.length === 0 ? (
                         <tr>
                           <td colSpan={7} className="text-center py-5" style={{ color: '#8B6F47' }}>
-                            <p>No rooms found. Click "Add New Room" to create one.</p>
+                            <p>No rooms found matching your criteria.</p>
                           </td>
                         </tr>
                       ) : (
-                        rooms.map(room => (
+                        filteredRooms.map(room => (
                         <tr key={room.id}>
                           <td data-label="Select">
                             <input 
@@ -1312,9 +1531,9 @@ const Admin: React.FC = () => {
         {/* Audit Logs Tab */}
         {activeTab === 'auditLogs' && (
           <div>
-            <h4 className="mb-4" style={{ fontFamily: 'Playfair Display, serif', color: '#2C2C2C' }}>System Audit Logs</h4>
+            <h4 className="mb-4" style={{ fontFamily: 'Playfair Display, serif', color: '#2C2C2C' }}>{t('admin.auditLogs') || 'System Audit Logs'}</h4>
             {loadingAuditLogs ? (
-              <LoadingSpinner text="Loading Audit Logs..." />
+              <LoadingSpinner text={t('common.loading') || "Loading Audit Logs..."} />
             ) : (
               <div className="card shadow-sm border-0" style={{ borderRadius: '16px', overflow: 'hidden' }}>
                 <div className="table-responsive">
@@ -1330,7 +1549,7 @@ const Admin: React.FC = () => {
                     </thead>
                     <tbody>
                       {auditLogs.length === 0 ? (
-                        <tr><td colSpan={5} className="text-center py-4 text-muted"><FaHistory className="mb-2 d-block mx-auto fs-3" />No audit logs found</td></tr>
+                        <tr><td colSpan={5} className="text-center py-4 text-muted"><FaHistory className="mb-2 d-block mx-auto fs-3" />{t('admin.noAuditLogs') || 'No audit logs found'}</td></tr>
                       ) : (
                         auditLogs.map((log) => (
                           <tr key={log.id}>
@@ -1363,19 +1582,11 @@ const Admin: React.FC = () => {
           </div>
         )}
 
-        {/* Bookings Tab */}
-        {activeTab === 'bookings' && (
-          <div>
-             <h4 className="mb-3" style={{ fontFamily: 'Playfair Display, serif', color: '#2C2C2C' }}>All Bookings</h4>
-             {loadingBookings ? <LoadingSpinner text="Loading Bookings..." /> : <BookingsTable bookings={bookings} />}
-          </div>
-        )}
-
         {/* Services Tab */}
         {activeTab === 'services' && (
           <div>
-            <h4 className="mb-3" style={{ fontFamily: 'Playfair Display, serif', color: '#2C2C2C' }}>Service Requests</h4>
-            {loadingServiceRequests ? <LoadingSpinner text="Loading..." /> : (
+            <h4 className="mb-3" style={{ fontFamily: 'Playfair Display, serif', color: '#2C2C2C' }}>{t('admin.serviceRequests') || 'Service Requests'}</h4>
+            {loadingServiceRequests ? <LoadingSpinner text={t('services.loading') || "Loading..."} /> : (
               <div className="card shadow-sm border-0" style={{ borderRadius: '16px', overflow: 'hidden' }}>
                 <div className="table-responsive">
                   <table className="table table-hover mb-0 align-middle">
@@ -1408,194 +1619,19 @@ const Admin: React.FC = () => {
         
         {/* Settings Tab */}
         {activeTab === 'settings' && (
-           <div>
-             <h4 className="mb-4" style={{ fontFamily: 'Playfair Display, serif', color: '#2C2C2C' }}>Hotel Settings</h4>
-             <form onSubmit={(e) => { 
-               e.preventDefault(); 
-               setHotelSettings(hotelSettings); 
-               showSuccess('Settings Saved', 'Hotel settings have been successfully updated.'); 
-               setTimeout(() => window.location.reload(), 1500); 
-             }}>
-               <div className="row g-4">
-                 {/* General Information */}
-                 <div className="col-md-6">
-                   <div className="card shadow-sm border-0 h-100" style={{ borderRadius: '16px', padding: '1.5rem', background: 'rgba(255, 255, 255, 0.8)' }}>
-                     <h5 className="mb-3" style={{ color: '#8B6F47', fontFamily: 'Playfair Display, serif' }}>General Information</h5>
-                     <div className="mb-3">
-                       <label className="form-label text-muted small text-uppercase fw-bold">Hotel Name</label>
-                       <input className="form-control" value={hotelSettings.hotelName} onChange={e => setHotelSettingsState({...hotelSettings, hotelName: e.target.value})} />
-                     </div>
-                     <div className="mb-3">
-                       <label className="form-label text-muted small text-uppercase fw-bold">Welcome Description</label>
-                       <textarea className="form-control" rows={4} value={hotelSettings.welcomeDescription} onChange={e => setHotelSettingsState({...hotelSettings, welcomeDescription: e.target.value})} />
-                     </div>
-                   </div>
-                 </div>
-
-                 {/* Contact Information */}
-                 <div className="col-md-6">
-                   <div className="card shadow-sm border-0 h-100" style={{ borderRadius: '16px', padding: '1.5rem', background: 'rgba(255, 255, 255, 0.8)' }}>
-                     <h5 className="mb-3" style={{ color: '#8B6F47', fontFamily: 'Playfair Display, serif' }}>Contact Details</h5>
-                     <div className="mb-3">
-                       <label className="form-label text-muted small text-uppercase fw-bold">Email Address</label>
-                       <input className="form-control" type="email" value={hotelSettings.email || ''} onChange={e => setHotelSettingsState({...hotelSettings, email: e.target.value})} />
-                     </div>
-                     <div className="mb-3">
-                       <label className="form-label text-muted small text-uppercase fw-bold">Phone Number</label>
-                       <input className="form-control" value={hotelSettings.phone || ''} onChange={e => setHotelSettingsState({...hotelSettings, phone: e.target.value})} />
-                     </div>
-                     <div className="mb-3">
-                       <label className="form-label text-muted small text-uppercase fw-bold">Address</label>
-                       <input className="form-control" value={hotelSettings.address || ''} onChange={e => setHotelSettingsState({...hotelSettings, address: e.target.value})} />
-                     </div>
-                   </div>
-                 </div>
-
-                 {/* Policies */}
-                 <div className="col-md-6">
-                   <div className="card shadow-sm border-0 h-100" style={{ borderRadius: '16px', padding: '1.5rem', background: 'rgba(255, 255, 255, 0.8)' }}>
-                     <h5 className="mb-3" style={{ color: '#8B6F47', fontFamily: 'Playfair Display, serif' }}>Policies & Currency</h5>
-                     <div className="row">
-                       <div className="col-6 mb-3">
-                         <label className="form-label text-muted small text-uppercase fw-bold">Check-in Time</label>
-                         <input className="form-control" type="time" value={hotelSettings.checkInTime || '15:00'} onChange={e => setHotelSettingsState({...hotelSettings, checkInTime: e.target.value})} />
-                       </div>
-                       <div className="col-6 mb-3">
-                         <label className="form-label text-muted small text-uppercase fw-bold">Check-out Time</label>
-                         <input className="form-control" type="time" value={hotelSettings.checkOutTime || '11:00'} onChange={e => setHotelSettingsState({...hotelSettings, checkOutTime: e.target.value})} />
-                       </div>
-                     </div>
-                     <div className="row">
-                       <div className="col-6 mb-3">
-                         <label className="form-label text-muted small text-uppercase fw-bold">Tax Rate (%)</label>
-                         <input className="form-control" type="number" value={hotelSettings.taxRate || 10} onChange={e => setHotelSettingsState({...hotelSettings, taxRate: parseFloat(e.target.value)})} />
-                       </div>
-                       <div className="col-6 mb-3">
-                         <label className="form-label text-muted small text-uppercase fw-bold">Currency</label>
-                         <select className="form-select" value={hotelSettings.currency || 'USD'} onChange={e => setHotelSettingsState({...hotelSettings, currency: e.target.value})}>
-                           <option value="USD">USD ($)</option>
-                           <option value="EUR">EUR (€)</option>
-                           <option value="CNY">CNY (¥)</option>
-                         </select>
-                       </div>
-                     </div>
-                   </div>
-                 </div>
-
-                 {/* Social Media */}
-                 <div className="col-md-6">
-                   <div className="card shadow-sm border-0 h-100" style={{ borderRadius: '16px', padding: '1.5rem', background: 'rgba(255, 255, 255, 0.8)' }}>
-                     <h5 className="mb-3" style={{ color: '#8B6F47', fontFamily: 'Playfair Display, serif' }}>Social Media</h5>
-                     <div className="mb-3">
-                         <label className="form-label text-muted small text-uppercase fw-bold">Facebook URL</label>
-                         <input className="form-control" value={hotelSettings.facebookUrl || ''} onChange={e => setHotelSettingsState({...hotelSettings, facebookUrl: e.target.value})} placeholder="https://facebook.com/..." />
-                     </div>
-                     <div className="mb-3">
-                         <label className="form-label text-muted small text-uppercase fw-bold">Instagram URL</label>
-                         <input className="form-control" value={hotelSettings.instagramUrl || ''} onChange={e => setHotelSettingsState({...hotelSettings, instagramUrl: e.target.value})} placeholder="https://instagram.com/..." />
-                     </div>
-                     <div className="mb-3">
-                         <label className="form-label text-muted small text-uppercase fw-bold">Twitter URL</label>
-                         <input className="form-control" value={hotelSettings.twitterUrl || ''} onChange={e => setHotelSettingsState({...hotelSettings, twitterUrl: e.target.value})} placeholder="https://twitter.com/..." />
-                     </div>
-                   </div>
-                 </div>
-               </div>
-
-               {/* Membership Benefits */}
-               <div className="row mt-4">
-                 <div className="col-12">
-                   <div className="card shadow-sm border-0" style={{ borderRadius: '16px', padding: '1.5rem', background: 'rgba(255, 255, 255, 0.8)' }}>
-                     <h5 className="mb-3" style={{ color: '#8B6F47', fontFamily: 'Playfair Display, serif' }}>Membership Tier Benefits</h5>
-                     <p className="text-muted small mb-4">Enter benefits for each tier, one per line.</p>
-                     <div className="row g-3">
-                        {['member', 'silver', 'gold', 'platinum'].map((tier) => (
-                            <div className="col-md-6" key={tier}>
-                                <label className="form-label text-muted small text-uppercase fw-bold">{tier} Benefits</label>
-                                <textarea 
-                                    className="form-control" 
-                                    rows={5}
-                                    value={hotelSettings.membershipBenefits?.[tier as keyof typeof hotelSettings.membershipBenefits]?.join('\n') || ''}
-                                    onChange={e => {
-                                        const benefits = e.target.value.split('\n');
-                                        setHotelSettingsState({
-                                            ...hotelSettings,
-                                            membershipBenefits: {
-                                                ...hotelSettings.membershipBenefits || { member: [], silver: [], gold: [], platinum: [] },
-                                                [tier]: benefits
-                                            }
-                                        });
-                                    }}
-                                />
-                            </div>
-                        ))}
-                     </div>
-                   </div>
-                 </div>
-               </div>
-
-               {/* Membership Discounts */}
-               <div className="row mt-4">
-                 <div className="col-12">
-                   <div className="card shadow-sm border-0" style={{ borderRadius: '16px', padding: '1.5rem', background: 'rgba(255, 255, 255, 0.8)' }}>
-                     <h5 className="mb-3" style={{ color: '#8B6F47', fontFamily: 'Playfair Display, serif' }}>Membership Discounts</h5>
-                     <p className="text-muted small mb-4">Set discount percentage for each membership tier (e.g., 10 = 10% off).</p>
-                     <div className="row g-3">
-                        {['member', 'silver', 'gold', 'platinum'].map((tier) => (
-                            <div className="col-md-6" key={tier}>
-                                <label className="form-label text-muted small text-uppercase fw-bold">{tier} Discount (%)</label>
-                                <input 
-                                    type="number"
-                                    min="0"
-                                    max="100"
-                                    className="form-control" 
-                                    value={hotelSettings.membershipDiscounts?.[tier as keyof typeof hotelSettings.membershipDiscounts] || 0}
-                                    onChange={e => {
-                                        const discount = parseInt(e.target.value) || 0;
-                                        setHotelSettingsState({
-                                            ...hotelSettings,
-                                            membershipDiscounts: {
-                                                ...hotelSettings.membershipDiscounts || { member: 10, silver: 15, gold: 20, platinum: 25 },
-                                                [tier]: discount
-                                            }
-                                        });
-                                    }}
-                                />
-                            </div>
-                        ))}
-                     </div>
-                   </div>
-                 </div>
-               </div>
-
-               <div className="mt-5 text-center pb-4">
-                 <button 
-                   type="submit"
-                   className="btn btn-primary px-5 py-3"
-                   style={{ 
-                     background: 'linear-gradient(135deg, #C9A961 0%, #8B6F47 100%)', 
-                     border: 'none', 
-                     borderRadius: '30px', 
-                     fontSize: '1.1rem',
-                     fontWeight: 600, 
-                     boxShadow: '0 4px 15px rgba(139, 111, 71, 0.3)',
-                     letterSpacing: '1px',
-                     textTransform: 'uppercase'
-                   }}
-                 >
-                   Save All Settings
-                 </button>
-               </div>
-             </form>
-           </div>
+          <SettingsTab 
+            initialSettings={settings} 
+            onUpdateSettings={updateSettings}
+            showSuccess={showSuccess}
+            showError={showError}
+          />
         )}
-        
-        {/* Database Tab */}
+
         {activeTab === 'database' && (
           <div>
-             <h4 className="mb-4" style={{ fontFamily: 'Playfair Display, serif', color: '#2C2C2C' }}>Database View</h4>
+             <h4 className="mb-4" style={{ fontFamily: 'Playfair Display, serif', color: '#2C2C2C' }}>{t('admin.databaseView') || 'Database View'}</h4>
              {/* ... (Implementation of Database tables, same as before) */}
-             {loadingDatabase ? <LoadingSpinner text="Loading Database..." /> : (
+             {loadingDatabase ? <LoadingSpinner text={t('common.loading') || "Loading Database..."} /> : (
                <div className="d-flex flex-column gap-4">
                  {/* Just showing Users table example for brevity, full implementation is implied */}
                  <div className="card shadow-sm border-0" style={{ borderRadius: '16px', overflow: 'hidden' }}>

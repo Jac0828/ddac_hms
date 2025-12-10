@@ -23,6 +23,11 @@ public class CreateDutyRosterDto
     public TimeSpan? StartTime { get; set; }
     public TimeSpan? EndTime { get; set; }
     public string? Notes { get; set; }
+    
+    // Helper properties to accept string formats from frontend
+    public string? DateString { get; set; }
+    public string? StartTimeString { get; set; }
+    public string? EndTimeString { get; set; }
 }
 
 public class UpdateDutyRosterDto
@@ -33,6 +38,11 @@ public class UpdateDutyRosterDto
     public TimeSpan? StartTime { get; set; }
     public TimeSpan? EndTime { get; set; }
     public string? Notes { get; set; }
+    
+    // Helper properties to accept string formats from frontend
+    public string? DateString { get; set; }
+    public string? StartTimeString { get; set; }
+    public string? EndTimeString { get; set; }
 }
 
 public class StaffDto
@@ -42,5 +52,6 @@ public class StaffDto
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
     public string? PhoneNumber { get; set; }
+    public List<string> Roles { get; set; } = new();
 }
 

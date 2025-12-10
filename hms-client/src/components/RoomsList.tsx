@@ -3,11 +3,14 @@ import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCurrency } from '../contexts/CurrencyContext';
+import { useSettings } from '../contexts/SettingsContext';
 import { roomsApi, Room } from '../services/api';
 import { motion } from 'framer-motion';
+import LoadingSpinner from './common/LoadingSpinner';
+import ImageGallery from './common/ImageGallery';
+import FeedbackModal from './common/FeedbackModal';
 import DatePicker from 'react-datepicker';
 import { format, differenceInDays, parseISO } from 'date-fns';
-import { getHotelSettings } from '../utils/hotelSettings';
 import 'react-datepicker/dist/react-datepicker.css';
 import './RoomsList.css';
 
@@ -61,7 +64,8 @@ const RoomsList: React.FC = () => {
   const [numberOfRooms, setNumberOfRooms] = useState(parseInt(roomsParam));
   const [adults, setAdults] = useState(parseInt(adultsParam));
   const [children, setChildren] = useState(parseInt(childrenParam));
-  const [hotelSettings] = useState(getHotelSettings());
+  const [showVerifyModal, setShowVerifyModal] = useState(false);
+  const { settings } = useSettings();
 
   const datePickerRef = useRef<HTMLDivElement>(null);
   const guestRef = useRef<HTMLDivElement>(null);
@@ -152,25 +156,24 @@ const RoomsList: React.FC = () => {
     // Use pricePerNight directly from database (room.pricePerNight)
     const basePrice = room.pricePerNight;
     
-    // Get discount from hotel settings (stored as percentages: 10 = 10% off, 15 = 15% off, etc.)
-    const discounts = hotelSettings.membershipDiscounts || {
-      member: 10,   // 10% off
-      silver: 15,   // 15% off
-      gold: 20,     // 20% off
-      platinum: 25  // 25% off
-    };
+    // Get discount from hotel settings (stored as percentages: 10 = 10% off)
+    const memberDiscount = settings?.memberDiscount ?? 10;
+    const silverDiscount = settings?.silverDiscount ?? 15;
+    const goldDiscount = settings?.goldDiscount ?? 20;
+    const platinumDiscount = settings?.platinumDiscount ?? 25;
     
     // Calculate discount multiplier based on tier (convert percentage to multiplier)
-    let discountPercent = discounts.member || 10; // Default member discount
-    if (user?.membershipTier === 'Silver') discountPercent = discounts.silver || 15;
-    if (user?.membershipTier === 'Gold') discountPercent = discounts.gold || 20;
-    if (user?.membershipTier === 'Platinum') discountPercent = discounts.platinum || 25;
+    let discountPercent = memberDiscount; // Default member discount
+    if (user?.membershipTier === 'Silver') discountPercent = silverDiscount;
+    if (user?.membershipTier === 'Gold') discountPercent = goldDiscount;
+    if (user?.membershipTier === 'Platinum') discountPercent = platinumDiscount;
     
     // Convert percentage to multiplier (e.g., 10% off = 0.9 multiplier)
     let discountMultiplier = 1 - (discountPercent / 100);
     
     // Only apply discount if user is verified (email confirmed)
-    if (!user?.emailConfirmed) {
+    // If user is not logged in, show potential member price
+    if (user && !user.emailConfirmed) {
       discountMultiplier = 1; // No discount for unverified users
     }
 
@@ -361,12 +364,7 @@ const RoomsList: React.FC = () => {
 
         {/* Loading */}
         {loading && (
-          <div className="availability-loading-luxury">
-            <div className="loading-spinner-luxury">
-              <div className="spinner-circle-luxury"></div>
-            </div>
-            <p>{t('availability.searching') || 'Searching for available rooms...'}</p>
-          </div>
+          <LoadingSpinner text={t('availability.searching') || 'Searching for available rooms...'} />
         )}
 
         {/* Results */}
@@ -409,17 +407,25 @@ const RoomsList: React.FC = () => {
                   <div className="room-availability-layout-luxury">
                     {/* Left: Room Image & Info */}
                     <div className="room-info-section-luxury">
-                      <div 
-                        className="room-image-placeholder-availability-luxury"
-                        style={imageUrl ? { backgroundImage: `url(${imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
-                      >
-                        {!imageUrl && (
-                          <>
-                            <div className="room-popular-badge-luxury">{t('availability.mostPopular') || 'Most Popular'}</div>
-                            <div className="room-360-badge-luxury">360°</div>
-                          </>
-                        )}
+                      <div style={{ height: '220px', marginBottom: '1rem', borderRadius: '12px', overflow: 'hidden', position: 'relative' }}>
+                         <ImageGallery 
+                           images={room.imageUrls || []} 
+                           height="100%" 
+                           showThumbnails={false} // Simple view for list
+                           allowFullscreen={false}
+                         />
+                         {!imageUrl && (
+                            <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', background: '#f5f5f5', color: '#999' }}>
+                              <span style={{ fontSize: '2rem' }}>🏨</span>
+                              <span>No image</span>
+                            </div>
+                         )}
+                         {/* Status Badge Overlay */}
+                         <div className={`room-status-badge-luxury status-${room.status.toLowerCase()}`} style={{ position: 'absolute', top: '1rem', right: '1rem', zIndex: 10 }}>
+                           {room.status}
+                         </div>
                       </div>
+                      
                       <div className="room-info-content-luxury">
                         <h3 className="room-name-luxury">{t(`roomType.${room.roomType}`) || room.roomType}</h3>
                         <p className="room-size-luxury">{room.size || '45 sqm / 484 sqf'}</p>
@@ -504,12 +510,22 @@ const RoomsList: React.FC = () => {
                                 </div>
                                 
                                 {isAuthenticated ? (
-                                  <Link
-                                    to={`/bookings/create?roomId=${bookingRoomId}&checkIn=${format(checkInDate, 'yyyy-MM-dd')}&checkOut=${format(checkOutDate, 'yyyy-MM-dd')}&ratePlan=${plan.id}`}
-                                    className="book-now-btn-luxury"
-                                  >
-                                    {t('availability.bookNow') || 'Book Now'}
-                                  </Link>
+                                  plan.id === 'member' && !user?.emailConfirmed ? (
+                                    <button
+                                      type="button"
+                                      className="book-now-btn-luxury"
+                                      onClick={() => setShowVerifyModal(true)}
+                                    >
+                                      {t('availability.bookNow') || 'Book Now'}
+                                    </button>
+                                  ) : (
+                                    <Link
+                                      to={`/bookings/create?roomId=${bookingRoomId}&checkIn=${format(checkInDate, 'yyyy-MM-dd')}&checkOut=${format(checkOutDate, 'yyyy-MM-dd')}&ratePlan=${plan.id}`}
+                                      className="book-now-btn-luxury"
+                                    >
+                                      {t('availability.bookNow') || 'Book Now'}
+                                    </Link>
+                                  )
                                 ) : (
                                   <Link
                                     to={`/login?redirect=/rooms?checkIn=${format(checkInDate, 'yyyy-MM-dd')}&checkOut=${format(checkOutDate, 'yyyy-MM-dd')}&roomId=${bookingRoomId}`}
@@ -548,6 +564,17 @@ const RoomsList: React.FC = () => {
             <p>{t('availability.tryDifferentDates') || 'Please try different dates or check back later.'}</p>
           </motion.div>
         )}
+
+        {/* Email Verification Modal */}
+        <FeedbackModal
+          isOpen={showVerifyModal}
+          onClose={() => setShowVerifyModal(false)}
+          type="confirm"
+          title={t('common.verificationRequired') || "Verification Required"}
+          message={t('common.verifyEmailMessage') || "Please verify your email address to unlock Member Exclusive Rates."}
+          confirmText={t('common.goToProfile') || "Go to Profile"}
+          onConfirm={() => navigate('/profile')}
+        />
       </div>
     </div>
   );

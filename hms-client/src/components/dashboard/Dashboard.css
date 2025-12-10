@@ -33,6 +33,7 @@
   box-shadow: 0 4px 20px rgba(139, 111, 71, 0.08) !important;
   overflow: hidden;
   position: relative;
+  height: 100%;
 }
 
 .stats-card::before {
@@ -234,7 +235,7 @@
   margin-bottom: 1rem;
 }
 
-.dashboard-header h1 {
+.dashboard-header h1, .dashboard-header h2 {
   font-size: 2.5rem;
   font-weight: 700;
   color: #2C2C2C;
@@ -249,6 +250,68 @@
   color: #6C757D;
   font-size: 1.1rem;
   margin: 0;
+  letter-spacing: 0.5px;
+}
+
+/* Action Cards */
+.action-card-container {
+  border-radius: 16px;
+  border: 1px solid rgba(201, 169, 97, 0.4); /* Gold border */
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 20px rgba(139, 111, 71, 0.08);
+  padding: 2rem;
+}
+
+.action-card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  color: #2C2C2C;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(201, 169, 97, 0.2);
+}
+
+.action-button {
+  border: 1px solid rgba(201, 169, 97, 0.4) !important; /* Gold border */
+  background: white;
+  color: #8B6F47;
+  border-radius: 12px;
+  padding: 1.5rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  width: 100%;
+}
+
+.action-button:hover {
+  background: rgba(201, 169, 97, 0.05);
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(139, 111, 71, 0.15);
+  border-color: #C9A961 !important;
+}
+
+.action-button svg {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  color: #C9A961;
+  transition: transform 0.3s ease;
+}
+
+.action-button:hover svg {
+  transform: scale(1.1);
+  color: #8B6F47;
+}
+
+.action-button span {
+  font-weight: 600;
+  font-size: 1rem;
+  text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
@@ -268,7 +331,7 @@
     font-size: 1.5rem;
   }
   
-  .dashboard-header h1 {
+  .dashboard-header h1, .dashboard-header h2 {
     font-size: 2rem;
   }
 }

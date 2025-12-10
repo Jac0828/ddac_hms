@@ -1,22 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useSettings } from '../contexts/SettingsContext';
 import { roomsApi, bookingsApi, Room } from '../services/api';
-import { getHotelSettings } from '../utils/hotelSettings';
-import './Admin.css'; // Reuse styles for consistency
+import LoadingSpinner from '../components/common/LoadingSpinner';
+import ImageGallery from '../components/common/ImageGallery';
+import { motion } from 'framer-motion';
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
+import { format } from 'date-fns';
+import { FaCalendarAlt, FaUserFriends, FaPen, FaConciergeBell, FaInfoCircle, FaMoneyBillWave, FaBed, FaTag } from 'react-icons/fa';
+import './Admin.css'; // Keep Admin styles for some layout basics
+import '../components/Home.css'; // Import Home styles for luxury theme and calendar
 
 const CreateBooking: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
+  const { t } = useLanguage();
+  const { settings } = useSettings();
   
   const roomIdParam = searchParams.get('roomId');
   const checkInParam = searchParams.get('checkIn');
   const checkOutParam = searchParams.get('checkOut');
 
   const [room, setRoom] = useState<Room | null>(null);
-  const [checkIn, setCheckIn] = useState(checkInParam || '');
-  const [checkOut, setCheckOut] = useState(checkOutParam || '');
+  // State for Date objects
+  const [checkInDate, setCheckInDate] = useState<Date | null>(
+    checkInParam ? new Date(checkInParam) : new Date()
+  );
+  const [checkOutDate, setCheckOutDate] = useState<Date | null>(
+    checkOutParam ? new Date(checkOutParam) : (() => {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      return tomorrow;
+    })()
+  );
+
   const [numberOfGuests, setNumberOfGuests] = useState(1);
   const [specialRequests, setSpecialRequests] = useState('');
   const [loading, setLoading] = useState(false);
@@ -24,20 +45,14 @@ const CreateBooking: React.FC = () => {
   const [loadingRoom, setLoadingRoom] = useState(!!roomIdParam);
 
   useEffect(() => {
+    // Wait for auth state to be restored from localStorage
+    if (isLoading) {
+      return;
+    }
+    
     if (!isAuthenticated) {
       navigate('/login');
       return;
-    }
-
-    // Set default dates if not provided
-    if (!checkIn) {
-      const today = new Date();
-      setCheckIn(today.toISOString().split('T')[0]);
-    }
-    if (!checkOut) {
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      setCheckOut(tomorrow.toISOString().split('T')[0]);
     }
 
     // Load room if roomId is provided
@@ -48,82 +63,83 @@ const CreateBooking: React.FC = () => {
           setRoom(data);
           setNumberOfGuests(Math.min(data.capacity, 2));
         } catch (err) {
-          setError('Failed to load room details');
+          setError(t('rooms.error') || 'Failed to load room details');
         } finally {
           setLoadingRoom(false);
         }
       };
       fetchRoom();
     }
-  }, [roomIdParam, isAuthenticated, navigate, checkInParam, checkOutParam, checkIn, checkOut]);
+  }, [roomIdParam, isAuthenticated, isLoading, navigate]);
 
   const calculateNights = () => {
-    if (!checkIn || !checkOut) return 0;
-    const nights = Math.ceil((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (1000 * 60 * 60 * 24));
+    if (!checkInDate || !checkOutDate) return 0;
+    const diffTime = checkOutDate.getTime() - checkInDate.getTime();
+    const nights = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return nights > 0 ? nights : 0;
   };
 
-  const getMemberDiscount = () => {
-    // Check if user is a verified member
-    if (!user?.membershipTier || !user?.emailConfirmed) {
-      return 1.0;
-    }
-    
-    const hotelSettings = getHotelSettings();
-    const discounts = hotelSettings.membershipDiscounts || {
-      member: 10,
-      silver: 15,
-      gold: 20,
-      platinum: 25
+  const getDiscountMultiplier = (tier?: string) => {
+    const discounts = settings || { 
+        memberDiscount: 10, silverDiscount: 15, goldDiscount: 20, platinumDiscount: 25
     };
     
-    const tier = (user.membershipTier || '').toLowerCase();
-    let discountPercent = discounts.member || 10;
-    if (tier === 'silver') discountPercent = discounts.silver || 15;
-    if (tier === 'gold') discountPercent = discounts.gold || 20;
-    if (tier === 'platinum') discountPercent = discounts.platinum || 25;
+    let discountPercent = discounts.memberDiscount;
+    if (tier === 'Silver') discountPercent = discounts.silverDiscount;
+    if (tier === 'Gold') discountPercent = discounts.goldDiscount;
+    if (tier === 'Platinum') discountPercent = discounts.platinumDiscount;
     
+    // Only apply discount if email is confirmed
+    if (user && !user.emailConfirmed) return 1;
+
     return 1 - (discountPercent / 100);
   };
 
-  const calculateMemberPrice = () => {
+  const calculateStandardTotal = () => {
     if (!room) return 0;
-    const discount = getMemberDiscount();
-    return Math.round((room.pricePerNight * discount) * 100) / 100;
+    return room.pricePerNight * calculateNights();
+  };
+
+  const calculateMemberTotal = () => {
+    if (!room) return 0;
+    const multiplier = getDiscountMultiplier(user?.membershipTier);
+    return room.pricePerNight * calculateNights() * multiplier;
   };
 
   const calculateTotal = () => {
-    if (!room) return 0;
-    const nights = calculateNights();
-    const basePrice = room.pricePerNight * nights;
-    
-    // Apply member discount if user is a verified member
-    const discount = getMemberDiscount();
-    const finalPrice = basePrice * discount;
-    
-    // Round to 2 decimal places
-    return Math.round(finalPrice * 100) / 100;
+    // Return member price if user is a verified member, otherwise standard price
+    if (user && user.emailConfirmed && user.membershipTier) {
+      return calculateMemberTotal();
+    }
+    return calculateStandardTotal();
   };
 
-  // Check if user is eligible for member discount
-  const isMemberEligible = user?.membershipTier && user?.emailConfirmed;
+  const isMember = user && user.emailConfirmed && user.membershipTier;
+  const standardTotal = calculateStandardTotal();
+  const memberTotal = calculateMemberTotal();
+  const discountAmount = standardTotal - memberTotal;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
     if (!room) {
-      setError('Please select a room');
+      setError(t('booking.selectRoom') || 'Please select a room');
+      return;
+    }
+
+    if (!checkInDate || !checkOutDate) {
+      setError(t('availability.selectDates') || 'Please select check-in and check-out dates');
       return;
     }
 
     if (numberOfGuests > room.capacity) {
-      setError(`This room can only accommodate ${room.capacity} guests`);
+      setError(`${t('booking.maxGuestsError') || 'This room can only accommodate'} ${room.capacity} ${t('booking.guests') || 'guests'}`);
       return;
     }
 
-    if (new Date(checkOut) <= new Date(checkIn)) {
-      setError('Check-out date must be after check-in date');
+    if (checkOutDate <= checkInDate) {
+      setError(t('availability.invalidDates') || 'Check-out date must be after check-in date');
       return;
     }
 
@@ -132,217 +148,304 @@ const CreateBooking: React.FC = () => {
     try {
       await bookingsApi.create({
         roomId: room.id,
-        checkInDate: checkIn,
-        checkOutDate: checkOut,
+        checkInDate: format(checkInDate, 'yyyy-MM-dd'),
+        checkOutDate: format(checkOutDate, 'yyyy-MM-dd'),
         numberOfGuests,
         specialRequests: specialRequests.trim() || undefined,
       });
       
       navigate('/bookings?success=true');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to create booking. Please try again.');
+      if (err.response?.status === 401) {
+        setError(t('auth.sessionExpired') || 'Session expired. Redirecting to login...');
+        setTimeout(() => {
+             localStorage.removeItem('jwtToken');
+             localStorage.removeItem('user');
+             navigate('/login');
+        }, 1500);
+      } else {
+        setError(err.response?.data?.message || t('booking.createError') || 'Failed to create booking. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
   };
+
+  if (isLoading) {
+      return <LoadingSpinner text={t('auth.authenticating') || "Authenticating..."} />;
+  }
 
   if (!isAuthenticated) {
     return null;
   }
 
   if (loadingRoom) {
-    return (
-      <div className="container mt-5 text-center">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner text={t('rooms.loadingDetails') || "Loading room details..."} />;
   }
 
   return (
-    <div className="dashboard-page" style={{ minHeight: '100vh', position: 'relative', padding: '2rem 0' }}>
+    <div className="home-container" style={{ paddingTop: '2rem', paddingBottom: '4rem', background: 'linear-gradient(135deg, #FDFBF7 0%, #F5F0E8 100%)' }}>
       <div className="container">
-        <h2 className="mb-4" style={{ fontFamily: 'Playfair Display, serif', color: '#2C2C2C' }}>Create Booking</h2>
-
-        <div className="row">
-          <div className="col-md-8">
-            <div className="card shadow-sm border-0" style={{ borderRadius: '16px' }}>
+        <div className="row g-4">
+          {/* Booking Form Column */}
+          <div className="col-lg-7">
+            <motion.div 
+                className="card shadow-lg border-0 h-100" 
+                style={{ borderRadius: '16px', overflow: 'hidden', background: 'rgba(255, 255, 255, 0.95)', backdropFilter: 'blur(10px)' }}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <div className="card-header bg-transparent border-0 pt-4 px-4 pb-0">
+                <h4 className="mb-0" style={{ fontFamily: 'Playfair Display, serif', color: '#2C2C2C', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <FaCalendarAlt style={{ color: '#C9A961' }} /> {t('booking.details') || 'Booking Details'}
+                </h4>
+              </div>
               <div className="card-body p-4">
                 <form onSubmit={handleSubmit}>
                   {error && (
-                    <div className="alert alert-danger">{error}</div>
+                    <motion.div 
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="alert alert-danger d-flex align-items-center gap-2"
+                    >
+                        <FaInfoCircle /> {error}
+                    </motion.div>
                   )}
 
                   {!room && (
                     <div className="alert alert-info">
-                      <Link to="/check-availability" className="btn btn-primary">
-                        Search for Available Rooms
+                      <Link to="/check-availability" className="btn btn-primary btn-sm">
+                        {t('booking.searchAvailable') || 'Search for Available Rooms'}
                       </Link>
                     </div>
                   )}
 
-                  <div className="row">
-                    <div className="col-md-6 mb-3">
-                      <label htmlFor="checkIn" className="form-label">Check-in Date</label>
-                      <input
-                        type="date"
-                        className="form-control"
-                        id="checkIn"
-                        value={checkIn}
-                        onChange={(e) => setCheckIn(e.target.value)}
-                        min={new Date().toISOString().split('T')[0]}
-                        required
-                      />
+                  <div className="row mb-4">
+                    <div className="col-md-6 mb-3 mb-md-0">
+                      <label className="form-label fw-bold text-uppercase small text-muted">{t('booking.checkIn') || 'Check-in Date'}</label>
+                      <div className="luxury-calendar">
+                        <DatePicker
+                            selected={checkInDate}
+                            onChange={(date: Date) => setCheckInDate(date)}
+                            selectsStart
+                            startDate={checkInDate}
+                            endDate={checkOutDate}
+                            minDate={new Date()}
+                            dateFormat="MMM d, yyyy"
+                            className="form-control border-0 bg-light p-3 fw-bold"
+                            wrapperClassName="w-100"
+                        />
+                      </div>
                     </div>
-                    <div className="col-md-6 mb-3">
-                      <label htmlFor="checkOut" className="form-label">Check-out Date</label>
-                      <input
-                        type="date"
-                        className="form-control"
-                        id="checkOut"
-                        value={checkOut}
-                        onChange={(e) => setCheckOut(e.target.value)}
-                        min={checkIn || new Date().toISOString().split('T')[0]}
-                        required
-                      />
+                    <div className="col-md-6">
+                      <label className="form-label fw-bold text-uppercase small text-muted">{t('booking.checkOut') || 'Check-out Date'}</label>
+                      <div className="luxury-calendar">
+                        <DatePicker
+                            selected={checkOutDate}
+                            onChange={(date: Date) => setCheckOutDate(date)}
+                            selectsEnd
+                            startDate={checkInDate}
+                            endDate={checkOutDate}
+                            minDate={checkInDate || new Date()}
+                            dateFormat="MMM d, yyyy"
+                            className="form-control border-0 bg-light p-3 fw-bold"
+                            wrapperClassName="w-100"
+                        />
+                      </div>
                     </div>
                   </div>
 
                   {room && (
-                    <div className="mb-3">
-                      <label htmlFor="numberOfGuests" className="form-label">
-                        Number of Guests (Max: {room.capacity})
+                    <div className="mb-4">
+                      <label className="form-label fw-bold text-uppercase small text-muted">
+                        <FaUserFriends className="me-2" style={{ color: '#C9A961' }} />
+                        {t('booking.guests') || 'Guests'} (Max: {room.capacity})
                       </label>
-                      <input
-                        type="number"
-                        className="form-control"
-                        id="numberOfGuests"
-                        value={numberOfGuests}
-                        onChange={(e) => setNumberOfGuests(parseInt(e.target.value))}
-                        min={1}
-                        max={room.capacity}
-                        required
-                      />
+                      <div className="input-group">
+                        <button 
+                            type="button" 
+                            className="btn btn-outline-secondary"
+                            onClick={() => setNumberOfGuests(prev => Math.max(1, prev - 1))}
+                        >
+                            -
+                        </button>
+                        <input
+                            type="number"
+                            className="form-control text-center fw-bold border-secondary"
+                            value={numberOfGuests}
+                            readOnly
+                        />
+                        <button 
+                            type="button" 
+                            className="btn btn-outline-secondary"
+                            onClick={() => setNumberOfGuests(prev => Math.min(room.capacity, prev + 1))}
+                        >
+                            +
+                        </button>
+                      </div>
                     </div>
                   )}
 
-                  <div className="mb-3">
-                    <label htmlFor="specialRequests" className="form-label">
-                      Special Requests (Optional)
+                  <div className="mb-4">
+                    <label className="form-label fw-bold text-uppercase small text-muted">
+                        <FaConciergeBell className="me-2" style={{ color: '#C9A961' }} />
+                        {t('booking.specialRequests') || 'Special Requests'}
                     </label>
                     <textarea
-                      className="form-control"
-                      id="specialRequests"
+                      className="form-control bg-light border-0"
                       rows={4}
                       value={specialRequests}
                       onChange={(e) => setSpecialRequests(e.target.value)}
-                      placeholder="Any special requests or notes..."
+                      placeholder={t('booking.specialRequestsPlaceholder') || "Any special requests, dietary restrictions, or notes for our staff..."}
+                      style={{ borderRadius: '12px', padding: '1rem' }}
                     />
                   </div>
 
-                  <div className="d-flex gap-2">
+                  <div className="d-flex gap-3 mt-4">
                     <button
                       type="submit"
-                      className="btn btn-primary"
-                      style={{ background: 'linear-gradient(135deg, #C9A961 0%, #8B6F47 100%)', border: 'none' }}
+                      className="btn btn-primary py-3 px-4 flex-grow-1 fw-bold text-uppercase"
+                      style={{ 
+                          background: 'linear-gradient(135deg, #C9A961 0%, #8B6F47 100%)', 
+                          border: 'none',
+                          borderRadius: '12px',
+                          letterSpacing: '1px',
+                          boxShadow: '0 4px 15px rgba(201, 169, 97, 0.3)'
+                      }}
                       disabled={loading || !room}
                     >
-                      {loading ? 'Creating Booking...' : 'Confirm Booking'}
+                      {loading ? (
+                          <><span className="spinner-border spinner-border-sm me-2"/> {t('common.processing') || 'Processing...'}</>
+                      ) : (
+                          t('booking.confirm') || 'Confirm Booking'
+                      )}
                     </button>
-                    <Link to="/rooms" className="btn btn-secondary">
-                      Cancel
+                    <Link 
+                        to="/rooms" 
+                        className="btn btn-light py-3 px-4 fw-bold text-uppercase"
+                        style={{ borderRadius: '12px', border: '1px solid #e2e8f0' }}
+                    >
+                      {t('common.cancel') || 'Cancel'}
                     </Link>
                   </div>
                 </form>
               </div>
-            </div>
+            </motion.div>
           </div>
 
-          <div className="col-md-4">
-            <div className="card shadow-sm border-0 sticky-top" style={{ borderRadius: '16px', top: '2rem' }}>
+          {/* Booking Summary Column */}
+          <div className="col-lg-5">
+            <motion.div 
+                className="card shadow-lg border-0 sticky-top" 
+                style={{ borderRadius: '16px', top: '6rem', background: 'rgba(255, 255, 255, 0.95)', backdropFilter: 'blur(10px)' }}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+            >
+              <div className="card-header bg-transparent border-0 pt-4 px-4 pb-0">
+                <h4 className="mb-0" style={{ fontFamily: 'Playfair Display, serif', color: '#2C2C2C', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <FaMoneyBillWave style={{ color: '#C9A961' }} /> {t('booking.summary') || 'Summary'}
+                </h4>
+              </div>
               <div className="card-body p-4">
-                <h5 style={{ fontFamily: 'Playfair Display, serif' }}>Booking Summary</h5>
-                <hr style={{ borderColor: 'rgba(201, 169, 97, 0.3)' }} />
                 {room ? (
                   <>
-                    {room.imageUrls && room.imageUrls.length > 0 && (
-                      <div className="mb-3 rounded overflow-hidden shadow-sm" style={{ height: '180px' }}>
-                        <img 
-                          src={room.imageUrls[0]} 
-                          alt={room.roomType} 
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                        />
-                      </div>
-                    )}
-                    <div className="d-flex justify-content-between mb-2">
-                      <span>Room:</span>
-                      <strong>{room.roomNumber}</strong>
-                    </div>
-                    <div className="d-flex justify-content-between mb-2">
-                      <span>Type:</span>
-                      <span>{room.roomType}</span>
-                    </div>
-                    <div className="d-flex justify-content-between mb-2">
-                      <span>Nights:</span>
-                      <span>{calculateNights()}</span>
-                    </div>
-                    {isMemberEligible ? (
-                      <>
-                        <div className="d-flex justify-content-between mb-2">
-                          <span>Standard Price/Night:</span>
-                          <span style={{ textDecoration: 'line-through', color: '#A0AEC0' }}>${room.pricePerNight.toFixed(2)}</span>
+                    {room.imageUrls && room.imageUrls.length > 0 ? (
+                        <div className="mb-4 rounded-3 overflow-hidden shadow-sm" style={{ height: '220px' }}>
+                            <ImageGallery 
+                                images={room.imageUrls} 
+                                height="100%" 
+                                showThumbnails={false}
+                                allowFullscreen={true} 
+                            />
                         </div>
-                        <div className="d-flex justify-content-between mb-2">
-                          <span style={{ color: '#C9A961', fontWeight: 'bold' }}>Member Price/Night:</span>
-                          <span style={{ color: '#C9A961', fontWeight: 'bold' }}>${calculateMemberPrice().toFixed(2)}</span>
-                        </div>
-                      </>
                     ) : (
-                      <div className="d-flex justify-content-between mb-2">
-                        <span>Price/Night:</span>
-                        <span>${room.pricePerNight.toFixed(2)}</span>
-                      </div>
+                        <div className="mb-4 rounded-3 bg-light d-flex align-items-center justify-content-center text-muted" style={{ height: '200px' }}>
+                            <FaBed size={48} opacity={0.3} />
+                        </div>
                     )}
-                    {room.amenities && room.amenities.length > 0 && (
-                      <div className="mb-3 mt-3">
-                        <small className="text-muted d-block mb-1">Included:</small>
-                        <div className="d-flex flex-wrap gap-1">
-                          {room.amenities.slice(0, 4).map(a => (
-                            <span key={a} className="badge bg-light text-dark border" style={{ fontSize: '0.65rem' }}>{a}</span>
-                          ))}
+
+                    <div className="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom" style={{ borderColor: 'rgba(201, 169, 97, 0.2)' }}>
+                        <div>
+                            <h5 className="mb-1 fw-bold" style={{ color: '#2C2C2C' }}>{t('booking.room') || 'Room'} {room.roomNumber}</h5>
+                            <div className="badge bg-dark text-gold text-uppercase" style={{ color: '#C9A961' }}>{room.roomType}</div>
+                        </div>
+                        <div className="text-end">
+                            {isMember ? (
+                                <>
+                                    <div className="fs-5 fw-bold text-decoration-line-through text-muted">${room.pricePerNight}</div>
+                                    <div className="fs-4 fw-bold" style={{ color: '#C9A961' }}>${(room.pricePerNight * getDiscountMultiplier(user?.membershipTier)).toFixed(2)}</div>
+                                    <small className="text-muted">/ {t('rooms.perNight') || 'night'}</small>
+                                    <div className="badge bg-success mt-1">
+                                        <FaTag className="me-1" />
+                                        {user.membershipTier} Member
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="fs-4 fw-bold" style={{ color: '#8B6F47' }}>${room.pricePerNight}</div>
+                                    <small className="text-muted">/ {t('rooms.perNight') || 'night'}</small>
+                                </>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="d-flex justify-content-between mb-2">
+                      <span className="text-muted">{t('booking.duration') || 'Duration'}</span>
+                      <span className="fw-bold">{calculateNights()} {t('booking.nights') || 'nights'}</span>
+                    </div>
+                    <div className="d-flex justify-content-between mb-2">
+                      <span className="text-muted">{t('booking.checkIn') || 'Check-in'}</span>
+                      <span className="fw-bold">{checkInDate ? format(checkInDate, 'MMM d, yyyy') : '-'}</span>
+                    </div>
+                    <div className="d-flex justify-content-between mb-3 pb-3 border-bottom" style={{ borderColor: 'rgba(201, 169, 97, 0.2)' }}>
+                      <span className="text-muted">{t('booking.checkOut') || 'Check-out'}</span>
+                      <span className="fw-bold">{checkOutDate ? format(checkOutDate, 'MMM d, yyyy') : '-'}</span>
+                    </div>
+                    
+                    {isMember && discountAmount > 0 && (
+                      <div className="mb-2 p-2 bg-light rounded" style={{ background: 'rgba(201, 169, 97, 0.1)' }}>
+                        <div className="d-flex justify-content-between align-items-center mb-1">
+                          <span className="text-muted small">Standard Price:</span>
+                          <span className="text-decoration-line-through text-muted">${standardTotal.toFixed(2)}</span>
+                        </div>
+                        <div className="d-flex justify-content-between align-items-center">
+                          <span className="text-success small fw-bold">
+                            <FaTag className="me-1" />
+                            {user.membershipTier} Discount:
+                          </span>
+                          <span className="text-success fw-bold">-${discountAmount.toFixed(2)}</span>
                         </div>
                       </div>
                     )}
-                    <hr style={{ borderColor: 'rgba(201, 169, 97, 0.3)' }} />
-                    {isMemberEligible && (
-                      <div className="d-flex justify-content-between mb-2">
-                        <span>Standard Total:</span>
-                        <span style={{ textDecoration: 'line-through', color: '#A0AEC0', fontSize: '0.9rem' }}>
-                          ${(room.pricePerNight * calculateNights()).toFixed(2)}
-                        </span>
-                      </div>
-                    )}
-                    <div className="d-flex justify-content-between align-items-center">
-                      <strong style={{ fontSize: '1.1rem' }}>Total:</strong>
-                      <strong style={{ 
-                        fontSize: '1.5rem', 
-                        color: isMemberEligible ? '#C9A961' : '#8B6F47' 
-                      }}>
-                        ${calculateTotal().toFixed(2)}
-                      </strong>
+                    <div className="d-flex justify-content-between align-items-center mt-2">
+                      <span className="h5 mb-0">{t('booking.totalAmount') || 'Total Amount'}</span>
+                      <span className="h3 mb-0 fw-bold" style={{ color: '#C9A961' }}>${calculateTotal().toFixed(2)}</span>
                     </div>
-                    {isMemberEligible && (
-                      <small className="text-muted d-block mt-1" style={{ textAlign: 'right' }}>
-                        Member discount applied
-                      </small>
+                    
+                    {room.amenities && room.amenities.length > 0 && (
+                      <div className="mt-4 p-3 bg-light rounded-3">
+                        <small className="text-muted text-uppercase fw-bold d-block mb-2">{t('booking.includedAmenities') || 'Included Amenities'}</small>
+                        <div className="d-flex flex-wrap gap-2">
+                          {room.amenities.slice(0, 5).map(a => (
+                            <span key={a} className="badge bg-white text-dark border" style={{ fontWeight: 500 }}>{a}</span>
+                          ))}
+                          {room.amenities.length > 5 && (
+                              <span className="badge bg-white text-dark border">+{room.amenities.length - 5} {t('common.more') || 'more'}</span>
+                          )}
+                        </div>
+                      </div>
                     )}
                   </>
                 ) : (
-                  <p className="text-muted">Select a room to see booking summary</p>
+                  <div className="text-center py-5 text-muted">
+                    <FaInfoCircle size={32} className="mb-3 opacity-50" />
+                    <p>{t('booking.selectRoomSummary') || 'Select a room to see booking summary'}</p>
+                  </div>
                 )}
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>

@@ -4,37 +4,65 @@ import { useNavigate, Link } from 'react-router-dom';
 import { FaCrown, FaUser, FaShieldAlt, FaCheckCircle, FaArrowLeft } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { useLanguage } from '../contexts/LanguageContext';
-import { getHotelSettings } from '../utils/hotelSettings';
+import { useSettings } from '../contexts/SettingsContext';
 import './MembershipBenefits.css';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 
 const MembershipBenefits: React.FC = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const hotelSettings = getHotelSettings();
+  const { settings, loading: settingsLoading } = useSettings();
 
   React.useEffect(() => {
+    // Wait for auth state to be restored from localStorage
+    if (isLoading) {
+      return;
+    }
+    
     if (!isAuthenticated) {
       navigate('/login');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isLoading, isAuthenticated, navigate]);
 
+  if (isLoading || settingsLoading) return <LoadingSpinner />;
   if (!user) return null;
 
   const getTierBenefits = (tier: string): string[] => {
-    const benefits = hotelSettings.membershipBenefits;
+    if (!settings) return [];
+    const benefits = settings.membershipBenefits;
+    
+    // Helper to get benefits for a specific tier only
+    const getExclusive = (t: string) => {
+        switch (t.toLowerCase()) {
+            case 'member': return benefits.member || [];
+            case 'silver': return benefits.silver || [];
+            case 'gold': return benefits.gold || [];
+            case 'platinum': return benefits.platinum || [];
+            default: return [];
+        }
+    };
+
+    // Cumulative logic
+    let accumulated: string[] = [];
     switch (tier.toLowerCase()) {
-      case 'member':
-        return benefits.member || [];
-      case 'silver':
-        return benefits.silver || [];
-      case 'gold':
-        return benefits.gold || [];
       case 'platinum':
-        return benefits.platinum || [];
+        accumulated = [...getExclusive('member'), ...getExclusive('silver'), ...getExclusive('gold'), ...getExclusive('platinum')];
+        break;
+      case 'gold':
+        accumulated = [...getExclusive('member'), ...getExclusive('silver'), ...getExclusive('gold')];
+        break;
+      case 'silver':
+        accumulated = [...getExclusive('member'), ...getExclusive('silver')];
+        break;
+      case 'member':
       default:
-        return [];
+        accumulated = getExclusive('member');
+        break;
     }
+    
+    // Remove duplicates
+    return Array.from(new Set(accumulated));
   };
 
   const allBenefits = new Set<string>();

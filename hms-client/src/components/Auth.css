@@ -5,7 +5,8 @@
   align-items: flex-start;
   justify-content: center;
   position: relative;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   width: 100%;
   padding: 2rem 1rem 1rem 1rem;
   background: var(--theme-bg-gradient);
@@ -167,9 +168,7 @@
   transform-style: preserve-3d;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   position: relative;
-  overflow-x: visible;
-  overflow-y: auto;
-  max-height: 95vh;
+  overflow: visible;
 }
 
 .auth-card-split::before {
@@ -1913,83 +1912,153 @@
   color: white;
 }
 
-/* Style month/year dropdowns to look like clickable text */
+/* Style month/year dropdowns to look like clickable text (SCROLL mode triggers) */
+.auth-date-picker-calendar .react-datepicker__year-read-view,
+.auth-date-picker-calendar .react-datepicker__month-read-view {
+  visibility: visible !important;
+  display: inline-block !important;
+  padding: 0.3rem 1.8rem 0.3rem 0.8rem !important;
+  border: 1px solid rgba(201, 169, 97, 0.2);
+  border-radius: 6px;
+  cursor: pointer;
+  color: #8B6F47;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  background: white;
+  margin: 0 0.25rem;
+  position: relative !important;
+}
+
+.auth-date-picker-calendar .react-datepicker__year-read-view:hover,
+.auth-date-picker-calendar .react-datepicker__month-read-view:hover {
+  background: rgba(201, 169, 97, 0.1);
+  border-color: #C9A961;
+}
+
+/* Arrows for read view */
+.auth-date-picker-calendar .react-datepicker__year-read-view--down-arrow,
+.auth-date-picker-calendar .react-datepicker__month-read-view--down-arrow {
+  border-color: #8B6F47 !important;
+  border-width: 2px 2px 0 0 !important;
+  width: 8px !important;
+  height: 8px !important;
+  position: absolute !important;
+  top: 35% !important;
+  right: 0.6rem !important;
+  transform: rotate(135deg) !important;
+  margin: 0 !important;
+}
+
+/* Dropdown List Container (SCROLL mode) */
+.auth-date-picker-calendar .react-datepicker__year-dropdown,
+.auth-date-picker-calendar .react-datepicker__month-dropdown {
+  background-color: white !important;
+  border: 1px solid rgba(201, 169, 97, 0.3) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+  width: 100px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 10001 !important;
+  overflow: hidden !important;
+  padding: 0.25rem !important;
+  top: 30px !important; /* Adjust position below the read-view */
+  max-height: 200px !important; /* Limit height */
+  overflow-y: auto !important; /* Enable scrolling */
+}
+
+/* Dropdown Options */
+.auth-date-picker-calendar .react-datepicker__year-option,
+.auth-date-picker-calendar .react-datepicker__month-option {
+  padding: 0.5rem !important;
+  color: #4A4A4A !important;
+  font-size: 0.85rem !important;
+  transition: all 0.2s ease !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+  display: block !important;
+  width: 100% !important;
+  text-align: center !important;
+  background: transparent !important;
+}
+
+.auth-date-picker-calendar .react-datepicker__year-option:hover,
+.auth-date-picker-calendar .react-datepicker__month-option:hover {
+  background: rgba(201, 169, 97, 0.1) !important;
+  color: #C9A961 !important;
+}
+
+.auth-date-picker-calendar .react-datepicker__year-option--selected_year,
+.auth-date-picker-calendar .react-datepicker__month-option--selected_month {
+  background: rgba(201, 169, 97, 0.2) !important;
+  color: #8B6F47 !important;
+  font-weight: 700 !important;
+}
+
+/* Hide checkmark in scroll mode to keep it clean */
+.auth-date-picker-calendar .react-datepicker__year-option span,
+.auth-date-picker-calendar .react-datepicker__month-option span {
+  display: none !important;
+}
+
+/* Scroll arrows in dropdown */
+.auth-date-picker-calendar .react-datepicker__navigation--years-upcoming,
+.auth-date-picker-calendar .react-datepicker__navigation--years-previous {
+  border-color: #8B6F47 !important;
+  background: rgba(201, 169, 97, 0.1) !important;
+  height: 10px !important;
+  width: 10px !important;
+  margin: 5px auto !important;
+  border-width: 2px 2px 0 0 !important;
+  display: block !important;
+  position: relative !important;
+  top: auto !important;
+}
+
+.auth-date-picker-calendar .react-datepicker__navigation--years-upcoming {
+  transform: rotate(315deg) !important;
+  margin-bottom: 5px !important;
+}
+
+.auth-date-picker-calendar .react-datepicker__navigation--years-previous {
+  transform: rotate(135deg) !important;
+  margin-top: 5px !important;
+}
+
+/* Scrollbar for the dropdown list */
+.auth-date-picker-calendar .react-datepicker__year-dropdown::-webkit-scrollbar {
+  width: 4px;
+}
+
+.auth-date-picker-calendar .react-datepicker__year-dropdown::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.auth-date-picker-calendar .react-datepicker__year-dropdown::-webkit-scrollbar-thumb {
+  background: #C9A961;
+  border-radius: 2px;
+}
+
+/* Ensure the header container allows the absolute dropdown to show */
+.auth-date-picker-calendar .react-datepicker__header {
+  position: relative;
+  z-index: 2;
+}
+
+/* Force dropdowns to be side-by-side */
+.auth-date-picker-calendar .react-datepicker__header__dropdown {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: 100%;
+  gap: 0.5rem;
+}
+
 .auth-date-picker-calendar .react-datepicker__month-dropdown-container,
 .auth-date-picker-calendar .react-datepicker__year-dropdown-container {
   display: inline-block !important;
   margin: 0 !important;
-  vertical-align: middle !important;
-}
-
-.auth-date-picker-calendar .react-datepicker__month-dropdown,
-.auth-date-picker-calendar .react-datepicker__year-dropdown {
-  background: transparent !important;
-  border: none !important;
-  padding: 0.2rem 0.5rem !important;
-  font-size: 0.8rem !important;
-  font-weight: 600 !important;
-  color: #8B6F47 !important;
-  cursor: pointer !important;
-  appearance: none !important;
-  -webkit-appearance: none !important;
-  -moz-appearance: none !important;
-  outline: none !important;
-  text-align: center !important;
-  border-radius: 4px !important;
-  transition: all 0.2s ease !important;
-  margin: 0 0.25rem !important;
-}
-
-.auth-date-picker-calendar .react-datepicker__month-dropdown:hover,
-.auth-date-picker-calendar .react-datepicker__year-dropdown:hover {
-  color: #C9A961 !important;
-  background: rgba(201, 169, 97, 0.1) !important;
-}
-
-.auth-date-picker-calendar .react-datepicker__month-dropdown:focus,
-.auth-date-picker-calendar .react-datepicker__year-dropdown:focus {
-  color: #C9A961 !important;
-  background: rgba(201, 169, 97, 0.15) !important;
-  outline: none !important;
-}
-
-/* Hide dropdown arrows - make it look like text */
-.auth-date-picker-calendar .react-datepicker__month-dropdown::-ms-expand,
-.auth-date-picker-calendar .react-datepicker__year-dropdown::-ms-expand {
-  display: none !important;
-}
-
-.auth-date-picker-calendar .react-datepicker__month-dropdown-container::after,
-.auth-date-picker-calendar .react-datepicker__year-dropdown-container::after {
-  display: none !important;
-}
-
-/* Style the dropdown options */
-.auth-date-picker-calendar .react-datepicker__month-option,
-.auth-date-picker-calendar .react-datepicker__year-option {
-  padding: 0.5rem !important;
-  border-radius: 4px !important;
-  transition: all 0.2s ease !important;
-  font-size: 0.8rem !important;
-  color: #4A4A4A !important;
-}
-
-.auth-date-picker-calendar .react-datepicker__month-option:hover,
-.auth-date-picker-calendar .react-datepicker__year-option:hover {
-  background: rgba(201, 169, 97, 0.1) !important;
-  color: #8B6F47 !important;
-}
-
-.auth-date-picker-calendar .react-datepicker__month-option--selected,
-.auth-date-picker-calendar .react-datepicker__year-option--selected {
-  background: rgba(201, 169, 97, 0.2) !important;
-  color: #8B6F47 !important;
-  font-weight: 600 !important;
-}
-
-/* Style month/year title area */
-.auth-date-picker-calendar .react-datepicker__header {
-  position: relative;
 }
 
 /* ============================================
@@ -2276,4 +2345,3 @@
     transform: translateX(-50%);
   }
 }
-

@@ -22,28 +22,71 @@ import MembershipBenefits from './pages/MembershipBenefits';
 import Roles from './pages/Roles';
 import RoomTypesManagement from './pages/RoomTypesManagement';
 import DutyRosterManagement from './pages/DutyRosterManagement';
+import ManagerRoomList from './pages/ManagerRoomList';
+import ManagerReviews from './pages/ManagerReviews';
+import StaffList from './pages/StaffList';
 import AuditLogs from './pages/AuditLogs';
+import PaymentRecord from './pages/PaymentRecord';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+  
+  // Wait for auth state to be restored from localStorage
+  if (isLoading) {
+    return null; // Or a loading spinner
+  }
+  
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
 };
 
+// Root redirect component - redirects authenticated users to their home page
+const RootRedirect: React.FC = () => {
+  const { isAuthenticated, user, isLoading, isAdmin, isManager, isReceptionist, isRoomAttendant, isCustomer } = useAuth();
+  
+  // Wait for auth state to be restored from localStorage
+  if (isLoading) {
+    return <Home />; // Show home page while loading
+  }
+  
+  if (!isAuthenticated || !user) {
+    return <Home />;
+  }
+  
+  // Redirect based on role
+  if (isAdmin) {
+    return <Navigate to="/admin" replace />;
+  } else if (isManager || isReceptionist || isRoomAttendant) {
+    return <Navigate to="/dashboard" replace />;
+  } else if (isCustomer) {
+    return <Home />;
+  }
+  
+  // Default fallback
+  return <Home />;
+};
+
+import { SettingsProvider } from './contexts/SettingsContext';
+
 const AppContent: React.FC = () => {
   return (
-    <Router>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
+    <SettingsProvider>
+      <Router>
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<RootRedirect />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
         <Route path="/admin" element={<PrivateRoute><Admin /></PrivateRoute>} />
         <Route path="/roles" element={<PrivateRoute><Roles /></PrivateRoute>} />
         <Route path="/manager/room-types" element={<PrivateRoute><RoomTypesManagement /></PrivateRoute>} />
+        <Route path="/manager/rooms" element={<PrivateRoute><ManagerRoomList /></PrivateRoute>} />
+        <Route path="/manager/staff" element={<PrivateRoute><StaffList /></PrivateRoute>} />
         <Route path="/manager/duty-roster" element={<PrivateRoute><DutyRosterManagement /></PrivateRoute>} />
+        <Route path="/manager/reviews" element={<PrivateRoute><ManagerReviews /></PrivateRoute>} />
+        <Route path="/manager/payments" element={<PrivateRoute><PaymentRecord /></PrivateRoute>} />
         <Route path="/admin/audit-logs" element={<PrivateRoute><AuditLogs /></PrivateRoute>} />
         <Route path="/rooms" element={<RoomsList />} />
         <Route path="/rooms/:id" element={<RoomDetails />} />
@@ -56,6 +99,7 @@ const AppContent: React.FC = () => {
         <Route path="/membership-benefits" element={<PrivateRoute><MembershipBenefits /></PrivateRoute>} />
       </Routes>
     </Router>
+    </SettingsProvider>
   );
 };
 

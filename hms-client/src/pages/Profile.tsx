@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { FaCrown, FaUser, FaIdCard, FaLock, FaCheckCircle, FaPencilAlt, FaGift, FaEnvelope, FaEnvelopeOpen } from 'react-icons/fa';
+import { FaCrown, FaUser, FaIdCard, FaLock, FaCheckCircle, FaPencilAlt, FaGift, FaEnvelope, FaEnvelopeOpen, FaCamera } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { useLanguage } from '../contexts/LanguageContext';
 import { authApi } from '../services/api';
 import FeedbackModal from '../components/common/FeedbackModal';
 import EditFormModal from '../components/common/EditFormModal';
+import ImageUpload from '../components/common/ImageUpload';
 import './Profile.css';
 
 const Profile: React.FC = () => {
-  const { user, isAuthenticated, updateUser } = useAuth();
+  const { user, isAuthenticated, isLoading, updateUser, isCustomer } = useAuth();
   const navigate = useNavigate();
   const { t } = useLanguage();
 
@@ -21,7 +22,7 @@ const Profile: React.FC = () => {
   const [showVerificationInput, setShowVerificationInput] = useState(false);
   
   const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
-  const [profileData, setProfileData] = useState({ firstName: '', lastName: '', email: '', phoneNumber: '' });
+  const [profileData, setProfileData] = useState({ firstName: '', lastName: '', email: '', phoneNumber: '', profilePictureUrl: '' });
   
   const [feedbackModal, setFeedbackModal] = useState<{ isOpen: boolean; type: 'success' | 'error'; title: string; message: string }>({
     isOpen: false,
@@ -31,14 +32,20 @@ const Profile: React.FC = () => {
   });
 
   useEffect(() => {
+    // Wait for auth state to be restored from localStorage
+    if (isLoading) {
+      return;
+    }
+    
     if (!isAuthenticated) {
       navigate('/login');
     } else if (user) {
       setProfileData({ 
-        firstName: user.firstName, 
-        lastName: user.lastName, 
-        email: user.email, 
-        phoneNumber: user.phoneNumber || '' 
+        firstName: user.firstName || '', 
+        lastName: user.lastName || '', 
+        email: user.email || '', 
+        phoneNumber: user.phoneNumber || '',
+        profilePictureUrl: user.profilePictureUrl || ''
       });
       
       // Check if user needs to verify email (from registration redirect)
@@ -47,11 +54,12 @@ const Profile: React.FC = () => {
         setShowVerificationInput(true);
       }
     }
-  }, [isAuthenticated, navigate, user]);
+  }, [isLoading, isAuthenticated, navigate, user]);
 
   if (!user) return null;
 
   const getTierClass = (tier: string | undefined) => {
+    if (!user.emailConfirmed) return 'unverified';
     const t = (tier || 'Member').toLowerCase();
     if (t.includes('platinum')) return 'platinum';
     if (t.includes('gold')) return 'gold';
@@ -86,9 +94,12 @@ const Profile: React.FC = () => {
     }
   };
 
-  const handleUpdateProfile = async () => {
+  const handleUpdateProfile = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault(); // Prevent page refresh
     try {
+      console.log('[Profile] Updating profile with data:', profileData);
       const response = await authApi.updateProfile(profileData);
+      console.log('[Profile] Update response:', response);
       
       if (user) {
           const updatedUser = {
@@ -97,16 +108,50 @@ const Profile: React.FC = () => {
               firstName: response.user.firstName,
               lastName: response.user.lastName,
               email: response.user.email,
-              phoneNumber: response.user.phoneNumber,
+              phoneNumber: response.user.phoneNumber || '',
               emailConfirmed: response.user.emailConfirmed,
+              profilePictureUrl: response.user.profilePictureUrl,
           };
           updateUser(updatedUser, response.token);
+          
+          // Update local profileData to reflect changes
+          setProfileData({
+            firstName: updatedUser.firstName,
+            lastName: updatedUser.lastName,
+            email: updatedUser.email,
+            phoneNumber: updatedUser.phoneNumber || '',
+            profilePictureUrl: updatedUser.profilePictureUrl || ''
+          });
       }
 
+      // Close edit modal first, then show feedback after a short delay
       setIsEditProfileOpen(false);
-      setFeedbackModal({ isOpen: true, type: 'success', title: 'Success', message: 'Profile updated successfully' });
+      
+      // Use setTimeout to ensure EditFormModal is fully closed before showing FeedbackModal
+      setTimeout(() => {
+        setFeedbackModal({ 
+          isOpen: true, 
+          type: 'success', 
+          title: t('profile.success') || 'Success', 
+          message: t('profile.updateSuccess') || 'Profile updated successfully' 
+        });
+      }, 300);
     } catch (error: any) {
-      setFeedbackModal({ isOpen: true, type: 'error', title: 'Error', message: error.response?.data?.message || 'Failed to update profile' });
+      console.error('[Profile] Update error:', error);
+      console.error('[Profile] Error response:', error.response?.data);
+      
+      // Close edit modal first
+      setIsEditProfileOpen(false);
+      
+      // Show error feedback after modal closes
+      setTimeout(() => {
+        setFeedbackModal({ 
+          isOpen: true, 
+          type: 'error', 
+          title: t('profile.error') || 'Error', 
+          message: error.response?.data?.message || t('profile.updateError') || 'Failed to update profile' 
+        });
+      }, 300);
     }
   };
 
@@ -211,29 +256,27 @@ const Profile: React.FC = () => {
 
   return (
     <div className="profile-container-luxury">
-      <motion.div className="profile-header-luxury" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-        <h1>{t('nav.profile')}</h1>
-        <p className="text-muted">Manage your membership and personal details</p>
-      </motion.div>
-
-      <div className="profile-grid-layout">
-        {/* Left Column: Membership Card */}
+      <div className={`profile-grid-layout ${!isCustomer ? 'single-column' : ''}`}>
+        {/* Left Column: Membership Card - Only for Customers */}
+        {isCustomer && (
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
           <div className={`membership-card-luxury ${getTierClass(user.membershipTier)}`}>
             <div className="card-pattern"></div>
             <div className="card-header-section">
               <div className="hotel-brand">SHANGRI-LA</div>
-              <div className="tier-badge"><FaCrown /> {user.membershipTier || 'Member'}</div>
+              <div className="tier-badge">
+                <FaCrown /> {user.emailConfirmed ? (user.membershipTier || 'Member') : 'Unverified'}
+              </div>
             </div>
             <div className="card-user-info">
               <div className="user-name-large">{user.firstName} {user.lastName}</div>
-              <div className="member-since">Member since {new Date(user.createdAt || Date.now()).getFullYear()}</div>
+              <div className="member-since">{user.emailConfirmed ? `${t('profile.memberSince') || 'Member since'} ${new Date(user.createdAt || Date.now()).getFullYear()}` : 'Join Date: ' + new Date(user.createdAt || Date.now()).getFullYear()}</div>
             </div>
             <div className="card-footer-section">
               <div className="points-display">
-                <span className="points-label">Points</span>
+                <span className="points-label">{t('profile.points') || 'Points'}</span>
                 <div className="points-value">{user.points || 0}</div>
-                {tierInfo.needed > 0 && <div className="points-next-tier">{tierInfo.needed} to {tierInfo.next}</div>}
+                {tierInfo.needed > 0 && <div className="points-next-tier">{tierInfo.needed} {t('profile.toNextTier') || 'to'} {tierInfo.next}</div>}
               </div>
             </div>
             {tierInfo.needed > 0 && (
@@ -244,40 +287,67 @@ const Profile: React.FC = () => {
           </div>
           <div className="text-center">
             <Link to="/membership-benefits" className="btn-gold w-100 mb-3 d-inline-block text-center text-decoration-none">
-              <FaGift className="me-2" /> View Tier Benefits
+              <FaGift className="me-2" /> {t('profile.viewBenefits') || 'View Tier Benefits'}
             </Link>
           </div>
         </motion.div>
+        )}
 
         {/* Right Column: Details */}
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}>
           {/* Personal Details */}
           <div className="detail-card">
             <div className="d-flex justify-content-between align-items-center mb-4">
-              <h3 className="mb-0"><FaUser /> Personal Details</h3>
+              <h3 className="mb-0"><FaUser /> {t('profile.personalDetails') || 'Personal Details'}</h3>
               <button className="btn-outline-gold btn-sm" onClick={() => setIsEditProfileOpen(true)}>
-                <FaPencilAlt className="me-2" /> Edit
+                <FaPencilAlt className="me-2" /> {t('profile.edit') || 'Edit'}
               </button>
             </div>
+            
+            <div className="d-flex justify-content-center mb-4 position-relative">
+              <div className="position-relative">
+                <div className="avatar-circle-large" style={{
+                  width: '100px', height: '100px', borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #C9A961 0%, #8B6F47 100%)',
+                  color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontWeight: 'bold', fontSize: '2.5rem', overflow: 'hidden', border: '3px solid #fff', boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
+                }}>
+                  {user.profilePictureUrl ? (
+                    <img src={user.profilePictureUrl} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <span>{user.firstName?.charAt(0)}{user.lastName?.charAt(0)}</span>
+                  )}
+                </div>
+                <button 
+                  className="position-absolute bottom-0 end-0 btn btn-sm btn-light rounded-circle shadow-sm border"
+                  style={{ width: '32px', height: '32px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  onClick={() => setIsEditProfileOpen(true)}
+                  title="Change Profile Picture"
+                >
+                  <FaCamera style={{ color: '#8B6F47', fontSize: '0.9rem' }} />
+                </button>
+              </div>
+            </div>
+
             <div className="info-row">
-              <span className="info-label">First Name</span>
+              <span className="info-label">{t('profile.firstName') || 'First Name'}</span>
               <span className="info-value">{user.firstName}</span>
             </div>
             <div className="info-row">
-              <span className="info-label">Last Name</span>
+              <span className="info-label">{t('profile.lastName') || 'Last Name'}</span>
               <span className="info-value">{user.lastName}</span>
             </div>
             <div className="info-row">
-              <span className="info-label">Email</span>
-              <div className="d-flex align-items-center justify-content-between w-100">
+              <span className="info-label">{t('profile.email') || 'Email'}</span>
+              <div className="d-flex align-items-center">
                 <span className="info-value">{user.email}</span>
                 {user.emailConfirmed ? (
                   <span className="badge bg-success text-white ms-2">
-                    <FaEnvelopeOpen className="me-1" /> Verified
+                    <FaEnvelopeOpen className="me-1" /> {t('profile.verified') || 'Verified'}
                   </span>
                 ) : (
                   <span className="badge bg-warning text-dark ms-2">
-                    <FaEnvelope className="me-1" /> Unverified
+                    <FaEnvelope className="me-1" /> {t('profile.unverified') || 'Unverified'}
                   </span>
                 )}
               </div>
@@ -294,9 +364,9 @@ const Profile: React.FC = () => {
                   <div className="d-flex align-items-start mb-2">
                     <FaEnvelope className="me-2 mt-1" style={{ color: '#C9A961', fontSize: '1.1rem' }} />
                     <div className="flex-grow-1">
-                      <strong style={{ color: '#8B6F47' }}>Email not verified.</strong>
+                      <strong style={{ color: '#8B6F47' }}>{t('profile.emailNotVerified') || 'Email not verified.'}</strong>
                       <p className="mb-2 mt-1" style={{ color: '#6C757D', fontSize: '0.85rem', lineHeight: '1.5' }}>
-                        Verify your email to become a member and unlock exclusive benefits including member discounts, points rewards, and special offers!
+                        {t('profile.verifyEmailDesc') || 'Verify your email to become a member and unlock exclusive benefits including member discounts, points rewards, and special offers!'}
                       </p>
                       {!showVerificationInput && (
                         <button 
@@ -325,11 +395,11 @@ const Profile: React.FC = () => {
                           {isVerifyingEmail ? (
                             <>
                               <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                              Sending...
+                              {t('profile.sending') || 'Sending...'}
                             </>
                           ) : (
                             <>
-                              <FaEnvelope className="me-2" /> Send Verification Code
+                              <FaEnvelope className="me-2" /> {t('profile.sendVerification') || 'Send Verification Code'}
                             </>
                           )}
                         </button>
@@ -352,10 +422,10 @@ const Profile: React.FC = () => {
                     <FaEnvelope className="me-2 mt-1" style={{ color: '#C9A961', fontSize: '1.1rem' }} />
                     <div className="flex-grow-1">
                       <label className="form-label fw-bold mb-2" style={{ color: '#2C2C2C' }}>
-                        Enter Verification Code (6 digits)
+                        {t('profile.enterCode') || 'Enter Verification Code (6 digits)'}
                       </label>
                       <p className="text-muted small mb-3" style={{ fontSize: '0.8rem' }}>
-                        We've sent a 6-digit verification code to your email. Enter it below to verify your email and unlock member benefits.
+                        {t('profile.codeSentDesc') || "We've sent a 6-digit verification code to your email. Enter it below to verify your email and unlock member benefits."}
                       </p>
                       <div className="d-flex gap-2 align-items-center">
                         <input 
@@ -416,10 +486,10 @@ const Profile: React.FC = () => {
                           {isVerifyingEmail ? (
                             <>
                               <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                              Verifying...
+                              {t('profile.verifying') || 'Verifying...'}
                             </>
                           ) : (
-                            'Verify'
+                            t('profile.verify') || 'Verify'
                           )}
                         </button>
                         <button 
@@ -433,7 +503,7 @@ const Profile: React.FC = () => {
                             setVerificationCode('');
                           }}
                         >
-                          Cancel
+                          {t('common.cancel') || 'Cancel'}
                         </button>
                       </div>
                       <div className="d-flex justify-content-between align-items-center mt-3">
@@ -451,7 +521,7 @@ const Profile: React.FC = () => {
                           onClick={handleSendVerificationEmail}
                           disabled={isVerifyingEmail}
                         >
-                          Resend Code
+                          {t('profile.resendCode') || 'Resend Code'}
                         </button>
                       </div>
                     </div>
@@ -460,21 +530,21 @@ const Profile: React.FC = () => {
               </div>
             )}
             <div className="info-row">
-              <span className="info-label">Phone Number</span>
+              <span className="info-label">{t('profile.phoneNumber') || 'Phone Number'}</span>
               <span className="info-value">{user.phoneNumber || '-'}</span>
             </div>
           </div>
 
           {/* Account Security */}
           <div className="detail-card">
-            <h3 className="mb-4"><FaLock /> Account Security</h3>
+            <h3 className="mb-4"><FaLock /> {t('profile.accountSecurity') || 'Account Security'}</h3>
             <div className="info-row">
-              <span className="info-label">Password</span>
-              <button className="btn-outline-gold btn-sm" onClick={() => setIsChangePasswordOpen(true)}>Change Password</button>
+              <span className="info-label">{t('login.password') || 'Password'}</span>
+              <button className="btn-outline-gold btn-sm" onClick={() => setIsChangePasswordOpen(true)}>{t('profile.changePassword') || 'Change Password'}</button>
             </div>
             <div className="info-row">
-              <span className="info-label">Status</span>
-              <span className="badge bg-success text-white"><FaCheckCircle className="me-1"/> Active</span>
+              <span className="info-label">{t('profile.status') || 'Status'}</span>
+              <span className="badge bg-success text-white"><FaCheckCircle className="me-1"/> {t('profile.active') || 'Active'}</span>
             </div>
           </div>
         </motion.div>
@@ -484,26 +554,37 @@ const Profile: React.FC = () => {
       <EditFormModal
         isOpen={isEditProfileOpen}
         onClose={() => setIsEditProfileOpen(false)}
-        title="Edit Profile"
+        title={t('profile.editProfile') || 'Edit Profile'}
         onSubmit={handleUpdateProfile}
-        submitText="Save Changes"
+        submitText={t('profile.saveChanges') || 'Save Changes'}
       >
+        <div className="mb-4 text-center">
+            <div className="mb-3">
+                <ImageUpload 
+                    existingImages={profileData.profilePictureUrl ? [profileData.profilePictureUrl] : []}
+                    maxImages={1}
+                    title="Profile Picture"
+                    onUploadComplete={(url) => setProfileData({...profileData, profilePictureUrl: url})}
+                    onDelete={() => setProfileData({...profileData, profilePictureUrl: ''})}
+                />
+            </div>
+        </div>
         <div className="row">
             <div className="col-md-6 mb-3">
-                <label className="form-label">First Name</label>
+                <label className="form-label">{t('profile.firstName') || 'First Name'}</label>
                 <input type="text" className="form-control" value={profileData.firstName} onChange={(e) => setProfileData({...profileData, firstName: e.target.value})} required />
             </div>
             <div className="col-md-6 mb-3">
-                <label className="form-label">Last Name</label>
+                <label className="form-label">{t('profile.lastName') || 'Last Name'}</label>
                 <input type="text" className="form-control" value={profileData.lastName} onChange={(e) => setProfileData({...profileData, lastName: e.target.value})} required />
             </div>
         </div>
         <div className="mb-3">
-            <label className="form-label">Email</label>
+            <label className="form-label">{t('profile.email') || 'Email'}</label>
             <input type="email" className="form-control" value={profileData.email} onChange={(e) => setProfileData({...profileData, email: e.target.value})} required />
         </div>
         <div className="mb-3">
-            <label className="form-label">Phone Number</label>
+            <label className="form-label">{t('profile.phoneNumber') || 'Phone Number'}</label>
             <input type="text" className="form-control" value={profileData.phoneNumber} onChange={(e) => setProfileData({...profileData, phoneNumber: e.target.value})} placeholder="Enter phone number" />
         </div>
       </EditFormModal>
@@ -512,20 +593,20 @@ const Profile: React.FC = () => {
       <EditFormModal
         isOpen={isChangePasswordOpen}
         onClose={() => setIsChangePasswordOpen(false)}
-        title="Change Password"
+        title={t('profile.changePassword') || 'Change Password'}
         onSubmit={handleChangePassword}
-        submitText="Update Password"
+        submitText={t('profile.updatePassword') || 'Update Password'}
       >
         <div className="mb-3">
-          <label className="form-label">Current Password</label>
+          <label className="form-label">{t('profile.currentPassword') || 'Current Password'}</label>
           <input type="password" className="form-control" value={passwordData.currentPassword} onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })} required />
         </div>
         <div className="mb-3">
-          <label className="form-label">New Password</label>
+          <label className="form-label">{t('profile.newPassword') || 'New Password'}</label>
           <input type="password" className="form-control" value={passwordData.newPassword} onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })} required />
         </div>
         <div className="mb-3">
-          <label className="form-label">Confirm New Password</label>
+          <label className="form-label">{t('profile.confirmNewPassword') || 'Confirm New Password'}</label>
           <input type="password" className="form-control" value={passwordData.confirmNewPassword} onChange={(e) => setPasswordData({ ...passwordData, confirmNewPassword: e.target.value })} required />
         </div>
       </EditFormModal>

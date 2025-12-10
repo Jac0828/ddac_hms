@@ -143,7 +143,7 @@ const FrontDeskDashboard: React.FC = () => {
   }
 
   return (
-    <div className="dashboard-page" style={{ minHeight: '100vh', position: 'relative', padding: '2rem 0' }}>
+    <div className="dashboard-page" style={{ minHeight: '100vh', position: 'relative', padding: '2rem 0', background: 'linear-gradient(135deg, #FDFBF7 0%, #F5F0E8 100%)' }}>
       <FeedbackModal
         isOpen={feedbackModal.isOpen}
         onClose={feedbackModal.onClose}
@@ -182,7 +182,7 @@ const FrontDeskDashboard: React.FC = () => {
                 className="card shadow-sm h-100"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                style={{ borderRadius: '16px', border: '1px solid rgba(201, 169, 97, 0.2)', background: 'rgba(255, 255, 255, 0.8)' }}
+                style={{ borderRadius: '16px', border: '1px solid rgba(201, 169, 97, 0.2)', background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(253, 251, 247, 0.95) 100%)', backdropFilter: 'blur(10px)' }}
               >
                 <div className="card-header p-4 border-0 bg-transparent d-flex align-items-center gap-3">
                   <div style={{ 
@@ -255,7 +255,7 @@ const FrontDeskDashboard: React.FC = () => {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 }}
-                style={{ borderRadius: '16px', border: '1px solid rgba(201, 169, 97, 0.2)', background: 'rgba(255, 255, 255, 0.8)' }}
+                style={{ borderRadius: '16px', border: '1px solid rgba(201, 169, 97, 0.2)', background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(253, 251, 247, 0.95) 100%)', backdropFilter: 'blur(10px)' }}
               >
                  <div className="card-header p-4 border-0 bg-transparent d-flex align-items-center gap-3">
                   <div style={{ 
@@ -330,10 +330,10 @@ const FrontDeskDashboard: React.FC = () => {
                     className="card shadow-sm p-3 text-center cursor-pointer hover-lift"
                     whileHover={{ y: -5 }}
                     onClick={() => navigate('/bookings')}
-                    style={{ borderRadius: '16px', border: 'none', background: 'linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%)' }}
+                    style={{ borderRadius: '16px', border: '1px solid rgba(201, 169, 97, 0.4)', background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(253, 251, 247, 0.95) 100%)' }}
                   >
                     <div className="card-body">
-                      <FaCalendarCheck size={32} className="mb-3 text-primary" />
+                      <FaCalendarCheck size={32} className="mb-3" style={{ color: '#C9A961' }} />
                       <h5>All Bookings</h5>
                       <p className="text-muted small mb-0">View and manage reservation list</p>
                     </div>
@@ -343,11 +343,11 @@ const FrontDeskDashboard: React.FC = () => {
                   <motion.div 
                     className="card shadow-sm p-3 text-center cursor-pointer hover-lift"
                     whileHover={{ y: -5 }}
-                    onClick={() => navigate('/rooms')}
-                    style={{ borderRadius: '16px', border: 'none', background: 'linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%)' }}
+                    onClick={() => navigate('/manager/rooms')}
+                    style={{ borderRadius: '16px', border: '1px solid rgba(201, 169, 97, 0.4)', background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(253, 251, 247, 0.95) 100%)' }}
                   >
                     <div className="card-body">
-                      <FaSearch size={32} className="mb-3 text-success" />
+                      <FaSearch size={32} className="mb-3" style={{ color: '#8B6F47' }} />
                       <h5>Room Status</h5>
                       <p className="text-muted small mb-0">Check availability and room conditions</p>
                     </div>
@@ -358,10 +358,10 @@ const FrontDeskDashboard: React.FC = () => {
                     className="card shadow-sm p-3 text-center cursor-pointer hover-lift"
                     whileHover={{ y: -5 }}
                     onClick={() => navigate('/service-requests')}
-                    style={{ borderRadius: '16px', border: 'none', background: 'linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%)' }}
+                    style={{ borderRadius: '16px', border: '1px solid rgba(201, 169, 97, 0.4)', background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(253, 251, 247, 0.95) 100%)' }}
                   >
                     <div className="card-body">
-                      <FaConciergeBell size={32} className="mb-3 text-warning" />
+                      <FaConciergeBell size={32} className="mb-3" style={{ color: '#C9A961' }} />
                       <h5>Service Requests</h5>
                       <p className="text-muted small mb-0">Handle guest inquiries and needs</p>
                     </div>

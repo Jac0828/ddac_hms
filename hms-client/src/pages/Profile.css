@@ -1,144 +1,172 @@
 .profile-container-luxury {
-  padding: 4rem 2rem;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #fdfbf7 0%, #f5f0e6 100%);
-}
-
-.profile-header-luxury {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.profile-header-luxury h1 {
-  font-family: 'Playfair Display', serif;
-  color: #2C2622;
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .profile-grid-layout {
   display: grid;
   grid-template-columns: 1fr 2fr;
   gap: 2rem;
-  max-width: 1200px;
+}
+
+.profile-grid-layout.single-column {
+  grid-template-columns: 1fr;
+  max-width: 800px;
   margin: 0 auto;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .profile-grid-layout {
     grid-template-columns: 1fr;
   }
 }
 
+/* Membership Card Base */
 .membership-card-luxury {
-  background: linear-gradient(135deg, #C9A961 0%, #B08D55 100%);
-  border-radius: 20px;
-  padding: 1.5rem;
-  color: white;
-  box-shadow: 0 10px 30px rgba(201, 169, 97, 0.3);
   position: relative;
-  overflow: hidden;
-  margin-bottom: 2rem;
-  max-width: 100%;
+  border-radius: 20px;
+  padding: 2rem;
+  color: white;
   min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+  transition: transform 0.3s ease;
 }
 
-.membership-card-luxury.platinum {
-  background: linear-gradient(135deg, #E5E4E2 0%, #B4B4B4 100%);
-  box-shadow: 0 10px 30px rgba(180, 180, 180, 0.3);
+.membership-card-luxury:hover {
+  transform: translateY(-5px);
 }
 
-.membership-card-luxury.gold {
-  background: linear-gradient(135deg, #FFD700 0%, #B8860B 100%);
-  box-shadow: 0 10px 30px rgba(218, 165, 32, 0.3);
+/* Tiers */
+.membership-card-luxury.member {
+  background: linear-gradient(135deg, #5D4037 0%, #3E2723 100%); /* Bronze/Wood */
 }
 
 .membership-card-luxury.silver {
-  background: linear-gradient(135deg, #C0C0C0 0%, #A9A9A9 100%);
-  box-shadow: 0 10px 30px rgba(169, 169, 169, 0.3);
+  background: linear-gradient(135deg, #BDC3C7 0%, #2C3E50 100%); /* Silver */
 }
 
+.membership-card-luxury.gold {
+  background: linear-gradient(135deg, #F2C94C 0%, #F2994A 100%); /* Gold */
+}
+
+.membership-card-luxury.platinum {
+  background: linear-gradient(135deg, #141E30 0%, #243B55 100%); /* Platinum/Dark Blue */
+}
+
+/* Unverified Tier */
+.membership-card-luxury.unverified {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  color: #6c757d;
+  border: 2px dashed #ced4da;
+  box-shadow: none;
+}
+
+.membership-card-luxury.unverified .hotel-brand {
+    color: #adb5bd;
+}
+
+.membership-card-luxury.unverified .tier-badge {
+    background: #e2e6ea;
+    color: #6c757d;
+    border: none;
+}
+
+.membership-card-luxury.unverified .user-name-large {
+    color: #495057;
+}
+
+.membership-card-luxury.unverified .member-since {
+    color: #6c757d;
+}
+
+/* Card Elements */
 .card-pattern {
   position: absolute;
   top: 0;
+  left: 0;
   right: 0;
   bottom: 0;
-  left: 0;
-  background-image: radial-gradient(circle at 50% -20%, rgba(255, 255, 255, 0.2), transparent 70%);
-  opacity: 0.6;
+  background-image: radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 40%);
+  pointer-events: none;
 }
 
 .card-header-section {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 1.5rem;
-  position: relative;
   z-index: 1;
 }
 
 .hotel-brand {
   font-family: 'Playfair Display', serif;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   letter-spacing: 2px;
+  text-transform: uppercase;
+  opacity: 0.9;
 }
 
 .tier-badge {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 0.4rem 0.8rem;
-  border-radius: 30px;
+  background: rgba(255,255,255,0.2);
+  padding: 0.4rem 1rem;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
   backdrop-filter: blur(5px);
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 0.75rem;
-  letter-spacing: 1px;
 }
 
 .card-user-info {
-  position: relative;
+  margin-top: auto;
+  margin-bottom: 1.5rem;
   z-index: 1;
 }
 
 .user-name-large {
   font-family: 'Playfair Display', serif;
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .member-since {
   font-size: 0.85rem;
   opacity: 0.8;
-  margin-bottom: 1.5rem;
+  font-weight: 300;
 }
 
 .card-footer-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  position: relative;
   z-index: 1;
 }
 
 .points-display {
-  text-align: left;
+  display: flex;
+  flex-direction: column;
 }
 
 .points-label {
-  display: block;
   font-size: 0.75rem;
-  opacity: 0.8;
-  margin-bottom: 0.25rem;
   text-transform: uppercase;
+  opacity: 0.8;
   letter-spacing: 1px;
 }
 
 .points-value {
   font-size: 1.5rem;
   font-weight: 700;
-  font-family: 'Playfair Display', serif;
+  line-height: 1.2;
 }
 
 .points-next-tier {
@@ -147,123 +175,95 @@
   margin-top: 0.25rem;
 }
 
-.detail-card {
-  background: white;
-  padding: 2rem;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(201, 169, 97, 0.1);
-  margin-bottom: 2rem;
-}
-
-.detail-card h3 {
-  font-family: 'Playfair Display', serif;
-  color: #2C2622;
-  margin-bottom: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 1.5rem;
-}
-
-.info-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.info-row:last-child {
-  border-bottom: none;
-}
-
-.info-label {
-  color: #666;
-  font-size: 0.9rem;
-}
-
-.info-value {
-  color: #2C2622;
-  font-weight: 500;
-}
-
 .tier-progress-container {
-  margin-top: 1.5rem;
+  margin-top: 1rem;
+  z-index: 1;
 }
 
 .progress-bar-bg {
-  background: rgba(255, 255, 255, 0.2);
+  width: 100%;
   height: 6px;
+  background: rgba(255,255,255,0.3);
   border-radius: 3px;
   overflow: hidden;
-  margin-top: 0.5rem;
 }
 
 .progress-bar-fill {
-  background: white;
   height: 100%;
+  background: white;
   border-radius: 3px;
-}
-
-.benefits-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1rem;
-}
-
-.benefit-item {
-  display: flex;
-  align-items: center;
-  padding: 1rem;
-  background: #fcfcfc;
-  border-radius: 12px;
-  border: 1px solid rgba(201, 169, 97, 0.1);
-  color: #4A3F35;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.benefit-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  border-color: rgba(201, 169, 97, 0.3);
-}
-
-.benefit-item svg {
-  color: #C9A961;
-  margin-right: 0.75rem;
-  flex-shrink: 0;
+  transition: width 1s ease-out;
 }
 
 .btn-gold {
-  background: linear-gradient(135deg, #C9A961 0%, #8B6F47 100%);
-  border: none;
-  color: white;
-  padding: 0.5rem 1.5rem;
-  border-radius: 30px;
-  font-weight: 600;
-  transition: all 0.3s ease;
+    background: linear-gradient(135deg, #C9A961 0%, #8B6F47 100%);
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
 }
 
 .btn-gold:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(139, 111, 71, 0.3);
-  color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(139, 111, 71, 0.3);
+    color: white;
 }
 
 .btn-outline-gold {
-  border: 1px solid #C9A961;
-  color: #C9A961;
-  background: transparent;
-  padding: 0.4rem 1rem;
-  border-radius: 30px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  font-size: 0.9rem;
+    border: 1px solid #C9A961;
+    color: #8B6F47;
+    background: transparent;
+    padding: 0.4rem 1rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
 }
 
 .btn-outline-gold:hover {
-  background: #C9A961;
-  color: white;
+    background: #C9A961;
+    color: white;
+}
+
+/* Detail Card styles */
+.detail-card {
+    padding: 2rem;
+    border-radius: 16px;
+    margin-bottom: 1.5rem;
+    /* Make background warmer and less stark white */
+    background: linear-gradient(135deg, rgba(255, 252, 245, 0.98) 0%, rgba(255, 248, 240, 0.95) 100%) !important;
+    border: 1px solid rgba(201, 169, 97, 0.3) !important;
+    box-shadow: 0 10px 30px rgba(201, 169, 97, 0.08);
+}
+
+.detail-card h3 {
+    color: #8B6F47; /* Gold/Bronze color for titles */
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(201, 169, 97, 0.15); /* Softer gold divider */
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    color: #8B6F47; /* Softer gold/brown for labels */
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+.info-value {
+    color: #4A4A4A; /* Darker text for values */
+    font-weight: 500;
+    font-size: 1.05rem;
 }

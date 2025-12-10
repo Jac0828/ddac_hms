@@ -72,14 +72,18 @@ public class RoomsController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Manager,Receptionist")]
+    [Authorize(Roles = "Admin,Manager,Receptionist")]
     public async Task<ActionResult<RoomDto>> CreateRoom([FromBody] CreateRoomDto dto)
     {
+        var roomType = await _context.RoomTypes.FindAsync(dto.RoomTypeId);
+        if (roomType == null)
+            return BadRequest("Invalid Room Type ID");
+
         var room = new Room
         {
             RoomNumber = dto.RoomNumber,
             RoomTypeId = dto.RoomTypeId,
-            PricePerNight = dto.PricePerNight,
+            PricePerNight = roomType.BasePricePerNight, // Enforce price from Room Type
             Status = dto.Status.ToRoomStatus(),
             Description = dto.Description,
             Capacity = dto.Capacity,
@@ -90,11 +94,15 @@ public class RoomsController : ControllerBase
         };
 
         var created = await _roomService.CreateRoomAsync(room);
+        
+        // Ensure RoomType is populated for the response DTO
+        created.RoomType = roomType;
+        
         return CreatedAtAction(nameof(GetRoom), new { id = created.Id }, MapToDto(created));
     }
 
     [HttpPost("batch")]
-    [Authorize(Roles = "Manager")]
+    [Authorize(Roles = "Admin,Manager")]
     public async Task<ActionResult<IEnumerable<RoomDto>>> BatchCreateRooms([FromBody] BatchCreateRoomsDto dto)
     {
         var roomType = await _context.RoomTypes.FindAsync(dto.RoomTypeId);
@@ -147,16 +155,20 @@ public class RoomsController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize(Roles = "Manager,Receptionist")]
+    [Authorize(Roles = "Admin,Manager,Receptionist")]
     public async Task<IActionResult> UpdateRoom(int id, [FromBody] UpdateRoomDto dto)
     {
         var room = await _roomService.GetRoomByIdAsync(id);
         if (room == null)
             return NotFound();
 
+        var roomType = await _context.RoomTypes.FindAsync(dto.RoomTypeId);
+        if (roomType == null)
+            return BadRequest("Invalid Room Type ID");
+
         room.RoomNumber = dto.RoomNumber;
         room.RoomTypeId = dto.RoomTypeId;
-        room.PricePerNight = dto.PricePerNight;
+        room.PricePerNight = roomType.BasePricePerNight; // Enforce price from Room Type
         room.Status = dto.Status.ToRoomStatus();
         room.Description = dto.Description;
         room.Capacity = dto.Capacity;
@@ -170,7 +182,7 @@ public class RoomsController : ControllerBase
     }
 
     [HttpPut("{id}/status")]
-    [Authorize(Roles = "Manager,Receptionist")]
+    [Authorize(Roles = "Admin,Manager,Receptionist")]
     public async Task<IActionResult> UpdateRoomStatus(int id, [FromBody] UpdateRoomStatusDto dto)
     {
         var status = dto.Status.ToRoomStatus();
@@ -182,14 +194,27 @@ public class RoomsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = "Manager")]
+    [Authorize(Roles = "Admin,Manager")]
     public async Task<IActionResult> DeleteRoom(int id)
     {
-        var result = await _roomService.DeleteRoomAsync(id);
-        if (!result)
-            return BadRequest("Cannot delete room with active bookings");
+        try
+        {
+            var result = await _roomService.DeleteRoomAsync(id);
+            if (!result)
+                return BadRequest(new { message = "Cannot delete room because it has active bookings or is currently occupied." });
 
-        return NoContent();
+            return NoContent();
+        }
+        catch (DbUpdateException)
+        {
+            // This catches foreign key constraint violations
+            return BadRequest(new { message = "Cannot delete this room because it has associated historical records (bookings, service requests, etc.). Consider setting it to 'Maintenance' status instead." });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting room {id}: {ex.Message}");
+            return StatusCode(500, new { message = "An error occurred while deleting the room." });
+        }
     }
 
     private static RoomDto MapToDto(Room room)
