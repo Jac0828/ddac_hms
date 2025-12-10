@@ -240,7 +240,7 @@ public class DutyRosterController : ControllerBase
                 FirstName = u.FirstName,
                 LastName = u.LastName,
                 PhoneNumber = u.PhoneNumber,
-                Roles = rolesByUserId.TryGetValue(u.Id, out var roles) ? roles : new List<string>()
+                Roles = rolesByUserId.TryGetValue(u.Id, out var roles) ? roles.Where(r => r != null).Select(r => r!).ToList() : new List<string>()
             }).ToList();
 
             return Ok(staffDtos);

@@ -19,4 +19,10 @@ public class AppUser : IdentityUser
     public virtual ICollection<NewsComment> NewsComments { get; set; } = new List<NewsComment>();
     public virtual ICollection<ActivityLog> ActivityLogs { get; set; } = new List<ActivityLog>();
     public virtual ICollection<HousekeepingTask> AssignedHousekeepingTasks { get; set; } = new List<HousekeepingTask>();
+
+    // Email Verification
+    public string? EmailVerificationCode { get; set; }
+    public bool EmailVerified { get; set; } = false;
+
+    public string? ProfilePictureUrl { get; set; }
 }

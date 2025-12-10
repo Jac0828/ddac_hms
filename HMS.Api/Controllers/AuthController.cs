@@ -80,8 +80,8 @@ public class AuthController : ControllerBase
         
         if (!ModelState.IsValid)
         {
-            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
-            var errorDetails = ModelState.SelectMany(x => x.Value.Errors.Select(err => $"{x.Key}: {err.ErrorMessage}")).ToList();
+            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage ?? string.Empty).ToList();
+            var errorDetails = ModelState.SelectMany(x => x.Value?.Errors.Select(err => $"{x.Key}: {err.ErrorMessage ?? string.Empty}") ?? Enumerable.Empty<string>()).ToList();
             Console.WriteLine($"[Register] Model validation failed. Errors: {string.Join(", ", errors)}");
             Console.WriteLine($"[Register] Detailed errors: {string.Join(", ", errorDetails)}");
             return BadRequest(new { message = "Validation failed", errors = errors, details = errorDetails });
@@ -633,12 +633,6 @@ public class UpdateProfileModel
     public string Email { get; set; } = string.Empty;
     public string? PhoneNumber { get; set; }
     public string? ProfilePictureUrl { get; set; }
-}
-
-public class ChangePasswordModel
-{
-    public string CurrentPassword { get; set; } = string.Empty;
-    public string NewPassword { get; set; } = string.Empty;
 }
 
 public class ChangePasswordModel

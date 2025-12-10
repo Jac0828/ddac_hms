@@ -32,6 +32,9 @@ public class Booking : IAuditable, ISoftDelete
     [StringLength(500)]
     public string? SpecialRequests { get; set; }
     
+    public DateTime? ActualCheckInDate { get; set; }
+    public DateTime? ActualCheckOutDate { get; set; }
+    
     // IAuditable
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }

@@ -51,6 +51,18 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "AWSSDK.Extensions.NETCore.Setup": {
+              "target": "Package",
+              "version": "[4.0.3.15, )"
+            },
+            "AWSSDK.S3": {
+              "target": "Package",
+              "version": "[4.0.14.1, )"
+            },
+            "AWSSDK.SimpleEmail": {
+              "target": "Package",
+              "version": "[4.0.2.6, )"
+            },
             "Google.Apis.Auth": {
               "target": "Package",
               "version": "[1.73.0, )"

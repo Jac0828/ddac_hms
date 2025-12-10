@@ -24,6 +24,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser>
     public DbSet<StaffDutyRoster> StaffDutyRosters { get; set; }
     public DbSet<Review> Reviews { get; set; }
     public DbSet<EmailVerificationCode> EmailVerificationCodes { get; set; }
+    public DbSet<HotelSetting> HotelSettings { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
